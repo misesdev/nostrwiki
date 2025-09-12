@@ -1,0 +1,33 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=pass@WdHash500
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    networks:
+      - appnetwork
+
+  webapp:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: godzilla_api
+    depends_on:
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8080:8080"
+    command: >
+      sh -c "dotnet ef database update --project api/api.csproj --startup-project api &&
+         dotnet api.dll"
+    networks:
+      - appnetwork
+
+networks:
+  appnetwork:
+    driver: bridge
