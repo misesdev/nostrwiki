@@ -33,6 +33,23 @@ services:
     networks:
       - app-network
 
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: godzilla_api
+    depends_on:
+      - sqlserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8080:8080"
+    command: >
+      sh -c "dotnet ef database update --project api/api.csproj --startup-project api &&
+         dotnet api.dll"
+    networks:
+      - app-network
+
   app:
     build:
       context: ./app/
