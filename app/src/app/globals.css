@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+input {
+    background: transparent !important;
+    outline: none !important;
+}
+
+input:focus {
+    background: transparent !important;
+    outline: none !important;
+}
+
+input:-webkit-autofill {
+    background: transparent !important;
+}
