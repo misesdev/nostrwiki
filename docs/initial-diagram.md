@@ -3,7 +3,6 @@
 ---
 
 ```mermaid
-flowchart TD
 
     %% Users
     User[User / Browser] -->|Search Query| NextJS[Next.js Frontend]
