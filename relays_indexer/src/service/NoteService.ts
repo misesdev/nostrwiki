@@ -7,7 +7,7 @@ import { classifyUrl, distinct, extractTagsFromContent, extractUrls } from "../u
 import { LoadDataProps } from "./commons";
 import DBFiles from "./database/DBFiles";
 import DBNotes from "./database/DBNotes";
-import DBPubkeys from "./database/DBPubkeys";
+import DBUsers from "./database/DBUsers";
 import RelayService from "./RelayService";
 
 class NoteService 
@@ -15,17 +15,17 @@ class NoteService
     private readonly _settings: Settings
     private readonly _dbNotes: DBNotes
     private readonly _dbFiles: DBFiles
-    private readonly _dbPubkeys: DBPubkeys
+    private readonly _dbUsers: DBUsers
     constructor(
         settings: Settings,
         dbNotes: DBNotes = new DBNotes(),
         dbFiles: DBFiles = new DBFiles(),
-        dbPubkeys: DBPubkeys = new DBPubkeys()
+        dbUsers: DBUsers = new DBUsers()
     ) {
         this._settings = settings
         this._dbNotes = dbNotes 
         this._dbFiles = dbFiles 
-        this._dbPubkeys = dbPubkeys
+        this._dbUsers = dbUsers
     }
 
     public async loadNotes({ pool, pubkeys, accumulateRelays }: LoadDataProps): Promise<void>
@@ -50,7 +50,7 @@ class NoteService
 
             // indexing user references
             const pubkeyRefs = this.refPubkeys(events)
-            await this._dbPubkeys.upRefs(pubkeyRefs)
+            await this._dbUsers.upRefs(pubkeyRefs)
             
             // indexing references
             const eventRefs = this.refEvents(events)
@@ -79,9 +79,15 @@ class NoteService
                     files.push({
                         url,
                         type,
+                        title: event.title,
+                        description: "",
+                        published_by: event.published_by,
+                        published_at: event.published_at,
                         note_id: event.id,
                         pubkey: event.pubkey,
-                        tags: event.tags
+                        tags: event.tags,
+                        created_at: new Date(),
+                        ref_count: 1
                     })
                 }
             }
@@ -112,8 +118,11 @@ class NoteService
                 pubkey: event.pubkey,
                 title: this.extractTitle(event),
                 content: event.content,
-                created_at: event.created_at,
-                tags: distinct(tags).join(" ")
+                published_by: "",
+                published_at: event.created_at,
+                tags: distinct(tags).join(", "),
+                created_at: new Date(),
+                ref_count: 1
             })
         }
         return notes;

@@ -1,4 +1,4 @@
-import { User } from "../../modules/types/User";
+import { RefPubkey, User } from "../../modules/types/User";
 import DBFactory from "./DBFactory"
 
 class DBUsers
@@ -33,6 +33,39 @@ class DBUsers
         `
         const results = await this._db.query<{ pubkey: string }>(query, [items, offset])
         return results.map(u => u.pubkey)
+    }
+
+    public async upsertPubkeys(items: string[]): Promise<void>
+    {
+        for (let i = 0; i < items.length; i += this.BATCH_SIZE) {
+            const batch = items.slice(i, i + this.BATCH_SIZE);
+            await this.upsertPubkeysBetch(batch);
+        }
+    }
+
+    private async upsertPubkeysBetch(pubkeys: string[]): Promise<void>
+    {
+        if(!pubkeys.length) return;
+
+        const values: any[] = [];
+        const columns = ["pubkey", "created_at"];
+        const placeholders: string[] = [];
+        pubkeys.forEach((pubkey, i) => {
+            const baseIndex = i * columns.length;
+            placeholders.push(
+                `(${columns.map((_, j) => `$${baseIndex + j + 1}`).join(", ")})`
+            );
+            values.push(pubkey, new Date())
+        })
+        const query = `
+            INSERT INTO users (${columns.join(", ")})
+            VALUES ${placeholders.join(", ")}
+            ON CONFLICT (pubkey)
+            DO UPDATE SET
+                ref_count = EXCLUDED.ref_count + 1
+                updated_at = NOW()
+        `;
+        await this._db.exec(query, values);
     }
 
     public async upsert(items: User[]): Promise<void>
@@ -70,7 +103,7 @@ class DBUsers
                 user.lud06 ?? null,
                 user.lud16 ?? null,
                 user.zapService ?? null,
-                new Date(),
+                user.created_at,
                 false 
             )
         })
@@ -94,6 +127,34 @@ class DBUsers
                 available = true
         `;
         await this._db.exec(query, values);
+    }
+
+    public async upRefs(refs: RefPubkey[]): Promise<void>
+    {
+        for (let i = 0; i < refs.length; i += this.BATCH_SIZE) {
+            const batch = refs.slice(i, i + this.BATCH_SIZE);
+            await this.upRefsBetch(batch);
+        }
+    }
+
+    private async upRefsBetch(refs: RefPubkey[]): Promise<void>
+    {
+        if(!refs.length) return
+
+        const pubkeys = refs.map(r => r.pubkey);
+        const counts = refs.map(r => r.count);
+
+        const query = `
+            UPDATE users 
+                SET ref_count = users.ref_count + v.count
+            FROM (
+                SELECT unnest($1::text[]) AS pubkey,
+                       unnest($2::bigint[]) AS count
+            ) AS v
+            WHERE users.pubkey = v.pubkey
+        `;
+
+        await this._db.exec(query, [pubkeys, counts]);
     }
 }
 

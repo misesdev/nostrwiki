@@ -1,8 +1,8 @@
 import { NostrEvent } from "../modules/types/NostrEvent";
 import { NostrRelay, RefRelay } from "../modules/types/NostrRelay";
-import AppSettings from "../settings/AppSettings";
 import { Settings } from "../settings/types";
 import { distinct, getRelayDomain, npubToHex } from "../utils";
+import DBSettings from "./database/DBSettings";
 import DBRelays from "./database/DBRelays";
 const https = require("node:https")
 const pLimit = require("p-limit");
@@ -123,12 +123,20 @@ class RelayService
                 software: response.data.software,
                 version: response.data.version,
                 icon: response.data.icon,
-                active: true,
+                created_at: new Date(),
+                available: true,
+                ref_count: 1
             }
         }
         catch(ex) {
             console.log("unreachable relay", url)
-            return { url, name: url, active: false }
+            return { 
+                url, 
+                name: url, 
+                created_at: new Date(),
+                available: false,
+                ref_count: 1
+            }
         }
     }
 
@@ -140,11 +148,12 @@ class RelayService
     public static async currentRelays(settings: Settings): Promise<NostrRelay[]>
     {
         const dbRelays = new DBRelays()
+        const appSettings = new DBSettings()
         let relays = await dbRelays.list(settings.relay_index, settings.relays_connections)
         if(!relays.length) 
         { 
             relays = await dbRelays.list(0, settings.relays_connections)
-            AppSettings.save({ ...settings, relay_index: 0 })
+            await appSettings.update({ ...settings, relay_index: 0 })
         }
         return relays
     }

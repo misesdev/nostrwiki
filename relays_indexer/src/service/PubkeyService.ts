@@ -1,22 +1,22 @@
-import AppSettings from "../settings/AppSettings";
 import { Settings } from "../settings/types";
 import { distinct, getPubkeys } from "../utils";
 import { LoadDataProps } from "./commons";
-import DBPubkeys from "./database/DBPubkeys";
+import DBSettings from "./database/DBSettings";
+import DBUsers from "./database/DBUsers";
 import FriendsService from "./FriendsService";
 import RelayService from "./RelayService";
 
 class PubkeyService
 {
     private readonly _settings: Settings
-    private readonly _dbPubkeys: DBPubkeys
+    private readonly _dbUsers: DBUsers 
     private readonly _friendService: FriendsService
     constructor(
         settings: Settings,
-        dbPubkeys: DBPubkeys = new DBPubkeys(),
+        dbUsers: DBUsers = new DBUsers(),
         friendService: FriendsService = new FriendsService()
     ) {
-        this._dbPubkeys = dbPubkeys
+        this._dbUsers = dbUsers
         this._friendService = friendService
         this._settings = settings
     }
@@ -24,8 +24,8 @@ class PubkeyService
     public async loadPubkeys({ pool, pubkeys, accumulateRelays }: LoadDataProps): Promise<void>
     {
         const relayUrls: string[] = []
-        if(pubkeys[0] == this._settings.initial_user)
-            await this._dbPubkeys.upsert(distinct(pubkeys))            
+        if(pubkeys[0] == this._settings.initial_pubkey)
+            await this._dbUsers.upsertPubkeys(distinct(pubkeys))            
 
         let skipe = this._settings.max_fetch_events
 
@@ -43,7 +43,7 @@ class PubkeyService
                 let event = events[i]
                 let npubs = getPubkeys(event)
                 console.log("npubs...:", npubs.length)
-                await this._dbPubkeys.upsert(distinct(npubs))
+                await this._dbUsers.upsertPubkeys(distinct(npubs))
                 await this._friendService
                     .saveFriends(event.pubkey, distinct(npubs))
                 const urls = RelayService.relaysFromEvent(event)
@@ -55,20 +55,21 @@ class PubkeyService
 
     public static async currentPubkeys(settings: Settings): Promise<string[]>
     {
-        const dbPubkeys = new DBPubkeys()
+        const dbUsers = new DBUsers()
+        const appSettings = new DBSettings()
 
-        let pubkeys: string[] = await dbPubkeys
-            .list(settings.pubkey_index, settings.pubkeys_per_process)
+        let pubkeys: string[] = await dbUsers
+            .listPubkeys(settings.pubkey_index, settings.pubkeys_per_process)
         
         if(!pubkeys.length && settings.pubkey_index > 0) 
         {
-            pubkeys = await dbPubkeys.list(0, settings.pubkeys_per_process)
-            AppSettings.save({...settings, pubkey_index: 0 })
+            pubkeys = await dbUsers.listPubkeys(0, settings.pubkeys_per_process)
+            await appSettings.update({...settings, pubkey_index: 0 })
         }
 
         if (!pubkeys.length && settings.pubkey_index == 0) 
         {
-            pubkeys = [settings.initial_user]
+            pubkeys = [settings.initial_pubkey]
         }
         return pubkeys
     }

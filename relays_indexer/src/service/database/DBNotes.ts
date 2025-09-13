@@ -85,7 +85,7 @@ class DBNotes
                 SELECT unnest($1::text[]) AS id,
                        unnest($2::bigint[]) AS count
             ) AS v
-            WHERE files.note_id = v.id
+            WHERE files.note_id = v.id;
         `;
 
         await this._db.exec(query, [ids, counts]);

@@ -9,6 +9,7 @@ export type Note = {
     tags?: string;
     created_at: Date;
     updated_at?: Date;
+    ref_count: number;
 }
 
 export type RefNote = {

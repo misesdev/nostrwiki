@@ -31,16 +31,16 @@ class UserService
                 kinds: [0]
             })
 
-            console.log("profiles...:", events.length)
+            console.log("users...:", events.length)
 
             for(let i = 0; i < events.length; i++) 
             {
                 try 
                 {
-                    const urls = RelayService.relaysFromEvent(events[i])
-                    relayUrls.push(...urls)
                     const user = this.userFromEvent(events[i])
                     users.push(user)
+                    const urls = RelayService.relaysFromEvent(events[i])
+                    relayUrls.push(...urls)
                 } 
                 catch {}
             }
@@ -66,13 +66,15 @@ class UserService
             user.display_name = user["displayName"]
         if(!user.name && user.display_name)
             user.name = user.display_name
+        if(!user.display_name && user.name)
+            user.display_name = user.name
         if(!user.picture && user["profile"])
             user.picture = user["profile"]
 
-        if(user.name.length >= 250)
-            user.name = `${user.name.substring(0, 245)}...`
-        if(user.display_name?.length >= 250)
-            user.display_name = `${user.display_name.substring(0, 245)}...`
+        if(user.name.length >= 100)
+            user.name = `${user.name.substring(0, 95)}...`
+        if(user.display_name?.length >= 100)
+            user.display_name = `${user.display_name.substring(0, 95)}...`
         if(user.picture?.length >= 512)
             user.picture = `${user.picture.substring(0, 508)}...`
         if(user.banner?.length >= 512)
@@ -93,6 +95,7 @@ class UserService
                 delete user[property]
         }
 
+        user.created_at = new Date()
         user.pubkey = event.pubkey
 
         return user

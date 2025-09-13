@@ -1,7 +1,7 @@
 export type User = {
     pubkey: string;
-    name: string;
-    display_name: string;
+    name?: string;
+    display_name?: string;
     picture?: string;
     about?: string;
     banner?: string;
