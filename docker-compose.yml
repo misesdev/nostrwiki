@@ -34,19 +34,24 @@ services:
       - app-network
 
   api:
-    build: 
-      context: .
+    build:
+      context: ./api/
       dockerfile: Dockerfile
-    container_name: godzilla_api
-    depends_on:
-      - sqlserver
+    working_dir: /var/www/html
+    volumes:
+      - ./api:/var/www/html
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-    ports:
-      - "8080:8080"
-    command: >
-      sh -c "dotnet ef database update --project api/api.csproj --startup-project api &&
-         dotnet api.dll"
+      DB_HOST: '${DB_HOST:-secret}'
+      DB_PORT: '${DB_PORT:-5432}'
+      DB_DATABASE: '${DB_DATABASE:-db_nostr_indexer}'
+      DB_USERNAME: '${DB_USERNAME:-db_indexer}'
+      DB_PASSWORD: '${DB_PASSWORD:-secret}'
+      TZ: America/Sao_Paulo
+    depends_on:
+      - db-engine
+      - nginx
+      - redis
+    restart: unless-stopped
     networks:
       - app-network
 
@@ -58,6 +63,25 @@ services:
       NODE_ENV: production
     ports:
       - "${APP_PORT:-3000}:${APP_PORT:-3000}"
+    networks:
+      - app-network
+
+  pubkeys_indexer:
+    build: ./pubkeys_indexer/
+    working_dir: /app
+    volumes:
+      - ./indexer/settings.local.json:/app/settings.local.json
+      - indexer:/app/data
+    depends_on:
+      - db-engine
+    environment:
+      TZ: America/Sao_Paulo
+      DB_HOST: '${DB_HOST:-secret}'
+      DB_PORT: '${DB_PORT:-5432}'
+      DB_DATABASE: '${DB_DATABASE:-db_nostr_indexer}'
+      DB_USERNAME: '${DB_USERNAME:-db_indexer}'
+      DB_PASSWORD: '${DB_PASSWORD:-secret}'
+    restart: unless-stopped
     networks:
       - app-network
 

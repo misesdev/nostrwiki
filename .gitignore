@@ -6,6 +6,7 @@
 /storage/*.key
 /vendor
 .env
+*/**/.env
 .env.backup
 .env.production
 .phpunit.result.cache
@@ -21,3 +22,5 @@ yarn-error.log
 
 .env
 */.env
+*/**/settings.local.json
+
