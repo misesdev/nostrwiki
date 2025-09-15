@@ -1,0 +1,52 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const DBFactory_1 = require("./DBFactory");
+class DBFiles {
+    constructor() {
+        this.BATCH_SIZE = 100;
+        this._db = new DBFactory_1.default();
+    }
+    upsert(items) {
+        return __awaiter(this, void 0, void 0, function* () {
+            for (let i = 0; i < items.length; i += this.BATCH_SIZE) {
+                const batch = items.slice(i, i + this.BATCH_SIZE);
+                yield this.upsertBetch(batch);
+            }
+        });
+    }
+    upsertBetch(files) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!files.length)
+                return;
+            const columns = [
+                "url", "pubkey", "note_id", "title", "description", "published_by",
+                "published_at", "type", "tags", "created_at"
+            ];
+            const values = [];
+            const placeholders = [];
+            files.forEach((file, i) => {
+                const baseIndex = i * columns.length;
+                placeholders.push(`(${columns.map((_, j) => `$${baseIndex + j + 1}`).join(", ")})`);
+                values.push(file.url, file.pubkey, file.note_id, file.title, file.description, file.published_by, file.published_at, file.type, file.tags, new Date());
+            });
+            const query = `
+            INSERT INTO files (${columns.join(", ")})
+            VALUES ${placeholders.join(", ")}
+            ON CONFLICT (url) 
+            DO UPDATE SET
+                ref_count = EXCLUDED.ref_count + 1
+        `;
+            yield this._db.exec(query, values);
+        });
+    }
+}
+exports.default = DBFiles;
