@@ -43,8 +43,8 @@ services:
     environment:
       DB_HOST: '${DB_HOST:-secret}'
       DB_PORT: '${DB_PORT:-5432}'
-      DB_DATABASE: '${DB_DATABASE:-db_nostr_indexer}'
-      DB_USERNAME: '${DB_USERNAME:-db_indexer}'
+      DB_DATABASE: '${DB_DATABASE:-db_engine}'
+      DB_USERNAME: '${DB_USERNAME:-misesdev}'
       DB_PASSWORD: '${DB_PASSWORD:-secret}'
       TZ: America/Sao_Paulo
     depends_on:
@@ -67,7 +67,7 @@ services:
       - app-network
 
   pubkeys_indexer:
-    build: ./pubkeys_indexer/
+    build: ./indexers/pubkeys/
     working_dir: /app
     volumes:
       - ./indexer/settings.local.json:/app/settings.local.json
@@ -76,10 +76,10 @@ services:
       - db-engine
     environment:
       TZ: America/Sao_Paulo
-      DB_HOST: '${DB_HOST:-secret}'
+      DB_HOST: '${DB_HOST:-db-engine}'
       DB_PORT: '${DB_PORT:-5432}'
-      DB_DATABASE: '${DB_DATABASE:-db_nostr_indexer}'
-      DB_USERNAME: '${DB_USERNAME:-db_indexer}'
+      DB_DATABASE: '${DB_DATABASE:-db_engine}'
+      DB_USERNAME: '${DB_USERNAME:-misesdev}'
       DB_PASSWORD: '${DB_PASSWORD:-secret}'
     restart: unless-stopped
     networks:

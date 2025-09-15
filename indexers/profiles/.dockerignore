@@ -1,0 +1,22 @@
+
+# local dependences
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Build output local
+dist
+
+# host settings
+settings.local.json
+app.logs
+
+# System files 
+.DS_Store
+*.swp
+*.swo
+
+.env
+.env.example
+
+src

@@ -32,8 +32,7 @@ class AppSettingsSeeder extends Seeder
             // Check if relays are reachable in batches of 20 relays (20 requests)
             "relays_betch_size" => 20,
             // Run every 1 minute
-            "indexer_interval" => 1 
-
+            "indexer_interval" => 5 
         ]);
     }
 }
