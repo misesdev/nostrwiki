@@ -11,23 +11,27 @@ trait NoteSearchable
     ): Builder
     {
         $term = trim($term);
-
-        return $query
-            ->with(['author'])
+        $bindings = [$term, $term];
+        return $query->with(['author'])
+            ->selectRaw("
+                notes.id, notes.kind, notes.pubkey, notes.title, notes.content,
+                notes.tags, notes.published_at, notes.created_at, notes.updated_at,
+                (
+                    greatest(
+                        ts_rank(notes.search_vector, websearch_to_tsquery('portuguese', unaccent(?))),
+                        ts_rank(notes.search_vector, websearch_to_tsquery('english', unaccent(?)))
+                    ) * 0.7
+                    +
+                    ln(notes.ref_count + 1) * 0.3
+                ) as relevance
+            ", $bindings)
             ->where(function ($q) use ($term) {
-                $q->orWhereRaw("notes.search_vector @@ plainto_tsquery('portuguese', unaccent(?))", [$term])
-                    ->orWhereRaw("notes.search_vector @@ plainto_tsquery('english', unaccent(?))", [$term])
-                    // Fallback para termos curtos ou parciais usando search_vector::text
-                    ->orWhereRaw("notes.search_vector::text ILIKE unaccent(?)", ["%{$term}%"]);
-
-                // Busca em autor (full-text + ILIKE)
-                // $q->orWhereHas('author', function ($q2) use ($term) {
-                //     $q2->orWhereRaw("users.search_vector @@ plainto_tsquery('portuguese', unaccent(?))",[$term])
-                //     ->orWhereRaw("users.search_vector @@ plainto_tsquery('english', unaccent(?))", [$term])
-                //     ->orWhereRaw("(users.search_vector::text) ILIKE unaccent(?)", ["%{$term}%"]);
-                // });
+                $q->orWhereRaw("notes.search_vector @@ websearch_to_tsquery('portuguese', unaccent(?))", [$term])
+                    ->orWhereRaw("notes.search_vector @@ websearch_to_tsquery('english', unaccent(?))", [$term])
+                    // Fallback para termos curtos ou parciais usando search_text
+                    ->orWhereRaw("notes.search_text ILIKE unaccent(?)", ["%{$term}%"]);
             })
-            ->orderByDesc('notes.ref_count')
+            ->orderByDesc('relevance')
             ->skip($skip)
             ->take($take);
     }

@@ -16,7 +16,7 @@ class User extends Model
     protected $keyType = 'string';
     protected $primaryKey = 'pubkey';
 
-    protected $hidden = ['search_vector'];
+    protected $hidden = ['search_vector', 'search_text'];
 
     protected $fillable = [
         'name',
@@ -32,17 +32,19 @@ class User extends Model
         'zap_service',
     ];
 
-    public function pubkey(): BelongsTo
+    public function notes()
     {
-        return $this->belongsTo(Pubkey::class, 'pubkey', 'pubkey');
+        return $this->hasMany(Note::class, 'pubkey', 'pubkey');
     }
 
-    public function searchFriends(string $term, int $skip, $take, string $lang)
+    /**
+     * Pesquisa notas deste usuário.
+     */
+    public function searchNotes(string $term, int $skip, int $take)
     {
-        return $this->friends()
-            ->getQuery()
-            ->search($term, $skip, $take, $lang)
-            ->get();
+        return $this->notes()              // pega apenas as notas do usuário
+                    ->search($term, $skip, $take)  // aplica o trait NoteSearchable
+                    ->get();
     }
 
     /**
@@ -60,4 +62,13 @@ class User extends Model
         )->join('users as u', 'friends.friend_pubkey', '=', 'u.pubkey')
             ->select('u.*');
     }
+
+    public function searchFriends(string $term, int $skip, $take, string $lang)
+    {
+        return $this->friends()
+            ->getQuery()
+            ->search($term, $skip, $take, $lang)
+            ->get();
+    }
+
 }

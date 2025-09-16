@@ -14,7 +14,7 @@ class Note extends Model
     protected $keyType = 'string';
     protected $primaryKey = 'id';
 
-    protected $hidden = ['search_vector'];
+    protected $hidden = ['search_vector', 'search_text'];
 
     protected $fillable = [
         'id',
@@ -22,17 +22,33 @@ class Note extends Model
         'pubkey',
         'title',
         'content',
+        'published_at',
         'tags',
         'created_at',
         'ref_count'
     ];
 
-    protected $casts = [
-        'tags' => 'array', // tags como json
-    ];
+    // Accessor para sempre retornar array
+    public function getTagsAttribute(?string $value): array
+    {
+        if (!$value) return [];
+        // separar por espaço
+        return preg_split('/\s+/', $value, -1, PREG_SPLIT_NO_EMPTY);
+    }
+
+    // Opcional: mutator para salvar array como string
+    public function setTagsAttribute(array $value): void
+    {
+        $this->attributes['tags'] = implode(' ', $value);
+    }
 
     public function author()
     {
         return $this->belongsTo(User::class, 'pubkey', 'pubkey');
+    }
+
+    public function files()
+    {
+        return $this->hasMany(File::class, 'note_id', 'id');
     }
 }

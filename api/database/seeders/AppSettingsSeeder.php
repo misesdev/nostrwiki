@@ -18,7 +18,7 @@ class AppSettingsSeeder extends Seeder
             // Current pubkey index that will increment with each execution of pubkeys_per_process
             "pubkey_index" => 0,
             // Number of pubkeys to be traversed per execution
-            "pubkeys_per_process" => 15000,
+            "pubkeys_per_process" => 30000,
             // Maximum number of events to be listed when indexing relays
             "max_fetch_notes" => 1000,
             // Number of pubkeys for each note query
@@ -30,7 +30,7 @@ class AppSettingsSeeder extends Seeder
             // Maximum number of events per request when indexing relays
             "max_fetch_events" => 120,
             // Check if relays are reachable in batches of 20 relays (20 requests)
-            "relays_betch_size" => 20,
+            "relays_betch_size" => 15,
             // Run every 1 minute
             "indexer_interval" => 5 
         ]);

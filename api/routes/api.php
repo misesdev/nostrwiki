@@ -9,13 +9,17 @@ use \App\Http\Controllers\RelaysController;
 
 Route::middleware('cache.response')->group(function () {
 
-    Route::get('/users/{pubkey}', [UserController::class, 'index']);
+    Route::post('/users/search', [UserController::class, 'search']);
+    
+    Route::get('/users/profile/{pubkey}', [UserController::class, 'profile']);
 
     Route::get('/users/friends/{pubkey}', [UserController::class, 'friends']);
+    
+    Route::post('/users/friends/search', [UserController::class, 'search_friends']);
 
-    Route::post('/users/search', [UserController::class, 'search']);
-
-    Route::post('/users/friends/search', [UserController::class, 'searchFriends']);
+    Route::get('/users/notes/{pubkey}', [UserController::class, 'notes']);
+    
+    Route::post('/users/notes/search', [UserController::class, 'search_notes']);
 
     Route::post('/relays/search', [RelaysController::class, 'search']);
 

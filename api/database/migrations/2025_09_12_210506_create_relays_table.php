@@ -21,8 +21,7 @@ return new class extends Migration
             $table->string('version', 50)->nullable();
             $table->boolean('available')->index()->default(false);
             $table->bigInteger('ref_count')
-                ->default(1)
-                ->index();
+                ->default(1)->index();
             $table->timestamps();
         });
 
@@ -32,6 +31,9 @@ return new class extends Migration
 
         // coluna normal para full-text search
         DB::statement("ALTER TABLE relays ADD COLUMN search_vector tsvector");
+        
+        // coluna auxiliar para substring search
+        DB::statement("ALTER TABLE relays ADD COLUMN search_text text");
 
         // trigger function para atualizar o tsvector
         DB::statement("
@@ -44,6 +46,15 @@ return new class extends Migration
                     setweight(to_tsvector('english',   unaccent(coalesce(NEW.description,''))), 'B') ||
                     setweight(to_tsvector('portuguese', unaccent(coalesce(NEW.url,''))), 'C') ||
                     setweight(to_tsvector('english',   unaccent(coalesce(NEW.url,''))), 'C');
+                -- versão plain text normalizada (para ILIKE/trgm)
+                NEW.search_text :=
+                    lower(
+                        unaccent(
+                            coalesce(NEW.name,'') || ' ' ||
+                            coalesce(NEW.description,'') || ' ' || 
+                            coalesce(NEW.url,'') || ' ' 
+                        )
+                    );
                 RETURN NEW;
             END;
             \$\$ LANGUAGE plpgsql;
@@ -58,9 +69,7 @@ return new class extends Migration
 
         // índices GIN para acelerar busca
         DB::statement("CREATE INDEX relays_search_vector_idx ON relays USING GIN (search_vector)");
-        DB::statement("CREATE INDEX IF NOT EXISTS relays_search_vector_trgm_idx ON relays USING gin ((search_vector::text) gin_trgm_ops)");
-        DB::statement("CREATE INDEX IF NOT EXISTS relays_ref_count_trgm_idx ON relays (ref_count)");
-        DB::statement("CREATE INDEX IF NOT EXISTS relays_available_trgm_idx ON relays (available)");
+        DB::statement("CREATE INDEX relays_search_text_trgm_idx ON relays USING gin (search_text gin_trgm_ops)");
     }
 
     public function down(): void

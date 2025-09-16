@@ -36,6 +36,9 @@ return new class extends Migration
         // coluna normal para full-text search
         DB::statement("ALTER TABLE notes ADD COLUMN search_vector tsvector");
 
+        // coluna auxiliar para substring search
+        DB::statement("ALTER TABLE notes ADD COLUMN search_text text");
+
         // trigger function para atualizar search_vector
         DB::statement("
             CREATE OR REPLACE FUNCTION notes_search_vector_trigger() RETURNS trigger AS \$\$
@@ -49,6 +52,16 @@ return new class extends Migration
                     setweight(to_tsvector('english', unaccent(coalesce(NEW.tags,''))), 'C') ||
                     setweight(to_tsvector('portuguese', unaccent(coalesce(NEW.content,''))), 'D') ||
                     setweight(to_tsvector('english', unaccent(coalesce(NEW.content,''))), 'D');
+            
+                -- versão plain text normalizada (para ILIKE/trgm)
+                NEW.search_text :=
+                    lower(
+                        unaccent(
+                            coalesce(NEW.title,'') || ' ' ||
+                            coalesce(NEW.tags,'') || ' ' || 
+                            coalesce(NEW.published_by,'') || ' ' 
+                        )
+                    );
                 RETURN NEW;
             END;
             \$\$ LANGUAGE plpgsql;
@@ -63,7 +76,7 @@ return new class extends Migration
 
         // índices
         DB::statement("CREATE INDEX notes_search_vector_idx ON notes USING GIN (search_vector)"); // full-text
-        DB::statement("CREATE INDEX notes_search_vector_trgm_idx ON notes USING gin ((search_vector::text) gin_trgm_ops)"); // fallback ILIKE
+        DB::statement("CREATE INDEX notes_search_text_trgm_idx ON notes USING gin (search_text gin_trgm_ops)");
     }
 
     public function down(): void

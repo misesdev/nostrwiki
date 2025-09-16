@@ -11,25 +11,31 @@ trait FileSearchable
     ): Builder
     {
         $term = trim($term);
-
+        $bindings = [$term, $term];
         return $query
             ->with(['author', 'note'])
             ->when($type, fn($q) => $q->where('type', $type))
-            ->join('notes', 'files.note_id', '=', 'notes.id')
-            ->select('files.*', 'notes.ref_count')
-            ->selectRaw(
-                "ts_rank(files.search_vector, plainto_tsquery('simple', unaccent(?))) AS fulltext_rank",
-                [$term]
-            )
+            ->selectRaw("
+                files.url, files.note_id, files.pubkey, files.title, 
+                notes.description, files.type, files.tags, files.published_at, 
+                files.created_at, files.updated_at,
+                (
+                    greatest(
+                        ts_rank(files.search_vector, websearch_to_tsquery('portuguese', unaccent(?))),
+                        ts_rank(files.search_vector, websearch_to_tsquery('english', unaccent(?)))
+                    ) * 0.7
+                    +
+                    ln(files.ref_count + 1) * 0.3
+                ) as relevance
+            ", $bindings)
             ->where(function ($q) use ($term) {
                 // full-text multilíngue
-                $q->orWhereRaw("files.search_vector @@ plainto_tsquery('portuguese', unaccent(?))", [$term])
-                    ->orWhereRaw("files.search_vector @@ plainto_tsquery('english', unaccent(?))", [$term])
+                $q->orWhereRaw("files.search_vector @@ websearch_to_tsquery('portuguese', unaccent(?))", [$term])
+                    ->orWhereRaw("files.search_vector @@ websearch_to_tsquery('english', unaccent(?))", [$term])
                     // fallback ILIKE no search_vector
-                    ->orWhereRaw("files.search_vector::text ILIKE unaccent(?)", ["%{$term}%"]);
+                    ->orWhereRaw("files.search_text ILIKE unaccent(?)", ["%{$term}%"]);
             })
-            ->orderByDesc('fulltext_rank')
-            ->orderByDesc('notes.ref_count')
+            ->orderByDesc('relevance')
             ->skip($skip)
             ->take($take);
     }
@@ -40,21 +46,28 @@ trait FileSearchable
     {
         return $query
             ->with(['author', 'note'])
-            ->join('notes', 'files.note_id', '=', 'notes.id')
-            ->select('files.*', 'notes.ref_count')
-            ->selectRaw(
-                "ts_rank(files.search_vector, plainto_tsquery('simple', unaccent(?))) AS fulltext_rank",
-                [$term]
-            )
+            //->join('notes', 'files.note_id', '=', 'notes.id')
+            ->selectRaw("
+                files.url, files.note_id, files.pubkey, files.title, 
+                notes.description, files.type, files.tags, files.published_at, 
+                files.created_at, files.updated_at,
+                (
+                    greatest(
+                        ts_rank(files.search_vector, websearch_to_tsquery('portuguese', unaccent(?))),
+                        ts_rank(files.search_vector, websearch_to_tsquery('english', unaccent(?)))
+                    ) * 0.7
+                    +
+                    ln(files.ref_count + 1) * 0.3
+                ) as relevance
+            ", [$term, $term])
             ->where(function ($q) use ($term) {
                 // full-text multilíngue
-                $q->orWhereRaw("files.search_vector @@ plainto_tsquery('portuguese', unaccent(?))", [$term])
-                    ->orWhereRaw("files.search_vector @@ plainto_tsquery('english', unaccent(?))", [$term])
+                $q->orWhereRaw("files.search_vector @@ websearch_to_tsquery('portuguese', unaccent(?))", [$term])
+                    ->orWhereRaw("files.search_vector @@ websearch_to_tsquery('english', unaccent(?))", [$term])
                     // fallback ILIKE no search_vector
-                    ->orWhereRaw("files.search_vector::text ILIKE unaccent(?)", ["%{$term}%"]);
+                    ->orWhereRaw("files.search_text ILIKE unaccent(?)", ["%{$term}%"]);
             })
-            ->orderByDesc('fulltext_rank')
-            ->orderByDesc('notes.ref_count')
+            ->orderByDesc('relevance')
             ->skip($skip)
             ->take($take);
     }

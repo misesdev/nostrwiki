@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Request\SearchFriendsRequest;
 use App\Http\Request\SearchRequest;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Request\UserPubkeyRequest;
+use App\Http\Request\UserSearchRequest;
 use App\User;
 
 class UserController extends Controller
@@ -12,19 +12,11 @@ class UserController extends Controller
     /**
      * @response User // 1 - PHPDoc
      */
-    function index(string $pubkey)
+    function profile(UserPubkeyRequest $request)
     {
-        $validate = Validator::make([ 'pubkey' => $pubkey ], [
-            'pubkey' => ['required', 'size:64', 'regex:/^[a-fA-F0-9]+$/'],
-        ]);
+        $user = User::find($request->pubkey);
 
-        if($validate->fails())
-            return response()->json($validate->errors(), 403);
-
-        $user = User::find($pubkey);
-
-        if(empty($user))
-            return response()->json(['message' => 'user not found'], 404);
+        if(!$user) return response()->json(['message' => 'user not found'], 404);
 
         return response()->json($user, 200);
     }
@@ -32,23 +24,29 @@ class UserController extends Controller
     /**
      * @response User[] // 1 - PHPDoc
      */
-    function friends(string $pubkey)
+    function friends(UserPubkeyRequest $request)
     {
-        $validate = Validator::make([ 'pubkey' => $pubkey ], [
-            'pubkey' => ['required', 'size:64', 'regex:/^[a-fA-F0-9]+$/'],
-        ]);
+        $user = User::find($request->pubkey);
 
-        if($validate->fails())
-            return response()->json($validate->errors(), 403);
-
-        $user = User::find($pubkey);
-
-        if(empty($user))
-            return response()->json(['message' => 'user not found'], 404);
+        if(!$user) return response()->json(['message' => 'user not found'], 404);
 
         $friends = $user->friends()->get();
 
         return response()->json($friends, 200);
+    }
+
+    /**
+     * @response Note[] // 1 - PHPDoc
+     */
+    function notes(UserPubkeyRequest $request)
+    {       
+        $user = User::find($request->pubkey);
+
+        if(!$user) return response()->json(['message' => 'user not found'], 404);
+
+        $notes = $user->notes()->get();
+
+        return response()->json($notes, 200);
     }
 
     /**
@@ -62,13 +60,13 @@ class UserController extends Controller
 
         $users = User::search($term, $skip, $take)->get();
 
-        return $users;
+        return response()->json($users, 200);
     }
 
     /**
      * @response User[] // 1 - PHPDoc
      */
-    function searchFriends(SearchFriendsRequest $request)
+    function search_friends(UserSearchRequest $request)
     {
         $term = $request->term;
         $pubkey = $request->pubkey;
@@ -77,12 +75,30 @@ class UserController extends Controller
 
         $user = User::find($pubkey);
 
-        if(empty($user))
-            return response()->json(['message' => 'user not found'], 404);
+        if(!$user) return response()->json(['message' => 'user not found'], 404);
 
-        $friends = $user->searchFriends($term, $skip, $take);
+        $friends = $user->searchFriends($term, $skip, $take)->get();
 
         return response()->json($friends, 200);
+    }
+
+    /**
+     * @response Note[] // 1 - PHPDoc
+     */
+    function search_notes(UserSearchRequest $request)
+    {
+        $term = $request->term;
+        $pubkey = $request->pubkey;
+        $skip = $request->input('skip', 0);
+        $take = $request->input('take', 75);
+
+        $user = User::find($pubkey);
+
+        if(!$user) return response()->json(['message' => 'user not found'], 404);
+
+        $notes = $user->searchNotes($term, $skip, $take)->get();
+
+        return response()->json($notes, 200);
     }
 }
 

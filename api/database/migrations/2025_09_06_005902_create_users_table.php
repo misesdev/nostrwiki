@@ -34,6 +34,9 @@ return new class extends Migration
         // coluna normal para full-text search
         DB::statement("ALTER TABLE users ADD COLUMN search_vector tsvector");
 
+        // coluna auxiliar para substring search
+        DB::statement("ALTER TABLE users ADD COLUMN search_text text");
+
         // trigger function para atualizar search_vector
         DB::statement("
             CREATE OR REPLACE FUNCTION users_search_vector_trigger() RETURNS trigger AS \$\$
@@ -45,6 +48,14 @@ return new class extends Migration
                     setweight(to_tsvector('english',   unaccent(coalesce(NEW.name,''))), 'B') ||
                     setweight(to_tsvector('portuguese', unaccent(coalesce(NEW.about,''))), 'C') ||
                     setweight(to_tsvector('english',   unaccent(coalesce(NEW.about,''))), 'C');
+                -- versão plain text normalizada (para ILIKE/trgm)
+                NEW.search_text :=
+                    lower(
+                        unaccent(
+                            coalesce(NEW.display_name,'') || ' ' ||
+                            coalesce(NEW.name,'') || ' ' 
+                        )
+                    );
                 RETURN NEW;
             END;
             \$\$ LANGUAGE plpgsql;
@@ -59,7 +70,7 @@ return new class extends Migration
 
         // índices
         DB::statement("CREATE INDEX users_search_vector_idx ON users USING GIN (search_vector)"); // full-text
-        DB::statement("CREATE INDEX users_search_vector_trgm_idx ON users USING gin ((search_vector::text) gin_trgm_ops)"); // fallback ILIKE
+        DB::statement("CREATE INDEX users_search_text_trgm_idx ON users USING gin (search_text gin_trgm_ops)");
     }
 
     public function down(): void

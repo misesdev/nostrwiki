@@ -11,11 +11,12 @@ class Relay extends Model
     use HasFactory;
     use RelaySearchable;
 
-    protected $hidden = ['search_vector'];
+    protected $hidden = ['search_vector', 'search_text'];
 
     protected $fillable = [
         'id',
         'url',
+        'icon',
         'name',
         'pubkey',
         'description',
@@ -23,9 +24,8 @@ class Relay extends Model
         'supported_nips',
         'software',
         'version',
-        'active',
-        'ref_count',
-        'icon'
+        'available',
+        'ref_count'
     ];
 
     public function author()

@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('app_settings', function (Blueprint $table) {
             $table->string("initial_pubkey", 64);
-            $table->integer("pubkey_index");
-            $table->integer("pubkeys_per_process");
-            $table->integer("max_fetch_notes");
-            $table->integer("pubkeys_per_notes");
-            $table->integer("relay_index");
-            $table->integer("relays_connections");
-            $table->integer("max_fetch_events");
-            $table->integer("relays_betch_size");
-            $table->integer("indexer_interval");
+            $table->integer("pubkey_index")->default(0);
+            $table->integer("pubkeys_per_process")->default(30000);
+            $table->integer("max_fetch_notes")->default(800);
+            $table->integer("pubkeys_per_notes")->default(25);
+            $table->integer("relay_index")->default(0);
+            $table->integer("relays_connections")->default(80);
+            $table->integer("max_fetch_events")->default(120);
+            $table->integer("relays_betch_size")->default(15);
+            $table->integer("indexer_interval")->default(5);
         });
     }
 
