@@ -50,7 +50,7 @@ export class RelayPool
 
         this.websockets = this.websockets.filter(socket => socket != null)
 
-        console.log("connected")
+        console.log("connected relays", this.websockets.length)
     }
 
     private async disconectRelay(websocket: WebSocket): Promise<void> {

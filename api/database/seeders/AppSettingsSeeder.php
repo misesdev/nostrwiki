@@ -12,7 +12,7 @@ class AppSettingsSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('relays')->insert([
+        DB::table('app_settings')->insertOrIgnore([
             // First public key from where indexing will start pubkey -> follows -> pubkeys..
             "initial_pubkey" => "55472e9c01f37a35f6032b9b78dade386e6e4c57d80fd1d0646abb39280e5e27",
             // Current pubkey index that will increment with each execution of pubkeys_per_process

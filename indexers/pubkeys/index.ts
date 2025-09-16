@@ -1,9 +1,7 @@
 import { RelayPool } from "./src/modules/RelayPool";
 import { RefRelay } from "./src/modules/types/NostrRelay";
-import NoteService from "./src/service/NoteService";
 import PubkeyService from "./src/service/PubkeyService";
 import RelayService from "./src/service/RelayService";
-import UserService from "./src/service/UserService";
 import AppSettings from "./src/settings/AppSettings";
 import { configDotenv } from "dotenv";
 
@@ -29,33 +27,32 @@ const runIndexer = async () => {
         const pool = await RelayPool.getInstance(relays)
 
         const pubkeys = await PubkeyService.currentPubkeys(settings)
+        console.log("pubkeys from database...:", pubkeys.length)
 
         // load pubkeys, friends pubkeys and relays
         const pubkeyService = new PubkeyService(settings)
         await pubkeyService.loadPubkeys({ pool, pubkeys, accumulateRelays })
 
-        // load users from pubkeys
-        const userService = new UserService(settings)
-        await userService.loadUsers({ pool, pubkeys, accumulateRelays })
-
-        const noteService = new NoteService(settings)
-        await noteService.loadNotes({ pool, pubkeys, accumulateRelays })
-
-        // load relays from pubkeys
-        const relayService = new RelayService(settings)
-        await relayService.loadRelays({ pool, pubkeys, accumulateRelays })
-
         const relayRefs: RefRelay[] = Array.from(relayMap.entries())
             .map(([url, count]) => ({ url, count }));
 
-        await relayService.saveRelays(relayRefs.map(r => r.url))
-        await relayService.upRefs(relayRefs) 
+        if(relayRefs.length) 
+        {
+            const relayService = new RelayService(settings)
+            await relayService.saveRelays(relayRefs.map(r => r.url))
+            await relayService.upRefs(relayRefs) 
+        }
        
-        if(settings.pubkey_index >= settings.pubkeys_per_process) 
-            settings.relay_index += relays.length
-
-        settings.pubkey_index += pubkeys.length
-        await appSettings.save(settings)
+        if(settings.pubkey_index >= settings.pubkeys_per_process)
+        { 
+            const relayIndex = settings.relay_index += relays.length
+            await appSettings.updateRelayIndex(relayIndex)
+        }
+        if(pubkeys.length) 
+        {
+            const pubkeyIndex = settings.pubkey_index += pubkeys.length
+            await appSettings.updatePubkeyIndex(pubkeyIndex)
+        }
 
         await pool.disconect()
     } 

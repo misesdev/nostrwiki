@@ -27,8 +27,7 @@ class DBUsers
         const query = `
             SELECT pubkey 
             FROM users 
-            WHERE available = true 
-            ORDER BY url 
+            ORDER BY pubkey 
             LIMIT $1 OFFSET $2
         `
         const results = await this._db.query<{ pubkey: string }>(query, [items, offset])
@@ -48,21 +47,21 @@ class DBUsers
         if(!pubkeys.length) return;
 
         const values: any[] = [];
-        const columns = ["pubkey", "created_at"];
+        const columns = ["pubkey"];
         const placeholders: string[] = [];
         pubkeys.forEach((pubkey, i) => {
             const baseIndex = i * columns.length;
             placeholders.push(
                 `(${columns.map((_, j) => `$${baseIndex + j + 1}`).join(", ")})`
             );
-            values.push(pubkey, new Date())
+            values.push(pubkey)
         })
         const query = `
             INSERT INTO users (${columns.join(", ")})
             VALUES ${placeholders.join(", ")}
             ON CONFLICT (pubkey)
             DO UPDATE SET
-                ref_count = EXCLUDED.ref_count + 1
+                ref_count = EXCLUDED.ref_count + 1,
                 updated_at = NOW()
         `;
         await this._db.exec(query, values);
@@ -122,7 +121,7 @@ class DBUsers
                 lud06 = EXCLUDED.lud06,
                 lud16 = EXCLUDED.lud16,
                 zap_service = EXCLUDED.zap_service,
-                ref_count = EXCLUDED.ref_count + 1
+                ref_count = EXCLUDED.ref_count + 1,
                 updated_at = NOW(),
                 available = true
         `;

@@ -21,14 +21,14 @@ class AppSettings
         await this._dbSettings.update(settings) 
     }
 
-    public async incrementRelays(relays: number): Promise<void>
+    public async updateRelayIndex(index: number): Promise<void>
     {
-        await this._dbSettings.incrementRelays(relays);
+        await this._dbSettings.updateRelayIndex(index);
     }
     
-    public async incrementPubkeys(relays: number): Promise<void>
+    public async updatePubkeyIndex(index: number): Promise<void>
     {
-        await this._dbSettings.incrementPubkeys(relays);
+        await this._dbSettings.updatePubkeyIndex(index);
     }
 }
 

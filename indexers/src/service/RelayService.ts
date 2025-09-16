@@ -87,7 +87,7 @@ class RelayService
             const results = await Promise.all(
                 betch.map(async url => limit(() => this.fetchRelayData(url)))
             )
-            const allRelays = results.flat()
+            const allRelays: NostrRelay[] = results.flat()
             if(allRelays.length)
                 relays.push(...allRelays.filter(r => !!r))
         }

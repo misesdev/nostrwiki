@@ -12,10 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('friends', function (Blueprint $table) {
-            $table->string('user_pubkey', 64)->primary();
-            $table->string('friend_pubkey', 64)->index();
+            $table->string('user_pubkey', 64);
+            $table->string('friend_pubkey', 64);
             
             $table->unique(['user_pubkey', 'friend_pubkey']);
+
+            $table->index('friend_pubkey');
 
             $table->foreign('user_pubkey')
                 ->references('pubkey')
