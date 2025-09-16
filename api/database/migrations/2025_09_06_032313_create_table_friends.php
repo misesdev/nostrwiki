@@ -19,7 +19,7 @@ return new class extends Migration
 
             $table->foreign('user_pubkey')
                 ->references('pubkey')
-                ->on('pubkeys')
+                ->on('users')
                 ->onDelete('cascade');
         });
     }

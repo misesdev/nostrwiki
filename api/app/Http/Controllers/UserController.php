@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Request\SearchRequest;
 use App\Http\Request\UserPubkeyRequest;
 use App\Http\Request\UserSearchRequest;
+use App\Note;
 use App\User;
 
 class UserController extends Controller

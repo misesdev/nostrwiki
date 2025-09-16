@@ -12,7 +12,7 @@ class RelaySeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('relays')->insert([
+        DB::table('relays')->insertOrIgnore([
             [ 'url' => 'wss://relay.damus.io', 'name' => 'wss://relay.damus.io', 'available' => true ],
             [ 'url' => 'wss://relay.nostr.bg', 'name' => 'wss://relay.nostr.bg', 'available' => true ],
             [ 'url' => 'wss://nostr.oxtr.dev', 'name' => 'wss://nostr.oxtr.dev', 'available' => true ],
@@ -27,7 +27,6 @@ class RelaySeeder extends Seeder
             [ 'url' => 'wss://relay.nostr.band', 'name' => 'wss://relay.nostr.band', 'available' => true ],
             [ 'url' => 'wss://filter.nostr.wine', 'name' => 'wss://filter.nostr.wine', 'available' => true ],
             [ 'url' => 'wss://relay.noswhere.com', 'name' => 'wss://relay.noswhere.com', 'available' => true ],
-            [ 'url' => 'wss://atlas.nostr.land', 'name' => 'wss://atlas.nostr.land', 'available' => true ],
             [ 'url' => 'wss://relay.nostr.net', 'name' => 'wss://relay.nostr.net', 'available' => true ],
             [ 'url' => 'wss://relay.primal.net', 'name' => 'wss://relay.primal.net', 'available' => true ],
             [ 'url' => 'wss://creatr.nostr.wine', 'name' => 'wss://creatr.nostr.wine', 'available' => true ],

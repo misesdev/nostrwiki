@@ -19,6 +19,7 @@ yarn-error.log
 /.idea
 /.vscode
 /pgsql
+pgsql
 
 .env
 */.env
