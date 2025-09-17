@@ -40,18 +40,18 @@ class DBSettings
         await this._db.exec(query, values)
     }
 
-    public async updatePubkeyIndex(index: number): Promise<void>
+    public async updateIndex(index: number, col: string): Promise<void>
     {
         const query = `
-            UPDATE app_settings SET pubkey_index = ${index} WHERE 1=1
+            UPDATE app_settings SET ${col} = ${index} WHERE 1=1
         `
         await this._db.exec(query, [])
     }
 
-    public async updateRelayIndex(index: number): Promise<void>
+    public async updateSince(timeSeconds: number, col: string): Promise<void>
     {
         const query = `
-            UPDATE app_settings SET relay_index = ${index} WHERE 1=1
+            UPDATE app_settings SET ${col} = ${timeSeconds} WHERE 1=1
         `
         await this._db.exec(query, [])
     }

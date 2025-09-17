@@ -10,8 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../utils");
-const DBSettings_1 = require("./database/DBSettings");
+const AppSettings_1 = require("../settings/AppSettings");
 const DBRelays_1 = require("./database/DBRelays");
+const constant_1 = require("../constant");
 const https = require("node:https");
 const pLimit = require("p-limit");
 const axios_1 = require("axios");
@@ -74,7 +75,6 @@ class RelayService {
             if (!relayUrls.length)
                 return;
             const limit = pLimit(10);
-            const relays = [];
             let betchSize = this._settings.relays_betch_size;
             const distinctRelays = (0, utils_1.distinct)(relayUrls);
             console.log("fetching data relays...:", distinctRelays.length);
@@ -82,22 +82,24 @@ class RelayService {
                 const betch = distinctRelays.slice(i, i + betchSize);
                 const results = yield Promise.all(betch.map((url) => __awaiter(this, void 0, void 0, function* () { return limit(() => this.fetchRelayData(url)); })));
                 const allRelays = results.flat();
-                if (allRelays.length)
-                    relays.push(...allRelays.filter(r => !!r));
+                if (allRelays.length) {
+                    yield this._dbRelays.upsert(allRelays.filter(r => !!r));
+                    console.log("saved relays", allRelays.length);
+                }
             }
-            yield this._dbRelays.upsert(relays);
-            console.log("saved relays", relays.length);
         });
     }
     fetchRelayData(url) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
+            var _a, _b, _c, _d, _e, _f, _g;
             const httpClient = axios_1.default.create({
                 headers: { Accept: "application/nostr+json" },
                 httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-                timeout: 3500
+                timeout: 3800
             });
             try {
+                if (url.includes(".onion") || url.includes(".local"))
+                    throw new Error("onion is not accessible");
                 const relayUrl = url.replace("wss", "https")
                     .replace("ws", "http");
                 const response = yield httpClient.get(relayUrl);
@@ -110,14 +112,14 @@ class RelayService {
                 }
                 return {
                     url,
-                    pubkey: relay_author,
+                    pubkey: relay_author !== null && relay_author !== void 0 ? relay_author : null,
                     name: (_a = response.data.name) !== null && _a !== void 0 ? _a : url,
-                    description: response.data.description,
-                    contact: response.data.contact,
-                    supported_nips: JSON.stringify((_b = response.data.supported_nips) !== null && _b !== void 0 ? _b : []),
-                    software: response.data.software,
-                    version: response.data.version,
-                    icon: response.data.icon,
+                    description: (_b = response.data.description) !== null && _b !== void 0 ? _b : null,
+                    contact: (_c = response.data.contact) !== null && _c !== void 0 ? _c : null,
+                    supported_nips: JSON.stringify((_d = response.data.supported_nips) !== null && _d !== void 0 ? _d : []),
+                    software: (_e = response.data.software) !== null && _e !== void 0 ? _e : null,
+                    version: (_f = response.data.version) !== null && _f !== void 0 ? _f : null,
+                    icon: (_g = response.data.icon) !== null && _g !== void 0 ? _g : null,
                     created_at: new Date(),
                     available: true,
                     ref_count: 1
@@ -140,14 +142,25 @@ class RelayService {
             yield this._dbRelays.upRefs(refs);
         });
     }
-    static currentRelays(settings) {
+    static getRelayIndex(settings, service) {
+        var _a;
+        const map = new Map();
+        map.set(constant_1.Service.pubkey_indexer, settings.pubkey_relay_index);
+        map.set(constant_1.Service.profile_indexer, settings.user_relay_index);
+        map.set(constant_1.Service.note_indexer, settings.note_relay_index);
+        map.set(constant_1.Service.file_indexer, settings.file_relay_index);
+        map.set(constant_1.Service.relay_indexer, settings.relay_index);
+        return (_a = map.get(service)) !== null && _a !== void 0 ? _a : 0;
+    }
+    static currentRelays(settings, service) {
         return __awaiter(this, void 0, void 0, function* () {
             const dbRelays = new DBRelays_1.default();
-            const appSettings = new DBSettings_1.default();
-            let relays = yield dbRelays.list(settings.relay_index, settings.relays_connections);
+            const appSettings = new AppSettings_1.default();
+            const index = this.getRelayIndex(settings, service);
+            let relays = yield dbRelays.list(index, settings.relays_connections);
             if (!relays.length) {
                 relays = yield dbRelays.list(0, settings.relays_connections);
-                yield appSettings.update(Object.assign(Object.assign({}, settings), { relay_index: 0 }));
+                yield appSettings.updateRelayIndex(service, 0);
             }
             return relays;
         });

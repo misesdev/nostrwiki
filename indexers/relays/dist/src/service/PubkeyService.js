@@ -9,8 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const constant_1 = require("../constant");
+const AppSettings_1 = require("../settings/AppSettings");
 const utils_1 = require("../utils");
-const DBSettings_1 = require("./database/DBSettings");
 const DBUsers_1 = require("./database/DBUsers");
 const FriendsService_1 = require("./FriendsService");
 const RelayService_1 = require("./RelayService");
@@ -22,9 +23,12 @@ class PubkeyService {
     }
     loadPubkeys(_a) {
         return __awaiter(this, arguments, void 0, function* ({ pool, pubkeys, accumulateRelays }) {
-            const relayUrls = [];
-            if (pubkeys[0] == this._settings.initial_pubkey)
+            if (!pubkeys.length)
+                return;
+            if (pubkeys.length == 1 && pubkeys[0] == this._settings.initial_pubkey) {
                 yield this._dbUsers.upsertPubkeys((0, utils_1.distinct)(pubkeys));
+            }
+            const relayUrls = [];
             let skipe = this._settings.max_fetch_events;
             console.log(`varrendo ${pubkeys.length} pubkeys..`);
             for (let i = 0; i < pubkeys.length; i += skipe) {
@@ -47,19 +51,30 @@ class PubkeyService {
             accumulateRelays(relayUrls);
         });
     }
-    static currentPubkeys(settings) {
+    static getPubkeyIndex(settings, service) {
+        var _a;
+        const map = new Map();
+        map.set(constant_1.Service.pubkey_indexer, settings.pubkey_index);
+        map.set(constant_1.Service.profile_indexer, settings.user_pubkey_index);
+        map.set(constant_1.Service.note_indexer, settings.note_pubkey_index);
+        map.set(constant_1.Service.file_indexer, settings.file_pubkey_index);
+        map.set(constant_1.Service.relay_indexer, settings.relay_pubkey_index);
+        return (_a = map.get(service)) !== null && _a !== void 0 ? _a : 0;
+    }
+    static currentPubkeys(settings, service) {
         return __awaiter(this, void 0, void 0, function* () {
             const dbUsers = new DBUsers_1.default();
-            const appSettings = new DBSettings_1.default();
-            let pubkeys = yield dbUsers
-                .listPubkeys(settings.pubkey_index, settings.pubkeys_per_process);
-            if (!pubkeys.length && settings.pubkey_index > 0) {
+            const appSettings = new AppSettings_1.default();
+            const index = this.getPubkeyIndex(settings, service);
+            let pubkeys = yield dbUsers.listPubkeys(index, settings.pubkeys_per_process);
+            if (!pubkeys.length && settings.pubkey_index != 0) {
                 pubkeys = yield dbUsers.listPubkeys(0, settings.pubkeys_per_process);
-                yield appSettings.update(Object.assign(Object.assign({}, settings), { pubkey_index: 0 }));
+                if (!pubkeys.length)
+                    pubkeys = [settings.initial_pubkey];
+                yield appSettings.updatePubkeyIndex(service, 0);
             }
-            if (!pubkeys.length && settings.pubkey_index == 0) {
+            if (!pubkeys.length && settings.pubkey_index <= 0)
                 pubkeys = [settings.initial_pubkey];
-            }
             return pubkeys;
         });
     }

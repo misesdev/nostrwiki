@@ -4,7 +4,7 @@ export type Note = {
     pubkey: string;
     title: string;
     content: string;
-    published_by: string;
+    published_by?: string;
     published_at: number;
     tags?: string;
     created_at: Date;

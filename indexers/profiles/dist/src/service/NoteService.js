@@ -12,14 +12,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../utils");
 const DBFiles_1 = require("./database/DBFiles");
 const DBNotes_1 = require("./database/DBNotes");
-const DBPubkeys_1 = require("./database/DBPubkeys");
+const DBUsers_1 = require("./database/DBUsers");
 const RelayService_1 = require("./RelayService");
 class NoteService {
-    constructor(settings, dbNotes = new DBNotes_1.default(), dbFiles = new DBFiles_1.default(), dbPubkeys = new DBPubkeys_1.default()) {
+    constructor(settings, dbNotes = new DBNotes_1.default(), dbFiles = new DBFiles_1.default(), dbUsers = new DBUsers_1.default()) {
         this._settings = settings;
         this._dbNotes = dbNotes;
         this._dbFiles = dbFiles;
-        this._dbPubkeys = dbPubkeys;
+        this._dbUsers = dbUsers;
     }
     loadNotes(_a) {
         return __awaiter(this, arguments, void 0, function* ({ pool, pubkeys, accumulateRelays }) {
@@ -39,7 +39,7 @@ class NoteService {
                 yield this._dbNotes.upsert(notes);
                 // indexing user references
                 const pubkeyRefs = this.refPubkeys(events);
-                yield this._dbPubkeys.upRefs(pubkeyRefs);
+                yield this._dbUsers.upRefs(pubkeyRefs);
                 // indexing references
                 const eventRefs = this.refEvents(events);
                 yield this._dbNotes.upRefs(eventRefs);
@@ -63,9 +63,15 @@ class NoteService {
                         files.push({
                             url,
                             type,
+                            title: event.title,
+                            description: "",
+                            published_by: event.published_by,
+                            published_at: event.published_at,
                             note_id: event.id,
                             pubkey: event.pubkey,
-                            tags: event.tags
+                            tags: event.tags,
+                            created_at: new Date(),
+                            ref_count: 1
                         });
                     }
                 }
@@ -94,8 +100,11 @@ class NoteService {
                 pubkey: event.pubkey,
                 title: this.extractTitle(event),
                 content: event.content,
-                created_at: event.created_at,
-                tags: (0, utils_1.distinct)(tags).join(" ")
+                published_by: "",
+                published_at: event.created_at,
+                tags: (0, utils_1.distinct)(tags).join(", "),
+                created_at: new Date(),
+                ref_count: 1
             });
         }
         return notes;

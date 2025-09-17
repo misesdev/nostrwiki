@@ -1,16 +1,14 @@
 import { WebSocket } from "ws"
 import { distinctEvent } from "../utils";
 import { NostrFilter } from "./types/NostrFilter";
-import { Settings } from "../settings/types";
 import { NostrEvent } from "./types/NostrEvent";
-import RelayService from "../service/RelayService";
 import { NostrRelay } from "./types/NostrRelay";
 
 export class RelayPool 
 {
     private relays: string[];
     public websockets: WebSocket[];
-    public timeout: number = 3500;
+    public timeout: number = 3200;
     private subscription: string = "3da9794398579582309458";
 
     constructor(relays: string[]) 
@@ -85,6 +83,8 @@ export class RelayPool
 
     private async fetchEventRelay(websocket: WebSocket, filter: NostrFilter): Promise<Event[]> 
     {
+        if(!filter.since) delete filter["since"]
+        
         return new Promise((resolve) => {
             let timeout: any;
             let events: Event[] = []

@@ -1,3 +1,26 @@
+
+x-db-env: &db-env
+  DB_HOST: '${DB_HOST:-db-engine}'
+  DB_PORT: '${DB_PORT:-5432}'
+  DB_DATABASE: '${DB_DATABASE:-db_engine}'
+  DB_USERNAME: '${DB_USERNAME:-misesdev}'
+  DB_PASSWORD: '${DB_PASSWORD:-secret}'
+
+x-indexer-common: &indexer-common
+  working_dir: /app
+  depends_on:
+    - db-engine
+  environment:
+    <<: *db-env
+  restart: unless-stopped
+  ulimits:
+    nproc: 65535
+    nofile:
+      soft: 20000
+      hard: 40000
+  networks:
+    - app-network
+
 services:
 
   db-engine:
@@ -17,8 +40,6 @@ services:
 
   redis:
     image: redis:7
-    # ports:
-    #   - "6379:6379"
     networks:
       - app-network
 
@@ -38,16 +59,8 @@ services:
       context: ./api/
       dockerfile: Dockerfile
     working_dir: /var/www/html
-    # volumes:
-    #   - ./api:/var/www/html
-    #   - ./api/pgsql:/var/www/html/pgsql
     environment:
-      DB_HOST: '${DB_HOST:-secret}'
-      DB_PORT: '${DB_PORT:-5432}'
-      DB_DATABASE: '${DB_DATABASE:-db_engine}'
-      DB_USERNAME: '${DB_USERNAME:-misesdev}'
-      DB_PASSWORD: '${DB_PASSWORD:-secret}'
-      TZ: America/Sao_Paulo
+      <<: *db-env
     depends_on:
       - db-engine
       - nginx
@@ -69,19 +82,19 @@ services:
 
   pubkeys_indexer:
     build: ./indexers/pubkeys/
-    working_dir: /app
-    depends_on:
-      - db-engine
-    environment:
-      TZ: America/Sao_Paulo
-      DB_HOST: '${DB_HOST:-db-engine}'
-      DB_PORT: '${DB_PORT:-5432}'
-      DB_DATABASE: '${DB_DATABASE:-db_engine}'
-      DB_USERNAME: '${DB_USERNAME:-misesdev}'
-      DB_PASSWORD: '${DB_PASSWORD:-secret}'
-    restart: unless-stopped
-    networks:
-      - app-network
+    <<: *indexer-common
+
+  profiles_indexer:
+    build: ./indexers/profiles/
+    <<: *indexer-common
+
+  notes_indexer:
+    build: ./indexers/notes/
+    <<: *indexer-common
+
+  relays_indexer:
+    build: ./indexers/relays/
+    <<: *indexer-common
 
 networks:
   app-network:

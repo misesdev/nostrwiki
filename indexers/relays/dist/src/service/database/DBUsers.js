@@ -21,7 +21,7 @@ class DBUsers {
             SELECT * 
             FROM users 
             WHERE available = true 
-            ORDER BY url 
+            ORDER BY pubkey 
             LIMIT $1 OFFSET $2
         `;
             const result = yield this._db.query(query, [items, offset]);
@@ -33,8 +33,7 @@ class DBUsers {
             const query = `
             SELECT pubkey 
             FROM users 
-            WHERE available = true 
-            ORDER BY url 
+            ORDER BY pubkey 
             LIMIT $1 OFFSET $2
         `;
             const results = yield this._db.query(query, [items, offset]);
@@ -54,19 +53,19 @@ class DBUsers {
             if (!pubkeys.length)
                 return;
             const values = [];
-            const columns = ["pubkey", "created_at"];
+            const columns = ["pubkey"];
             const placeholders = [];
             pubkeys.forEach((pubkey, i) => {
                 const baseIndex = i * columns.length;
                 placeholders.push(`(${columns.map((_, j) => `$${baseIndex + j + 1}`).join(", ")})`);
-                values.push(pubkey, new Date());
+                values.push(pubkey);
             });
             const query = `
             INSERT INTO users (${columns.join(", ")})
             VALUES ${placeholders.join(", ")}
             ON CONFLICT (pubkey)
             DO UPDATE SET
-                ref_count = EXCLUDED.ref_count + 1
+                ref_count = EXCLUDED.ref_count + 1,
                 updated_at = NOW()
         `;
             yield this._db.exec(query, values);
@@ -94,7 +93,7 @@ class DBUsers {
                 var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
                 const baseIndex = i * columns.length;
                 placeholders.push(`(${columns.map((_, j) => `$${baseIndex + j + 1}`).join(", ")})`);
-                values.push(user.pubkey, (_a = user.name) !== null && _a !== void 0 ? _a : null, (_b = user.display_name) !== null && _b !== void 0 ? _b : null, (_c = user.picture) !== null && _c !== void 0 ? _c : null, (_d = user.about) !== null && _d !== void 0 ? _d : null, (_e = user.banner) !== null && _e !== void 0 ? _e : null, (_f = user.website) !== null && _f !== void 0 ? _f : null, (_g = user.nip05) !== null && _g !== void 0 ? _g : null, (_h = user.lud06) !== null && _h !== void 0 ? _h : null, (_j = user.lud16) !== null && _j !== void 0 ? _j : null, (_k = user.zapService) !== null && _k !== void 0 ? _k : null, user.created_at, false);
+                values.push(user.pubkey, (_a = user.name) !== null && _a !== void 0 ? _a : null, (_b = user.display_name) !== null && _b !== void 0 ? _b : null, (_c = user.picture) !== null && _c !== void 0 ? _c : null, (_d = user.about) !== null && _d !== void 0 ? _d : null, (_e = user.banner) !== null && _e !== void 0 ? _e : null, (_f = user.website) !== null && _f !== void 0 ? _f : null, (_g = user.nip05) !== null && _g !== void 0 ? _g : null, (_h = user.lud06) !== null && _h !== void 0 ? _h : null, (_j = user.lud16) !== null && _j !== void 0 ? _j : null, (_k = user.zapService) !== null && _k !== void 0 ? _k : null, user.created_at, true);
             });
             const query = `
             INSERT INTO users (${columns.join(", ")})
@@ -111,7 +110,6 @@ class DBUsers {
                 lud06 = EXCLUDED.lud06,
                 lud16 = EXCLUDED.lud16,
                 zap_service = EXCLUDED.zap_service,
-                ref_count = EXCLUDED.ref_count + 1
                 updated_at = NOW(),
                 available = true
         `;

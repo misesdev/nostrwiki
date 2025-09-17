@@ -28,19 +28,22 @@ class DBNotes {
             if (!notes.length)
                 return;
             const columns = [
-                "id", "pubkey", "title", "content", "created_at", "kind", "tags"
+                "id", "kind", "pubkey", "title", "content", "published_by", "published_at",
+                "tags", "created_at"
             ];
             const values = [];
             const placeholders = [];
             notes.forEach((note, i) => {
                 const baseIndex = i * columns.length;
                 placeholders.push(`(${columns.map((_, j) => `$${baseIndex + j + 1}`).join(", ")})`);
-                values.push(note.id, note.pubkey, note.title, note.content, note.created_at, note.kind, note.tags);
+                values.push(note.id, note.kind, note.pubkey, note.title, note.content, note.published_by, note.published_at, note.tags, new Date());
             });
             const query = `
             INSERT INTO notes (${columns.join(", ")})
             VALUES ${placeholders.join(", ")}
-            ON CONFLICT (id) DO NOTHING
+            ON CONFLICT (id) 
+            DO UPDATE SET
+                ref_count = EXCLUDED.ref_count + 1
         `;
             yield this._db.exec(query, values);
         });
@@ -60,13 +63,22 @@ class DBNotes {
             const ids = refs.map(r => r.id);
             const counts = refs.map(r => r.count);
             const query = `
+            -- update ref_count(relevance) notes
             UPDATE notes
             SET ref_count = notes.ref_count + v.count
             FROM (
                 SELECT unnest($1::text[]) AS id,
                        unnest($2::bigint[]) AS count
             ) AS v
-            WHERE notes.id = v.id
+            WHERE notes.id = v.id;
+            -- update ref_count(relevance) in files of this notes
+            UPDATE files 
+            SET ref_count = files.ref_count + v.count
+            FROM (
+                SELECT unnest($1::text[]) AS id,
+                       unnest($2::bigint[]) AS count
+            ) AS v
+            WHERE files.note_id = v.id;
         `;
             yield this._db.exec(query, [ids, counts]);
         });

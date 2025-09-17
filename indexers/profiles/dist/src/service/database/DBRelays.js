@@ -20,44 +20,13 @@ class DBRelays {
             const query = `
             SELECT * 
             FROM relays 
-            WHERE active = true
-                AND url NOT LIKE '%.onion'
+            WHERE available = true
+                AND url NOT ILIKE '%.onion'
             ORDER BY url 
             LIMIT $1 OFFSET $2
         `;
             const result = yield this._db.query(query, [items, offset]);
             return result;
-        });
-    }
-    insert(relay) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const columns = [
-                "url", "name", "icon", "pubkey", "description", "contact",
-                "supported_nips", "software", "version", "active"
-            ];
-            const values = [relay.url,
-                relay.name, relay.icon, relay.pubkey, relay.description,
-                relay.contact, relay.supported_nips, relay.software,
-                relay.version, relay.active
-            ];
-            const placeholders = columns.map((_, i) => `$${i + 1}`);
-            const query = `
-            INSERT INTO relays (${columns.join(", ")})
-            VALUES (${placeholders.join(", ")})
-            ON CONFLICT (url)
-            DO UPDATE SET
-                name = EXCLUDED.name,
-                icon = EXCLUDED.icon,
-                pubkey = EXCLUDED.pubkey,
-                description = EXCLUDED.description,
-                contact = EXCLUDED.contact,
-                supported_nips = EXCLUDED.supported_nips,
-                software = EXCLUDED.software,
-                version = EXCLUDED.version,
-                active = EXCLUDED.active,
-                ref_count = relays.ref_count + 1
-        `;
-            yield this._db.exec(query, values);
         });
     }
     upsert(items) {
@@ -73,15 +42,15 @@ class DBRelays {
             if (!relays.length)
                 return;
             const columns = [
-                "url", "name", "icon", "pubkey", "description", "contact",
-                "supported_nips", "software", "version", "active"
+                "url", "name", "icon", "pubkey", "description", "contact", "supported_nips",
+                "software", "version", "available", "created_at"
             ];
             const values = [];
             const placeholders = [];
             relays.forEach((relay, i) => {
                 const baseIndex = i * columns.length;
                 placeholders.push(`(${columns.map((_, j) => `$${baseIndex + j + 1}`).join(", ")})`);
-                values.push(relay.url, relay.name, relay.icon, relay.pubkey, relay.description, relay.contact, relay.supported_nips, relay.software, relay.version, relay.active);
+                values.push(relay.url, relay.name, relay.icon, relay.pubkey, relay.description, relay.contact, relay.supported_nips, relay.software, relay.version, relay.available, new Date());
             });
             const query = `
             INSERT INTO relays (${columns.join(", ")})
@@ -96,8 +65,9 @@ class DBRelays {
                 supported_nips = EXCLUDED.supported_nips,
                 software = EXCLUDED.software,
                 version = EXCLUDED.version,
-                active = EXCLUDED.active,
-                ref_count = relays.ref_count + 1
+                available = EXCLUDED.available,
+                ref_count = relays.ref_count + 1,
+                updated_at = NOW()
         `;
             yield this._db.exec(query, values);
         });

@@ -15,7 +15,7 @@ class DBUsers
             SELECT * 
             FROM users 
             WHERE available = true 
-            ORDER BY url 
+            ORDER BY pubkey 
             LIMIT $1 OFFSET $2
         `
         const result = await this._db.query<User>(query, [items, offset])
@@ -103,7 +103,7 @@ class DBUsers
                 user.lud16 ?? null,
                 user.zapService ?? null,
                 user.created_at,
-                false 
+                true 
             )
         })
         const query = `
@@ -121,7 +121,6 @@ class DBUsers
                 lud06 = EXCLUDED.lud06,
                 lud16 = EXCLUDED.lud16,
                 zap_service = EXCLUDED.zap_service,
-                ref_count = EXCLUDED.ref_count + 1,
                 updated_at = NOW(),
                 available = true
         `;

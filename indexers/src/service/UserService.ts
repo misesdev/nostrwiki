@@ -1,9 +1,11 @@
+import { Service, ServiceKey } from "../constant";
 import { NostrEvent } from "../modules/types/NostrEvent";
 import { User } from "../modules/types/User";
 import { Settings } from "../settings/types";
 import { distinctUsers } from "../utils";
 import { LoadDataProps } from "./commons";
 import DBUsers from "./database/DBUsers";
+import PubkeyService from "./PubkeyService";
 import RelayService from "./RelayService";
 
 class UserService
@@ -16,6 +18,12 @@ class UserService
     ) {
         this._dbUsers = dbUsers
         this._settings = settings
+    }
+
+    public async listUsers(service: ServiceKey): Promise<User[]>
+    {
+        const index = PubkeyService.getPubkeyIndex(this._settings, service)
+        return await this._dbUsers.list(index, this._settings.pubkeys_per_process)
     }
 
     public async loadUsers({ pool, pubkeys, accumulateRelays }: LoadDataProps): Promise<void>
@@ -71,7 +79,7 @@ class UserService
         if(!user.picture && user["profile"])
             user.picture = user["profile"]
 
-        if(user.name.length >= 100)
+        if(user.name?.length >= 100)
             user.name = `${user.name.substring(0, 95)}...`
         if(user.display_name?.length >= 100)
             user.display_name = `${user.display_name.substring(0, 95)}...`

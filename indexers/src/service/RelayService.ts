@@ -2,12 +2,13 @@ import { NostrEvent } from "../modules/types/NostrEvent";
 import { NostrRelay, RefRelay } from "../modules/types/NostrRelay";
 import { Settings } from "../settings/types";
 import { distinct, getRelayDomain, npubToHex } from "../utils";
-import DBSettings from "./database/DBSettings";
+import AppSettings from "../settings/AppSettings" 
 import DBRelays from "./database/DBRelays";
+import { LoadDataProps } from "./commons";
+import { Service, ServiceKey } from "../constant"
 const https = require("node:https")
 const pLimit = require("p-limit");
 import axios from "axios"
-import { LoadDataProps } from "./commons";
 
 class RelayService
 {
@@ -77,7 +78,6 @@ class RelayService
         if(!relayUrls.length) return;
 
         const limit = pLimit(10) 
-        const relays: NostrRelay[] = []
         let betchSize = this._settings.relays_betch_size
         const distinctRelays: string[] = distinct(relayUrls)
         console.log("fetching data relays...:", distinctRelays.length)
@@ -88,11 +88,11 @@ class RelayService
                 betch.map(async url => limit(() => this.fetchRelayData(url)))
             )
             const allRelays: NostrRelay[] = results.flat()
-            if(allRelays.length)
-                relays.push(...allRelays.filter(r => !!r))
+            if(allRelays.length) {
+                await this._dbRelays.upsert(allRelays.filter(r => !!r));
+                console.log("saved relays", allRelays.length)
+            }
         }
-        await this._dbRelays.upsert(relays);
-        console.log("saved relays", relays.length)
     }
 
     private async fetchRelayData(url: string): Promise<NostrRelay>
@@ -100,9 +100,12 @@ class RelayService
         const httpClient = axios.create({
             headers: { Accept: "application/nostr+json" },
             httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-            timeout: 3500
+            timeout: 3800
         });
-        try {
+        try 
+        {
+            if(url.includes(".onion") || url.includes(".local"))
+                throw new Error("onion is not accessible")
             const relayUrl = url.replace("wss", "https")
                 .replace("ws", "http")
             const response = await httpClient.get(relayUrl)
@@ -115,14 +118,14 @@ class RelayService
             }
             return {
                 url,
-                pubkey: relay_author,
+                pubkey: relay_author ?? null,
                 name: response.data.name ?? url,
-                description: response.data.description,
-                contact: response.data.contact,
+                description: response.data.description ?? null,
+                contact: response.data.contact ?? null,
                 supported_nips: JSON.stringify(response.data.supported_nips??[]),
-                software: response.data.software,
-                version: response.data.version,
-                icon: response.data.icon,
+                software: response.data.software ?? null,
+                version: response.data.version ?? null,
+                icon: response.data.icon ?? null,
                 created_at: new Date(),
                 available: true,
                 ref_count: 1
@@ -145,15 +148,27 @@ class RelayService
         await this._dbRelays.upRefs(refs)
     }
 
-    public static async currentRelays(settings: Settings): Promise<NostrRelay[]>
+    public static getRelayIndex(settings: Settings, service: ServiceKey): number
+    {
+        const map = new Map<ServiceKey, number>();
+        map.set(Service.pubkey_indexer, settings.pubkey_relay_index)
+        map.set(Service.profile_indexer, settings.user_relay_index)
+        map.set(Service.note_indexer, settings.note_relay_index)
+        map.set(Service.file_indexer, settings.file_relay_index)
+        map.set(Service.relay_indexer, settings.relay_index)
+        return map.get(service) ?? 0
+    }
+
+    public static async currentRelays(settings: Settings, service: ServiceKey): Promise<NostrRelay[]>
     {
         const dbRelays = new DBRelays()
-        const appSettings = new DBSettings()
-        let relays = await dbRelays.list(settings.relay_index, settings.relays_connections)
+        const appSettings = new AppSettings()
+        const index = this.getRelayIndex(settings, service)
+        let relays = await dbRelays.list(index, settings.relays_connections)
         if(!relays.length) 
         { 
             relays = await dbRelays.list(0, settings.relays_connections)
-            await appSettings.update({ ...settings, relay_index: 0 })
+            await appSettings.updateRelayIndex(service, 0)
         }
         return relays
     }

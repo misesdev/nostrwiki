@@ -4,7 +4,7 @@ export type NFile = {
     note_id: string;
     title: string;
     description: string;
-    published_by: string;
+    published_by?: string;
     published_at: number;
     type: string;
     tags?: string;

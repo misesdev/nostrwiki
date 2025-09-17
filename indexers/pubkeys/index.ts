@@ -1,3 +1,4 @@
+import { Service } from "./src/constant";
 import { RelayPool } from "./src/modules/RelayPool";
 import { RefRelay } from "./src/modules/types/NostrRelay";
 import PubkeyService from "./src/service/PubkeyService";
@@ -22,11 +23,11 @@ const runIndexer = async () => {
             )
         } 
 
-        const relays = await RelayService.currentRelays(settings)
+        const relays = await RelayService.currentRelays(settings, Service.pubkey_indexer)
 
         const pool = await RelayPool.getInstance(relays)
 
-        const pubkeys = await PubkeyService.currentPubkeys(settings)
+        const pubkeys = await PubkeyService.currentPubkeys(settings, Service.pubkey_indexer)
         console.log("pubkeys from database...:", pubkeys.length)
 
         // load pubkeys, friends pubkeys and relays
@@ -45,13 +46,14 @@ const runIndexer = async () => {
        
         if(settings.pubkey_index >= settings.pubkeys_per_process)
         { 
-            const relayIndex = settings.relay_index += relays.length
-            await appSettings.updateRelayIndex(relayIndex)
+            const relayIndex = settings.pubkey_relay_index + relays.length
+            await appSettings.updateRelayIndex(Service.pubkey_indexer, relayIndex)
         }
+
         if(pubkeys.length) 
         {
-            const pubkeyIndex = settings.pubkey_index += pubkeys.length
-            await appSettings.updatePubkeyIndex(pubkeyIndex)
+            const pubkeyIndex = settings.pubkey_index + pubkeys.length
+            await appSettings.updatePubkeyIndex(Service.pubkey_indexer, pubkeyIndex)
         }
 
         await pool.disconect()
@@ -61,7 +63,7 @@ const runIndexer = async () => {
     } 
     finally {
         console.log("Indexer finished. Next run in", settings.indexer_interval, "minutes");
-        setTimeout(runIndexer, settings.indexer_interval * 60 * 1000);
+        setTimeout(() => runIndexer(), settings.indexer_interval * 60 * 1000);
     }
 }
 

@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const constant_1 = require("../constant");
 const DBSettings_1 = require("../service/database/DBSettings");
 class AppSettings {
     constructor(dbSettings = new DBSettings_1.default()) {
@@ -24,14 +25,46 @@ class AppSettings {
             yield this._dbSettings.update(settings);
         });
     }
-    incrementRelays(relays) {
+    updateRelayIndex(col, index) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this._dbSettings.incrementRelays(relays);
+            if (col == constant_1.Service.relay_indexer)
+                yield this._dbSettings.updateIndex(index, "relay_index");
+            else if (col == constant_1.Service.pubkey_indexer)
+                yield this._dbSettings.updateIndex(index, "pubkey_relay_index");
+            else if (col == constant_1.Service.profile_indexer)
+                yield this._dbSettings.updateIndex(index, "user_relay_index");
+            else if (col == constant_1.Service.note_indexer)
+                yield this._dbSettings.updateIndex(index, "note_relay_index");
+            else if (col == constant_1.Service.file_indexer)
+                yield this._dbSettings.updateIndex(index, "file_relay_index");
+            else
+                yield this._dbSettings.updateIndex(index, "relay_index");
         });
     }
-    incrementPubkeys(relays) {
+    updatePubkeyIndex(col, index) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this._dbSettings.incrementPubkeys(relays);
+            if (col == constant_1.Service.pubkey_indexer)
+                yield this._dbSettings.updateIndex(index, "pubkey_index");
+            else if (col == constant_1.Service.profile_indexer)
+                yield this._dbSettings.updateIndex(index, "user_pubkey_index");
+            else if (col == constant_1.Service.note_indexer)
+                yield this._dbSettings.updateIndex(index, "note_pubkey_index");
+            else if (col == constant_1.Service.file_indexer)
+                yield this._dbSettings.updateIndex(index, "file_pubkey_index");
+            else if (col == constant_1.Service.relay_indexer)
+                yield this._dbSettings.updateIndex(index, "relay_pubkey_index");
+            else
+                yield this._dbSettings.updateIndex(index, "pubkey_index");
+        });
+    }
+    updateSince(col, time) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (col == constant_1.Service.note_indexer)
+                yield this._dbSettings.updateSince(time, "note_since");
+            else if (col == constant_1.Service.file_indexer)
+                yield this._dbSettings.updateSince(time, "file_since");
+            else
+                yield this._dbSettings.updateSince(time, "note_since");
         });
     }
 }

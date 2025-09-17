@@ -21,7 +21,7 @@ class DBRelays {
             SELECT * 
             FROM relays 
             WHERE available = true
-                AND url NOT LIKE '%.onion'
+                AND url NOT ILIKE '%.onion'
             ORDER BY url 
             LIMIT $1 OFFSET $2
         `;
@@ -65,7 +65,7 @@ class DBRelays {
                 supported_nips = EXCLUDED.supported_nips,
                 software = EXCLUDED.software,
                 version = EXCLUDED.version,
-                active = EXCLUDED.active,
+                available = EXCLUDED.available,
                 ref_count = relays.ref_count + 1,
                 updated_at = NOW()
         `;

@@ -1,10 +1,10 @@
 import { NFile } from "../modules/types/File";
 import { NostrEvent } from "../modules/types/NostrEvent";
 import { Note, RefNote } from "../modules/types/Note";
-import { RefPubkey } from "../modules/types/User";
+import { RefPubkey, User } from "../modules/types/User";
 import { Settings } from "../settings/types";
 import { classifyUrl, distinct, extractTagsFromContent, extractUrls } from "../utils";
-import { LoadDataProps } from "./commons";
+import { LoadDataProps, LoadNotesProps } from "./commons";
 import DBFiles from "./database/DBFiles";
 import DBNotes from "./database/DBNotes";
 import DBUsers from "./database/DBUsers";
@@ -28,24 +28,25 @@ class NoteService
         this._dbUsers = dbUsers
     }
 
-    public async loadNotes({ pool, pubkeys, accumulateRelays }: LoadDataProps): Promise<void>
+    public async loadNotes({ pool, users, accumulateRelays }: LoadNotesProps): Promise<void>
     {
-        if(!pubkeys.length) return
+        if(!users.length) return
 
         let skipe = this._settings.pubkeys_per_notes
 
         console.log(`loading notes...`)
-        for(let i = 0; i < pubkeys.length; i += skipe) 
+        for(let i = 0; i < users.length; i += skipe) 
         {
+            const authors = users.slice(i, i + skipe)
             let events = await pool.fechEvents({
-                authors: pubkeys.slice(i, i + skipe),
+                authors: authors.map(u => u.pubkey),
                 limit: this._settings.max_fetch_notes, 
                 kinds: [1, 30023, 30818]
             })
 
             console.log("found notes...:", events.length)
             // indexing notes
-            const notes: Note[] = this.notesFromEvents(events) 
+            const notes: Note[] = this.notesFromEvents(events, authors) 
             await this._dbNotes.upsert(notes) 
 
             // indexing user references
@@ -80,7 +81,7 @@ class NoteService
                         url,
                         type,
                         title: event.title,
-                        description: "",
+                        description: event.content.split(" ").slice(0, 25).join(" "),
                         published_by: event.published_by,
                         published_at: event.published_at,
                         note_id: event.id,
@@ -95,12 +96,12 @@ class NoteService
         await this._dbFiles.upsert(files)
     }
 
-    private notesFromEvents(events: NostrEvent[]): Note[]   
+    private notesFromEvents(events: NostrEvent[], authors: User[]): Note[]   
     {
         const notes: Note[] = [];
         for (const event of events)
         {
-            const tags = extractTagsFromContent(event.content)
+            let tags = extractTagsFromContent(event.content)
             for (const tag of event.tags)
             {
                 if(tag[0] == "t") {
@@ -108,19 +109,25 @@ class NoteService
                         if(i >= 1) tags.push(t)
                     })
                 }
-                if (tag[0] == "alt") {
+                if (tag[0] == "alt") 
                     tags.push(tag[1])
-                }
             }
+            if(!tags.length) 
+            {
+                tags = event.content.split(" ")
+                    .filter(l => l.length >= 2 && l.length <= 15)
+                    .slice(0, 10)
+            }
+            const author = authors.find(u => u.pubkey == event.pubkey)
             notes.push({
                 id: event.id,
                 kind: event.kind,
                 pubkey: event.pubkey,
                 title: this.extractTitle(event),
                 content: event.content,
-                published_by: "",
+                published_by: author?.display_name,
                 published_at: event.created_at,
-                tags: distinct(tags).join(", "),
+                tags: distinct(tags).join(" "),
                 created_at: new Date(),
                 ref_count: 1
             })
@@ -181,7 +188,6 @@ class NoteService
                 if(item[0] == "image")
                     urls.push(item[1])
             })
-            
         })
         return files
     }

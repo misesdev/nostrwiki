@@ -1,7 +1,9 @@
+import { Service, ServiceKey } from "../constant";
+import { User } from "../modules/types/User";
+import AppSettings from "../settings/AppSettings";
 import { Settings } from "../settings/types";
 import { distinct, getPubkeys } from "../utils";
 import { LoadDataProps } from "./commons";
-import DBSettings from "./database/DBSettings";
 import DBUsers from "./database/DBUsers";
 import FriendsService from "./FriendsService";
 import RelayService from "./RelayService";
@@ -57,24 +59,52 @@ class PubkeyService
         accumulateRelays(relayUrls)
     }
 
-    public static async currentPubkeys(settings: Settings): Promise<string[]>
+    public static getPubkeyIndex(settings: Settings, service: ServiceKey): number
+    {
+        const map = new Map<ServiceKey, number>();
+        map.set(Service.pubkey_indexer, settings.pubkey_index)
+        map.set(Service.profile_indexer, settings.user_pubkey_index)
+        map.set(Service.note_indexer, settings.note_pubkey_index)
+        map.set(Service.file_indexer, settings.file_pubkey_index)
+        map.set(Service.relay_indexer, settings.relay_pubkey_index)
+        return map.get(service) ?? 0
+    }
+
+    public static async currentPubkeys(settings: Settings, service: ServiceKey): Promise<string[]>
     {
         const dbUsers = new DBUsers()
-        const appSettings = new DBSettings()
+        const appSettings = new AppSettings()
 
-        let pubkeys: string[] = await dbUsers
-            .listPubkeys(settings.pubkey_index, settings.pubkeys_per_process)
+        const index = this.getPubkeyIndex(settings, service)
+        let pubkeys: string[] = await dbUsers.listPubkeys(index, settings.pubkeys_per_process)
         
         if(!pubkeys.length && settings.pubkey_index != 0) 
         {
             pubkeys = await dbUsers.listPubkeys(0, settings.pubkeys_per_process)
             if(!pubkeys.length) pubkeys = [settings.initial_pubkey]
-            await appSettings.updatePubkeyIndex(0)
+            await appSettings.updatePubkeyIndex(service, 0)
         }
         if(!pubkeys.length && settings.pubkey_index <= 0)
             pubkeys = [settings.initial_pubkey]
 
         return pubkeys
+    }
+
+    public static async currentUsers(settings: Settings, service: ServiceKey): Promise<User[]>
+    {
+        const dbUsers = new DBUsers()
+        const appSettings = new AppSettings()
+
+        const index = this.getPubkeyIndex(settings, service)
+        let users: User[] = await dbUsers.list(index, settings.pubkeys_per_process)
+        
+        if(!users.length && settings.pubkey_index != 0) 
+        {
+            users = await dbUsers.list(0, settings.pubkeys_per_process)
+            await appSettings.updatePubkeyIndex(service, 0)
+        }
+
+        return users
     }
 }
 

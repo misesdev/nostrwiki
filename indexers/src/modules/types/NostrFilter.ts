@@ -1,5 +1,6 @@
 export type NostrFilter = {
-    authors: string[],
-    kinds: number[],
-    limit: number
+    since?: number;
+    authors: string[];
+    kinds: number[];
+    limit: number;
 }
