@@ -35,6 +35,7 @@ trait FileSearchable
                     // fallback ILIKE no search_vector
                     ->orWhereRaw("files.search_text ILIKE unaccent(?)", ["%{$term}%"]);
             })
+            ->orderByDesc('published_at')
             ->orderByDesc('relevance')
             ->skip($skip)
             ->take($take);

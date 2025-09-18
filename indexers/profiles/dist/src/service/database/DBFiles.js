@@ -8,8 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const DBFactory_1 = require("./DBFactory");
+const DBFactory_1 = __importDefault(require("./DBFactory"));
 class DBFiles {
     constructor() {
         this.BATCH_SIZE = 100;
@@ -17,6 +20,8 @@ class DBFiles {
     }
     upsert(items) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!items.length)
+                return;
             for (let i = 0; i < items.length; i += this.BATCH_SIZE) {
                 const batch = items.slice(i, i + this.BATCH_SIZE);
                 yield this.upsertBetch(batch);

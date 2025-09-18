@@ -24,9 +24,8 @@ return new class extends Migration
 
             $table->string('title', 255);
             $table->string('description', 512)->nullable();
-            $table->enum('type', ['image', 'video', 'audio'])
-                ->default('image')
-                ->index();
+            $table->enum('type', ['image', 'video', 'audio', 'iframe'])
+                ->default('image')->index();
             $table->string('tags', 512)->nullable();
             $table->string('published_by', 150);
             $table->bigInteger('published_at')->index();

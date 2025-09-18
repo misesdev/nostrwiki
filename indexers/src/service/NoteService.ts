@@ -3,12 +3,13 @@ import { NostrEvent } from "../modules/types/NostrEvent";
 import { Note, RefNote } from "../modules/types/Note";
 import { RefPubkey, User } from "../modules/types/User";
 import { Settings } from "../settings/types";
-import { classifyUrl, distinct, extractTagsFromContent, extractUrls } from "../utils";
-import { LoadDataProps, LoadNotesProps } from "./commons";
+import { checkMediaAccessible, distinct, distinctFiles, distinctNotes, extractTagsFromContent, extractUrls, mediaType } from "../utils";
+import { LoadNotesProps } from "./commons";
 import DBFiles from "./database/DBFiles";
 import DBNotes from "./database/DBNotes";
 import DBUsers from "./database/DBUsers";
 import RelayService from "./RelayService";
+const pLimit = require("p-limit");
 
 class NoteService 
 {
@@ -47,14 +48,17 @@ class NoteService
             console.log("found notes...:", events.length)
             // indexing notes
             const notes: Note[] = this.notesFromEvents(events, authors) 
+            console.log("saving", notes.length, "notes and indexing on elastic search")
             await this._dbNotes.upsert(notes) 
 
             // indexing user references
             const pubkeyRefs = this.refPubkeys(events)
+            console.log("update", pubkeyRefs.length, "pubkey references")
             await this._dbUsers.upRefs(pubkeyRefs)
             
             // indexing references
             const eventRefs = this.refEvents(events)
+            console.log("update", eventRefs.length, "notes references")
             await this._dbNotes.upRefs(eventRefs)
             
             // indexing files
@@ -63,37 +67,6 @@ class NoteService
             const relays = events.map(event => RelayService.relaysFromEvent(event))
             accumulateRelays(relays.flat())
         }
-    }
-
-    private async loadFiles(events: Note[]): Promise<void>
-    {
-        const files: NFile[] = []
-
-        for (let event of events)
-        {
-            const urls = extractUrls(event.content)
-            if (!urls.length) continue;
-
-            for (const url of urls) {
-                const type = classifyUrl(url)
-                if(type != "other") {
-                    files.push({
-                        url,
-                        type,
-                        title: event.title,
-                        description: event.content.split(" ").slice(0, 25).join(" "),
-                        published_by: event.published_by,
-                        published_at: event.published_at,
-                        note_id: event.id,
-                        pubkey: event.pubkey,
-                        tags: event.tags,
-                        created_at: new Date(),
-                        ref_count: 1
-                    })
-                }
-            }
-        }
-        await this._dbFiles.upsert(files)
     }
 
     private notesFromEvents(events: NostrEvent[], authors: User[]): Note[]   
@@ -115,8 +88,8 @@ class NoteService
             if(!tags.length) 
             {
                 tags = event.content.split(" ")
-                    .filter(l => l.length >= 2 && l.length <= 15)
-                    .slice(0, 10)
+                    .filter(l => l.length <= 15)
+                    .slice(0, 6)
             }
             const author = authors.find(u => u.pubkey == event.pubkey)
             notes.push({
@@ -132,7 +105,56 @@ class NoteService
                 ref_count: 1
             })
         }
-        return notes;
+        return distinctNotes(notes);
+    }
+
+    private async loadFiles(events: Note[]): Promise<void>
+    {
+        const files: NFile[] = []
+
+        for (let event of events)
+        {
+            const urls = extractUrls(event.content)
+            if (!urls.length) continue;
+
+            for (const url of urls) {
+                const type = mediaType(url)
+                const description = event.content
+                    .split(" ").filter(t => t.length <= 15).slice(0, 25).join(" ")
+                files.push({
+                    url,
+                    type,
+                    title: event.title,
+                    description: description,
+                    published_by: event.published_by,
+                    published_at: event.published_at,
+                    note_id: event.id,
+                    pubkey: event.pubkey,
+                    tags: event.tags,
+                    created_at: new Date(),
+                    ref_count: 1
+                })
+            }
+        }
+        
+        let betch = 25
+        const limit = pLimit(10)
+        const validFiles: NFile[] = []
+        for(let i = 0; i < files.length; i += betch)
+        {
+            const betchFiles = files.slice(i, i+betch)
+            const results = await Promise.all(
+                betchFiles.map(async file => limit(async () => {
+                    const valid = await checkMediaAccessible(file.url)
+                    if(valid) return file
+                    return null
+                }))
+            )
+            const allFiles: NFile[] = distinctFiles(results.flat())
+            validFiles.push(...allFiles)
+        }
+        console.log("saving", validFiles.length, "files from notes")
+        await this._dbFiles.upsert(validFiles)
     }
 
     private refPubkeys(events: NostrEvent[]): RefPubkey[]

@@ -1,13 +1,14 @@
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY pubkeys/package*.json ./
+
 RUN npm install
 
-COPY ../src ./src
+COPY src ./src
 
-COPY . .
+COPY pubkeys/* ./
 
 RUN npm run build
 

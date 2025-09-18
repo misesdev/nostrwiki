@@ -1,6 +1,15 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.extractTagsFromContent = exports.classifyUrl = exports.extractUrls = exports.npubToHex = exports.getRelayDomain = exports.distinct = exports.distinctUsers = exports.distinctEvent = exports.getPubkeys = void 0;
+exports.checkMediaAccessible = exports.extractTagsFromContent = exports.mediaType = exports.extractUrls = exports.npubToHex = exports.getRelayDomain = exports.distinct = exports.distinctUsers = exports.distinctNotes = exports.distinctEvent = exports.getPubkeys = void 0;
 const bech32_1 = require("bech32");
 const getPubkeys = (event) => {
     let pubkeys = event.tags.map((tag) => {
@@ -22,11 +31,21 @@ const getPubkeys = (event) => {
 };
 exports.getPubkeys = getPubkeys;
 const distinctEvent = (events) => {
-    return events.filter((event, index, self) => {
-        return index == self.findIndex(x => x.id == event.id);
-    });
+    const seen = new Map();
+    for (let event of events) {
+        seen.set(event.id, event);
+    }
+    return Array.from(seen.values());
 };
 exports.distinctEvent = distinctEvent;
+const distinctNotes = (notes) => {
+    const seen = new Map();
+    for (let note of notes) {
+        seen.set(note.id, note);
+    }
+    return Array.from(seen.values());
+};
+exports.distinctNotes = distinctNotes;
 const distinctUsers = (users) => {
     const seen = new Map();
     for (const user of users) {
@@ -36,9 +55,13 @@ const distinctUsers = (users) => {
 };
 exports.distinctUsers = distinctUsers;
 const distinct = (pubkeys) => {
-    return pubkeys.filter((pubkey, index, self) => {
-        return index == self.indexOf(pubkey);
-    });
+    const seen = new Set();
+    for (let pubkey of pubkeys)
+        seen.add(pubkey);
+    return Array.from(seen);
+    // return pubkeys.filter((pubkey, index, self) => {
+    //     return index == self.indexOf(pubkey)
+    // })
 };
 exports.distinct = distinct;
 const getRelayDomain = (relay) => {
@@ -80,7 +103,7 @@ const extractUrls = (content) => {
         .map((u) => u.trim());
 };
 exports.extractUrls = extractUrls;
-const classifyUrl = (url) => {
+const mediaType = (url) => {
     const lower = url.toLowerCase();
     if (/\.(jpg|jpeg|png|gif|webp|avif|svg)$/.test(lower))
         return "image";
@@ -88,9 +111,17 @@ const classifyUrl = (url) => {
         return "video";
     if (/\.(mp3|wav|ogg|flac|m4a|aac)$/.test(lower))
         return "audio";
-    return "other";
+    if (lower.includes("youtube.com") ||
+        lower.includes("youtu.be") ||
+        lower.includes("vimeo.com") ||
+        lower.includes("dailymotion.com") ||
+        lower.includes("soundcloud.com") ||
+        lower.includes("twitch.tv")) {
+        return "iframe";
+    }
+    return "iframe";
 };
-exports.classifyUrl = classifyUrl;
+exports.mediaType = mediaType;
 const extractTagsFromContent = (content) => {
     const regex = /#(\w+)/g;
     const matches = [];
@@ -101,3 +132,24 @@ const extractTagsFromContent = (content) => {
     return matches;
 };
 exports.extractTagsFromContent = extractTagsFromContent;
+const checkMediaAccessible = (url) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const response = yield fetch(url, { method: "HEAD" }); // HEAD evita baixar todo o conteúdo
+        if (!response.ok)
+            return false;
+        const contentType = response.headers.get("content-type");
+        if (!contentType)
+            return false;
+        if (contentType.startsWith("image/") || contentType.startsWith("video/")) {
+            return true;
+        }
+        if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
+            return response.status === 200; // só checa se a página existe
+        }
+        return false;
+    }
+    catch (err) {
+        return false;
+    }
+});
+exports.checkMediaAccessible = checkMediaAccessible;

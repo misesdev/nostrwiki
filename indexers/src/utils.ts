@@ -1,6 +1,8 @@
 import { bech32 } from "bech32";
 import { NostrEvent } from "./modules/types/NostrEvent";
 import { User } from "./modules/types/User";
+import { Note } from "./modules/types/Note";
+import { NFile } from "./modules/types/File";
 
 export const getPubkeys = (event: NostrEvent): string[] => {
     let pubkeys = event.tags.map((tag: any) => { 
@@ -21,23 +23,45 @@ export const getPubkeys = (event: NostrEvent): string[] => {
 }
 
 export const distinctEvent = (events: NostrEvent[]) => {
-    return events.filter((event, index, self) => {
-        return index == self.findIndex(x => x.id == event.id)
-    })
+    const seen = new Map<string, NostrEvent>();
+    for(let event of events) {
+        seen.set(event.id, event)
+    }
+    return Array.from(seen.values());
+}
+
+export const distinctNotes = (notes: Note[]) => {
+    const seen = new Map<string, Note>();
+    for(let note of notes) {
+        if(note)
+            seen.set(note.id, note)
+    }
+    return Array.from(seen.values());
 }
 
 export const distinctUsers = (users: User[]): User[] => {
     const seen = new Map<string, User>();
     for (const user of users) {
-        seen.set(user.pubkey, user);
+        if(user)
+            seen.set(user.pubkey, user);
+    }
+    return Array.from(seen.values());
+}
+
+export const distinctFiles = (files: NFile[]): NFile[] => {
+    const seen = new Map<string, NFile>();
+    for (const file of files) {
+        if(file)
+            seen.set(file.url, file);
     }
     return Array.from(seen.values());
 }
 
 export const distinct = (pubkeys: string[]) => {
-    return pubkeys.filter((pubkey, index, self) => {
-        return index == self.indexOf(pubkey)
-    })
+    const seen = new Set<string>()
+    for(let pubkey of pubkeys)
+        seen.add(pubkey)
+    return Array.from(seen)
 }
 
 export const getRelayDomain = (relay: string) => {
@@ -83,21 +107,54 @@ export const extractUrls = (content: string): string[] => {
         .map((u: string) => u.trim());
 }
 
-export const classifyUrl = (url: string): "image" | "video" | "audio" | "other" => {
+export const mediaType = (url: string): "image" | "video" | "audio" | "iframe" => {
     const lower = url.toLowerCase();
     if (/\.(jpg|jpeg|png|gif|webp|avif|svg)$/.test(lower)) return "image";
     if (/\.(mp4|webm|mkv|mov|avi)$/.test(lower)) return "video";
     if (/\.(mp3|wav|ogg|flac|m4a|aac)$/.test(lower)) return "audio";
-    return "other";
+    if (
+        lower.includes("youtube.com") ||
+        lower.includes("youtu.be") ||
+        lower.includes("vimeo.com") ||
+        lower.includes("dailymotion.com") ||
+        lower.includes("soundcloud.com") ||
+        lower.includes("twitch.tv")
+    ) {
+        return "iframe";
+    }
+
+    return "iframe";
 }
 
 export const extractTagsFromContent = (content: string): string[] => {
     const regex = /#(\w+)/g; 
     const matches: string[] = [];
-    let match;
+    let match: any;
     while ((match = regex.exec(content)) !== null) {
         matches.push(match[1].toLowerCase()); 
     }
     return matches;
+}
+
+export const checkMediaAccessible = async (url: string): Promise<boolean> => {
+    try {
+        const response = await fetch(url, { method: "HEAD" }); // HEAD evita baixar todo o conteúdo
+        if (!response.ok) return false;
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType) return false;
+        
+        if (contentType.startsWith("image/") || contentType.startsWith("video/")) {
+          return true;
+        }
+        
+        if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
+          return response.status === 200; // só checa se a página existe
+        }
+        
+        return false;
+    } catch (err) {
+        return false;
+    }
 }
 

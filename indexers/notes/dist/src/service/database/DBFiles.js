@@ -8,8 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const DBFactory_1 = require("./DBFactory");
+const DBFactory_1 = __importDefault(require("./DBFactory"));
 class DBFiles {
     constructor() {
         this.BATCH_SIZE = 100;
@@ -17,6 +20,8 @@ class DBFiles {
     }
     upsert(items) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!items.length)
+                return;
             for (let i = 0; i < items.length; i += this.BATCH_SIZE) {
                 const batch = items.slice(i, i + this.BATCH_SIZE);
                 yield this.upsertBetch(batch);
@@ -28,19 +33,22 @@ class DBFiles {
             if (!files.length)
                 return;
             const columns = [
-                "pubkey", "note_id", "url", "type", "tags"
+                "url", "pubkey", "note_id", "title", "description", "published_by",
+                "published_at", "type", "tags", "created_at"
             ];
             const values = [];
             const placeholders = [];
             files.forEach((file, i) => {
                 const baseIndex = i * columns.length;
                 placeholders.push(`(${columns.map((_, j) => `$${baseIndex + j + 1}`).join(", ")})`);
-                values.push(file.pubkey, file.note_id, file.url, file.type, file.tags);
+                values.push(file.url, file.pubkey, file.note_id, file.title, file.description, file.published_by, file.published_at, file.type, file.tags, new Date());
             });
             const query = `
             INSERT INTO files (${columns.join(", ")})
             VALUES ${placeholders.join(", ")}
-            ON CONFLICT (url) DO NOTHING
+            ON CONFLICT (url) 
+            DO UPDATE SET
+                ref_count = EXCLUDED.ref_count + 1
         `;
             yield this._db.exec(query, values);
         });

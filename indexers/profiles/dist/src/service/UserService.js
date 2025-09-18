@@ -8,11 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../utils");
-const DBUsers_1 = require("./database/DBUsers");
-const PubkeyService_1 = require("./PubkeyService");
-const RelayService_1 = require("./RelayService");
+const DBUsers_1 = __importDefault(require("./database/DBUsers"));
+const PubkeyService_1 = __importDefault(require("./PubkeyService"));
+const RelayService_1 = __importDefault(require("./RelayService"));
 class UserService {
     constructor(settings, dbUsers = new DBUsers_1.default()) {
         this._dbUsers = dbUsers;

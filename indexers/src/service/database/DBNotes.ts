@@ -1,18 +1,25 @@
 import DBFactory from "./DBFactory"
 import { Note, RefNote } from "../../modules/types/Note";
+import DBElastic from "../elastic/dbElastic";
 
 class DBNotes
 {
     private BATCH_SIZE = 100
     private readonly _db: DBFactory
-    constructor() {
-        this._db = new DBFactory()
+    private readonly _elastic: DBElastic
+    constructor(
+        db: DBFactory = new DBFactory(),
+        elastic: DBElastic = new DBElastic()
+    ) {
+        this._db = db
+        this._elastic = elastic
     }
 
     public async upsert(notes: Note[]): Promise<void>
     {
         for (let i = 0; i < notes.length; i += this.BATCH_SIZE) {
             const batch = notes.slice(i, i + this.BATCH_SIZE);
+            await this._elastic.indexNotes(batch)
             await this.upsertBetch(batch);
         }
     }
@@ -23,7 +30,7 @@ class DBNotes
 
         const columns = [
             "id", "kind", "pubkey", "title", "content", "published_by", "published_at", 
-            "tags", "created_at"
+            "created_at", "tags"
         ];
         const values: any[] = [];
         const placeholders: string[] = [];
@@ -40,8 +47,8 @@ class DBNotes
                 note.content,
                 note.published_by,
                 note.published_at,
-                note.tags,
-                new Date()
+                note.created_at,
+                note.tags
             )
         })
         const query = `
@@ -68,26 +75,27 @@ class DBNotes
 
         const ids = refs.map(r => r.id);
         const counts = refs.map(r => r.count);
-
-        const query = `
+        let query = `
             -- update ref_count(relevance) notes
             UPDATE notes
-            SET ref_count = notes.ref_count + v.count
+                SET ref_count = notes.ref_count + v.count
             FROM (
                 SELECT unnest($1::text[]) AS id,
                        unnest($2::bigint[]) AS count
             ) AS v
             WHERE notes.id = v.id;
+        `;
+        await this._db.exec(query, [ids, counts]);
+        query = `
             -- update ref_count(relevance) in files of this notes
             UPDATE files 
-            SET ref_count = files.ref_count + v.count
+                SET ref_count = files.ref_count + v.count
             FROM (
                 SELECT unnest($1::text[]) AS id,
                        unnest($2::bigint[]) AS count
             ) AS v
             WHERE files.note_id = v.id;
         `;
-
         await this._db.exec(query, [ids, counts]);
     }
 }

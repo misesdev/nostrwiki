@@ -4,7 +4,6 @@ import { RefRelay } from "./src/modules/types/NostrRelay";
 import NoteService from "./src/service/NoteService";
 import PubkeyService from "./src/service/PubkeyService";
 import RelayService from "./src/service/RelayService";
-import UserService from "./src/service/UserService";
 import AppSettings from "./src/settings/AppSettings";
 import { configDotenv } from "dotenv";
 

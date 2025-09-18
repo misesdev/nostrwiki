@@ -81,13 +81,13 @@ export class RelayPool
         await Promise.all(promises)
     }
 
-    private async fetchEventRelay(websocket: WebSocket, filter: NostrFilter): Promise<Event[]> 
+    private async fetchEventRelay(websocket: WebSocket, filter: NostrFilter): Promise<NostrEvent[]> 
     {
         if(!filter.since) delete filter["since"]
         
         return new Promise((resolve) => {
             let timeout: any;
-            let events: Event[] = []
+            let events: NostrEvent[] = []
             // send the message
             websocket.send(`[
                 "REQ", 
@@ -100,7 +100,7 @@ export class RelayPool
                 let data = JSON.parse(message.toString());            
                 
                 if(data[0] == "EVENT") {
-                    let event: Event = data[2];
+                    let event: NostrEvent = data[2];
                     events.push(event);
                 }
                 
@@ -138,7 +138,7 @@ export class RelayPool
         return distinctEvent(events)
     }
 
-    public async fechUser(pubkey: string): Promise<NostrEvent> 
+    public async fechUser(pubkey: string): Promise<NostrEvent|null> 
     {
         let events = await this.fechEvents({
             kinds: [0],

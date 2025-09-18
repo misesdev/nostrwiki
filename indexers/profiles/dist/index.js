@@ -8,13 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const constant_1 = require("./src/constant");
 const RelayPool_1 = require("./src/modules/RelayPool");
-const PubkeyService_1 = require("./src/service/PubkeyService");
-const RelayService_1 = require("./src/service/RelayService");
-const UserService_1 = require("./src/service/UserService");
-const AppSettings_1 = require("./src/settings/AppSettings");
+const PubkeyService_1 = __importDefault(require("./src/service/PubkeyService"));
+const RelayService_1 = __importDefault(require("./src/service/RelayService"));
+const UserService_1 = __importDefault(require("./src/service/UserService"));
+const AppSettings_1 = __importDefault(require("./src/settings/AppSettings"));
 const dotenv_1 = require("dotenv");
 (0, dotenv_1.configDotenv)();
 const runIndexer = () => __awaiter(void 0, void 0, void 0, function* () {

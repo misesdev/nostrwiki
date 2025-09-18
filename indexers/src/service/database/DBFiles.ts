@@ -11,6 +11,7 @@ class DBFiles
 
     public async upsert(items: NFile[]): Promise<void>
     {
+        if(!items.length) return
         for (let i = 0; i < items.length; i += this.BATCH_SIZE) {
             const batch = items.slice(i, i + this.BATCH_SIZE);
             await this.upsertBetch(batch);

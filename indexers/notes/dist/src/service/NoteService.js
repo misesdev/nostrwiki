@@ -8,40 +8,48 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../utils");
-const DBFiles_1 = require("./database/DBFiles");
-const DBNotes_1 = require("./database/DBNotes");
-const DBPubkeys_1 = require("./database/DBPubkeys");
-const RelayService_1 = require("./RelayService");
+const DBFiles_1 = __importDefault(require("./database/DBFiles"));
+const DBNotes_1 = __importDefault(require("./database/DBNotes"));
+const DBUsers_1 = __importDefault(require("./database/DBUsers"));
+const RelayService_1 = __importDefault(require("./RelayService"));
+const pLimit = require("p-limit");
 class NoteService {
-    constructor(settings, dbNotes = new DBNotes_1.default(), dbFiles = new DBFiles_1.default(), dbPubkeys = new DBPubkeys_1.default()) {
+    constructor(settings, dbNotes = new DBNotes_1.default(), dbFiles = new DBFiles_1.default(), dbUsers = new DBUsers_1.default()) {
         this._settings = settings;
         this._dbNotes = dbNotes;
         this._dbFiles = dbFiles;
-        this._dbPubkeys = dbPubkeys;
+        this._dbUsers = dbUsers;
     }
     loadNotes(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ pool, pubkeys, accumulateRelays }) {
-            if (!pubkeys.length)
+        return __awaiter(this, arguments, void 0, function* ({ pool, users, accumulateRelays }) {
+            if (!users.length)
                 return;
             let skipe = this._settings.pubkeys_per_notes;
             console.log(`loading notes...`);
-            for (let i = 0; i < pubkeys.length; i += skipe) {
+            for (let i = 0; i < users.length; i += skipe) {
+                const authors = users.slice(i, i + skipe);
                 let events = yield pool.fechEvents({
-                    authors: pubkeys.slice(i, i + skipe),
+                    authors: authors.map(u => u.pubkey),
                     limit: this._settings.max_fetch_notes,
                     kinds: [1, 30023, 30818]
                 });
                 console.log("found notes...:", events.length);
                 // indexing notes
-                const notes = this.notesFromEvents(events);
+                const notes = this.notesFromEvents(events, authors);
+                console.log("saving", notes.length, "notes and indexing on elastic search");
                 yield this._dbNotes.upsert(notes);
                 // indexing user references
                 const pubkeyRefs = this.refPubkeys(events);
-                yield this._dbPubkeys.upRefs(pubkeyRefs);
+                console.log("update", pubkeyRefs.length, "pubkey references");
+                yield this._dbUsers.upRefs(pubkeyRefs);
                 // indexing references
                 const eventRefs = this.refEvents(events);
+                console.log("update", eventRefs.length, "notes references");
                 yield this._dbNotes.upRefs(eventRefs);
                 // indexing files
                 yield this.loadFiles(notes);
@@ -49,6 +57,41 @@ class NoteService {
                 accumulateRelays(relays.flat());
             }
         });
+    }
+    notesFromEvents(events, authors) {
+        const notes = [];
+        for (const event of events) {
+            let tags = (0, utils_1.extractTagsFromContent)(event.content);
+            for (const tag of event.tags) {
+                if (tag[0] == "t") {
+                    tag.forEach((t, i) => {
+                        if (i >= 1)
+                            tags.push(t);
+                    });
+                }
+                if (tag[0] == "alt")
+                    tags.push(tag[1]);
+            }
+            if (!tags.length) {
+                tags = event.content.split(" ")
+                    .filter(l => l.length >= 2 && l.length <= 15)
+                    .slice(0, 10);
+            }
+            const author = authors.find(u => u.pubkey == event.pubkey);
+            notes.push({
+                id: event.id,
+                kind: event.kind,
+                pubkey: event.pubkey,
+                title: this.extractTitle(event),
+                content: event.content,
+                published_by: author === null || author === void 0 ? void 0 : author.display_name,
+                published_at: event.created_at,
+                tags: (0, utils_1.distinct)(tags).join(" "),
+                created_at: new Date(),
+                ref_count: 1
+            });
+        }
+        return (0, utils_1.distinctNotes)(notes);
     }
     loadFiles(events) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -58,47 +101,43 @@ class NoteService {
                 if (!urls.length)
                     continue;
                 for (const url of urls) {
-                    const type = (0, utils_1.classifyUrl)(url);
-                    if (type != "other") {
-                        files.push({
-                            url,
-                            type,
-                            note_id: event.id,
-                            pubkey: event.pubkey,
-                            tags: event.tags
-                        });
-                    }
-                }
-            }
-            yield this._dbFiles.upsert(files);
-        });
-    }
-    notesFromEvents(events) {
-        const notes = [];
-        for (const event of events) {
-            const tags = (0, utils_1.extractTagsFromContent)(event.content);
-            for (const tag of event.tags) {
-                if (tag[0] == "t") {
-                    tag.forEach((t, i) => {
-                        if (i >= 1)
-                            tags.push(t);
+                    const type = (0, utils_1.mediaType)(url);
+                    const description = event.content
+                        .split(" ").filter(t => t.length <= 15).slice(0, 25).join(" ");
+                    files.push({
+                        url,
+                        type,
+                        title: event.title,
+                        description: description,
+                        published_by: event.published_by,
+                        published_at: event.published_at,
+                        note_id: event.id,
+                        pubkey: event.pubkey,
+                        tags: event.tags,
+                        created_at: new Date(),
+                        ref_count: 1
                     });
                 }
-                if (tag[0] == "alt") {
-                    tags.push(tag[1]);
-                }
             }
-            notes.push({
-                id: event.id,
-                kind: event.kind,
-                pubkey: event.pubkey,
-                title: this.extractTitle(event),
-                content: event.content,
-                created_at: event.created_at,
-                tags: (0, utils_1.distinct)(tags).join(" ")
-            });
-        }
-        return notes;
+            let betch = 25;
+            const limit = pLimit(10);
+            const validFiles = [];
+            for (let i = 0; i < files.length; i += betch) {
+                const betchFiles = files.slice(i, i + betch);
+                const results = yield Promise.all(betchFiles.map((file) => __awaiter(this, void 0, void 0, function* () {
+                    return limit(() => __awaiter(this, void 0, void 0, function* () {
+                        const valid = yield (0, utils_1.checkMediaAccessible)(file.url);
+                        if (valid)
+                            return file;
+                        return null;
+                    }));
+                })));
+                const allFiles = (0, utils_1.distinctFiles)(results.flat());
+                validFiles.push(...allFiles);
+            }
+            console.log("saving", validFiles.length, "files from notes");
+            yield this._dbFiles.upsert(validFiles);
+        });
     }
     refPubkeys(events) {
         var _a;

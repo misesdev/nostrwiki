@@ -5,11 +5,14 @@ x-db-env: &db-env
   DB_DATABASE: '${DB_DATABASE:-db_engine}'
   DB_USERNAME: '${DB_USERNAME:-misesdev}'
   DB_PASSWORD: '${DB_PASSWORD:-secret}'
+  ELASTIC_PORT: ${ELASTIC_PORT:-9200}
+  ELASTIC_URL: http://elasticsearch:9200
 
 x-indexer-common: &indexer-common
   working_dir: /app
   depends_on:
     - db-engine
+    - elasticsearch
   environment:
     <<: *db-env
   restart: unless-stopped
@@ -23,6 +26,20 @@ x-indexer-common: &indexer-common
 
 services:
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.0.0
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms3g -Xmx3g
+      - xpack.security.enabled=false #disabled auth
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "${ELASTIC_PORT:-9200}:${ELASTIC_PORT:-9200}"
+    restart: unless-stopped
+    networks:
+      - app-network
+
   db-engine:
     image: 'postgres:15'
     ports:
@@ -33,7 +50,7 @@ services:
       POSTGRES_USER: '${DB_USERNAME:-misesdev}'
       POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
     volumes:
-      - './pgsql/data:/var/lib/postgres/data'
+      - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
     networks:
       - app-network
@@ -62,6 +79,7 @@ services:
     environment:
       <<: *db-env
     depends_on:
+      - elasticsearch
       - db-engine
       - nginx
       - redis
@@ -81,20 +99,34 @@ services:
       - app-network
 
   pubkeys_indexer:
-    build: ./indexers/pubkeys/
+    build:
+      context: ./indexers
+      dockerfile: pubkeys/Dockerfile
     <<: *indexer-common
 
   profiles_indexer:
-    build: ./indexers/profiles/
+    build:
+      context: ./indexers
+      dockerfile: profiles/Dockerfile
     <<: *indexer-common
 
   notes_indexer:
-    build: ./indexers/notes/
+    build:
+      context: ./indexers
+      dockerfile: notes/Dockerfile
     <<: *indexer-common
 
   relays_indexer:
-    build: ./indexers/relays/
+    build:
+      context: ./indexers
+      dockerfile: relays/Dockerfile
     <<: *indexer-common
+
+volumes:
+  esdata:
+    driver: local
+  pgdata:
+    driver: local
 
 networks:
   app-network:

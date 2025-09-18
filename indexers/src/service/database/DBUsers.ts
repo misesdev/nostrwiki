@@ -1,12 +1,18 @@
 import { RefPubkey, User } from "../../modules/types/User";
+import DBElastic from "../elastic/dbElastic";
 import DBFactory from "./DBFactory"
 
 class DBUsers
 {
     private BATCH_SIZE = 100
     private readonly _db: DBFactory
-    constructor() {
-        this._db = new DBFactory()
+    private readonly _elastic: DBElastic
+    constructor(
+        db: DBFactory = new DBFactory(),
+        elastic: DBElastic = new DBElastic()
+    ) {
+        this._db = db
+        this._elastic = elastic
     }
 
     public async list(offset: number, items: number): Promise<User[]>
@@ -71,6 +77,7 @@ class DBUsers
     {
         for (let i = 0; i < items.length; i += this.BATCH_SIZE) {
             const batch = items.slice(i, i + this.BATCH_SIZE);
+            await this._elastic.indexUsers(batch)
             await this.upsertBetch(batch);
         }
     }
