@@ -104,6 +104,10 @@ class PubkeyService
             await appSettings.updatePubkeyIndex(service, 0)
         }
 
+        if(index >= 200000 && !settings.note_since) {
+            await appSettings.updateSince(service)
+        }
+
         return users
     }
 }

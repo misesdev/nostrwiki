@@ -54,8 +54,9 @@ class AppSettings
             await this._dbSettings.updateIndex(index, "pubkey_index");
     }
 
-    public async updateSince(col: ServiceKey, time: number): Promise<void>
+    public async updateSince(col: ServiceKey): Promise<void>
     {
+        const time = parseInt((Date.now() / 1000).toString())
         if(col == Service.note_indexer)
             await this._dbSettings.updateSince(time, "note_since")
         else if(col == Service.file_indexer)

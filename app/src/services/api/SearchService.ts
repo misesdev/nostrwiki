@@ -1,7 +1,7 @@
 'use client'
 
 import { normalizeNote, normalizeUser } from "@/utils/utils";
-import { Note, User } from "../../types/types";
+import { AutocompleteResult, Note, User } from "../../types/types";
 import { APISerachProps, APIUserNotesProps } from "./types/APISearchProps";
 import axios, { AxiosInstance } from "axios";
 
@@ -20,14 +20,14 @@ class SearchService
         })
     }
 
-    public async autocomplete(term: string): Promise<any>
+    public async autocomplete(term: string): Promise<AutocompleteResult[]>
     {
         const response = await this._client.get(`/search/autocomplete?term=${term.trim()}`)
         
         if(![404, 200].includes(response.status)) 
             throw Error('Error when searching fo users')
         
-        return response.data
+        return response.data as AutocompleteResult[]
     }
 
     public async search<Entity>(url: string, body: APISerachProps): Promise<Entity[]> 
@@ -46,7 +46,6 @@ class SearchService
     {
         const response = await this._client.get(`/users/profile/${pubkey}`)
        
-        console.log(response.data)
         if(![404, 200].includes(response.status)) 
             throw Error('Error when searching fo users')
         
@@ -62,8 +61,6 @@ class SearchService
             throw Error('Error when searching fo users')
         }
 
-        console.log(response.data)
-        
         return (response.data as Note[]).map(n => normalizeNote(n))
     }
 

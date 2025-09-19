@@ -1,28 +1,24 @@
+
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import { Note, User } from "@/types/types"
+import { User } from "@/types/types"
 import AppImage from "../commons/AppImage"
 import SearchService from "@/services/api/SearchService"
 import { parseContent, Token } from "@konemono/nostr-content-parser"
 import { npubToHex, nprofileToPubkey, neventToId } from "@/utils/utils"
 import MarkdownContent from "./MarkDownContent"
-import UserModal from "../user/UserModal"
 
 type Props = {
-    note: Note;
+    content: string;
     cliped?: boolean;
 }
 
-const NoteContent = ({ note, cliped=false }: Props) => {
-
-    let filesCount = 0
+const Content = ({ content, cliped = false }: Props) => {
     const [profiles, setProfiles] = useState<Record<string, User | null>>({})
     const [events, setEvents] = useState<Record<string, any>>({})
-    const [selectedUser, setSelectedUser] = useState<User | null>(null)
-    const [isUserOpen, setIsUserOpen] = useState(false)
     const videoRefs = useRef<HTMLVideoElement[]>([])
-    const tokens: Token[] = parseContent(note.content, note.tags.map(t => ["t", t]))
+    const tokens: Token[] = parseContent((content))
 
     useEffect(() => {
         const fetchProfiles = async () => {
@@ -53,8 +49,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
         }
 
         fetchProfiles()
-
-    }, [note])
+    }, [content])
 
     // Pausar vídeos que saem da tela
     const handleIntersection = useCallback((entries: IntersectionObserverEntry[]) => {
@@ -73,22 +68,24 @@ const NoteContent = ({ note, cliped=false }: Props) => {
     }, [tokens, handleIntersection])
 
     const renderToken = (token: Token, i: number) => {
+        // Texto normal
         if (token.type === "text") {
-            const clip = token.content.split(" ").slice(0, 65).join(" ")
-            const content = cliped ? clip.replaceAll("nostr:", "") :
+            const clip = token.content.split(" ").slice(0, 38).join(" ")
+            const content = cliped ? `${clip.replaceAll("nostr:", "")}...` : 
                 token.content.replaceAll("nostr:", "")
             return (
                 <MarkdownContent key={i} content={content} />
             )
         }
+        // Hashtags
         if (token.type === "hashtag") {
             return (
-                <span
+                <strong
                     key={i}
-                    className="text-purple-400 hover:underline cursor-pointer mx-1"
+                    className="text-purple-400 hover:underline cursor-pointer mr-1"
                 >
                     #{token.content}
-                </span>
+                </strong>
             )
         }
 
@@ -102,10 +99,6 @@ const NoteContent = ({ note, cliped=false }: Props) => {
                     key={i}
                     className="text-blue-400 cursor-pointer hover:underline mr-1"
                     onClick={() => {
-                        if (profile) {
-                          setSelectedUser(profile)
-                          setIsUserOpen(true)
-                        }
                     }}
                 >
                     @{display}
@@ -120,9 +113,10 @@ const NoteContent = ({ note, cliped=false }: Props) => {
                 <span
                     key={i}
                     className="text-blue-500 underline hover:opacity-80"
-                    // onClick={() => {
-                    //     console.log("Abrir modal note:", note)
-                    // }}
+                    onClick={() => {
+                        // TODO: abrir modal da nota
+                        console.log("Abrir modal note:", note)
+                    }}
                 >
                     {note?.title || token.content.slice(0, 12) + "…"}
                 </span>
@@ -132,8 +126,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
         // Links / media
         if (token.type === "url") {
             if (token?.metadata?.type === "image") {
-                if(cliped && filesCount > 0) return null;
-                filesCount = filesCount + 1
+                if(cliped) return null
                 return (
                     <AppImage
                         key={i}
@@ -147,8 +140,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
                 )
             }
             if (token?.metadata?.type === "video") {
-                if(cliped && filesCount > 0) return null;
-                filesCount = filesCount + 1
+                if(cliped) return null
                 return (
                     <video
                         key={i}
@@ -169,19 +161,10 @@ const NoteContent = ({ note, cliped=false }: Props) => {
     }
 
     return (
-        <>
-            <div className="prose dark:prose-invert max-w-none leading-relaxed">
-                {tokens.map(renderToken)}
-            </div>
-            {selectedUser && isUserOpen && (
-                <UserModal
-                  user={selectedUser}
-                  isOpen={isUserOpen}
-                  onClose={() => setIsUserOpen(false)}
-                />
-            )}
-        </>
+        <div className="prose dark:prose-invert max-w-none leading-relaxed">
+            {tokens.map(renderToken)}
+        </div>
     )
 }
 
-export default NoteContent
+export default Content

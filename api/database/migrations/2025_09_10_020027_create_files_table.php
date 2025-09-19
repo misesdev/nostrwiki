@@ -52,18 +52,18 @@ return new class extends Migration
                 NEW.search_vector :=
                     setweight(to_tsvector('portuguese', unaccent(coalesce(NEW.title,''))), 'A') ||
                     setweight(to_tsvector('english',   unaccent(coalesce(NEW.title,''))), 'A') ||
-                    setweight(to_tsvector('portuguese', unaccent(coalesce(NEW.tags,''))), 'B') ||
-                    setweight(to_tsvector('english',   unaccent(coalesce(NEW.tags,''))), 'B') ||
-                    setweight(to_tsvector('portuguese', unaccent(coalesce(NEW.published_by,''))), 'C') ||
-                    setweight(to_tsvector('english',   unaccent(coalesce(NEW.published_by,''))), 'C');
+                    setweight(to_tsvector('portuguese', unaccent(coalesce(NEW.published_by,''))), 'B') ||
+                    setweight(to_tsvector('english',   unaccent(coalesce(NEW.published_by,''))), 'B') ||
+                    setweight(to_tsvector('portuguese', unaccent(coalesce(NEW.tags,''))), 'C') ||
+                    setweight(to_tsvector('english',   unaccent(coalesce(NEW.tags,''))), 'C');
             
                 -- versão plain text normalizada (para ILIKE/trgm)
                 NEW.search_text :=
                     lower(
                         unaccent(
                             coalesce(NEW.title,'') || ' ' ||
-                            coalesce(NEW.tags,'') || ' ' || 
-                            coalesce(NEW.published_by,'') || ' ' 
+                            coalesce(NEW.published_by,'') || ' ' || 
+                            coalesce(NEW.tags,'') || ' '
                         )
                     );
                 RETURN NEW;

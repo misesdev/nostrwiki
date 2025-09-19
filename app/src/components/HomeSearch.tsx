@@ -14,24 +14,24 @@ export default function HomeSearch(): ReactNode {
     }
 
     return (
-        <div className="w-full min-h-[60vh] flex flex-col items-center justify-center px-4 sm:px-8">
+        <div className="w-full flex flex-col items-center justify-center px-4 sm:px-8">
             {/* <h1 className="text-3xl sm:text-4xl font-bold text-gray-100 text-center mb-6"> */}
             {/*     Explore Nostr Content */}
             {/* </h1> */}
-            <div className='flex flex-col items-center py-10'>
+            <div className='flex flex-col items-center pb-5'>
                 <AppImage
                     src='/logo.png'
                     onError='/logo.png'
                     alt='Nostr Book - Search Users'
-                    width={130}
+                    width={100}
                     height={100}
-                    className='w-130 lg:w-200'
+                    className='w-120 lg:w-200'
                 />
                 <h1 
                     style={{ fontSize: 24 }}
                     className="text-[20px] lg:text-[24px] text-gray-400 mt-5 font-bold"
                 >
-                    Nostr Wiki - Explore Nostr Content
+                    Nostr Wiki - Explorer
                 </h1>
             </div>
             {/* Search Box */}

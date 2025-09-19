@@ -7,47 +7,61 @@ import { NFile } from "@/types/types";
 
 type Props = {
     videos: NFile[];         
-    videoIndex: number;     
+    playIndex: number;     
     isOpen: boolean;
     onClose: () => void;
+    fetchMoreVideos: () => Promise<void>;
+    endOfResults: boolean;
 };
 
-const VideoPlayer = ({ videos, videoIndex, isOpen, onClose }: Props) => {
+const PRELOAD_THRESHOLD = 3
 
-    const [index, setIndex] = useState(videoIndex)
+const VideoPlayer = ({ videos, playIndex, endOfResults, fetchMoreVideos, isOpen, onClose }: Props) => {
+
+    const [index, setIndex] = useState(playIndex)
     const video = useMemo(() => videos[index], [index, videos]);
 
     const onPrev = useCallback(() => {
-        if(index-1 >= 0) 
-            setIndex(prev => prev-1)
+        if (index > 0) {
+            setIndex(prev => prev - 1);
+        }
     }, [setIndex, index])
 
-    const onNext = useCallback(() => {
-        if(index+1 < videos.length) 
+    const onNext = useCallback(async () => {
+        const nextIndex = index + 1;
+        if(nextIndex < videos.length) { 
             setIndex(prev => prev+1)
-        else
+        } else if(endOfResults && nextIndex == videos.length) {
             setIndex(0)
-    }, [setIndex, index, videos])
+        }
+        if (!endOfResults && videos.length - nextIndex <= PRELOAD_THRESHOLD) {
+            await fetchMoreVideos();
+        }
+    }, [setIndex, index, videos, endOfResults, fetchMoreVideos])
 
     // Atalhos de teclado ← →
     useEffect(() => {
         if (!isOpen) return;
-        window.addEventListener("keydown", (e: KeyboardEvent) => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "ArrowLeft") {
+                e.preventDefault();
                 onPrev();
             } else if (e.key === "ArrowRight") {
+                e.preventDefault();
                 onNext();
             }
-            console.log(e.key)
-        });
-    }, [isOpen, onPrev, onNext]);
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [onPrev, onNext]);
 
     if (!video) return null;
 
     return (
         <BlurModal isOpen={isOpen} onClose={onClose}>
             <div className="relative flex items-center justify-center">
-                {/* Botão voltar */}
                 <button
                     onClick={onPrev}
                     className="absolute left-2 sm:left-6 z-20 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white"
@@ -55,7 +69,6 @@ const VideoPlayer = ({ videos, videoIndex, isOpen, onClose }: Props) => {
                     <ChevronLeft size={32} />
                 </button>
 
-                {/* Video */}
                 <video
                     loop
                     src={video.url}
@@ -66,7 +79,6 @@ const VideoPlayer = ({ videos, videoIndex, isOpen, onClose }: Props) => {
                     Your browser does not support the video tag.
                 </video>
 
-                {/* Botão próximo */}
                 <button
                     onClick={onNext}
                     className="absolute right-2 sm:right-6 z-20 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white"

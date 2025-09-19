@@ -1,15 +1,16 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { AiOutlineCamera, AiOutlineUser, AiOutlineFileText } from 'react-icons/ai';
+import { AiOutlineCamera, AiOutlineUser, AiOutlineFileText,
+    AiOutlineVideoCamera, AiOutlineGlobal } from 'react-icons/ai';
 import { motion } from 'framer-motion';
 
 const tabs = [
     { key: 'notes', label: 'Notes', icon: AiOutlineFileText },
     { key: 'users', label: 'Users', icon: AiOutlineUser },
     { key: 'images', label: 'Images', icon: AiOutlineCamera },
-    { key: 'videos', label: 'Videos', icon: AiOutlineCamera },
-    { key: 'relays', label: 'Relays', icon: AiOutlineCamera },
+    { key: 'videos', label: 'Videos', icon: AiOutlineVideoCamera },
+    { key: 'relays', label: 'Relays', icon: AiOutlineGlobal },
 ];
 
 export default function SearchHeaderOptions() {

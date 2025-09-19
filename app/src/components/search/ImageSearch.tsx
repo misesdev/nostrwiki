@@ -7,6 +7,7 @@ import EmptyResults from './EmptyResults';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ImageLoader from '../images/ImageLoader';
 import ImageResults from '../images/ImageResults';
+import ImageSlide from '../commons/ImageSlide';
 
 const ImageSearch = ({ term }: SearchParams) => {
 
@@ -16,6 +17,8 @@ const ImageSearch = ({ term }: SearchParams) => {
     const [images, setImages] = useState<NFile[]>([])
     const [endOfResults, setEndOfResults] = useState(false)
     const loaderRef = useRef<HTMLDivElement | null>(null);
+    const [slideOpen, setSlideOpen] = useState(false)
+    const [imageIndex, setImageIndex] = useState(0)
 
     useEffect(() => { 
         setSkip(0)
@@ -63,18 +66,36 @@ const ImageSearch = ({ term }: SearchParams) => {
         };
     }, [loading, endOfResults, fetchImages]);
 
+    const showInSlide = useCallback((video: NFile) => {
+        setImageIndex(images.indexOf(video)??0)
+        setSlideOpen(true)
+    }, [images])
+
     if (!loading && !images.length) 
         return <EmptyResults term={term} />
 
     return (
-        <div className='w-full'>
-            {loading && <ImageLoader />}
-            <ImageResults images={images} />
-            {endOfResults && 
-                <p className="text-center text-gray-500">No more results</p>
-            }
-            <div ref={loaderRef} className="h-100" />
-        </div>
+        <>
+            <div className='w-full'>
+                {loading && <ImageLoader />}
+                <ImageResults showInSlide={showInSlide} images={images} />
+                {endOfResults && 
+                    <p className="text-center text-gray-500">No more results</p>
+                }
+                <div ref={loaderRef} className="h-100" />
+            </div>
+            {/* Modal Player */}
+            {slideOpen && (
+                <ImageSlide
+                    images={images}
+                    isOpen={slideOpen}
+                    onClose={() => setSlideOpen(false)}
+                    imageIndex={imageIndex}
+                    fetchMoreImages={fetchImages}
+                    endOfResults={endOfResults}
+                />
+            )}
+        </>
     )
 }
 

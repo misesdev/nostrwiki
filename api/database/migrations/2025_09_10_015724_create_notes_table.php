@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('title', 255);
             $table->text('content')->nullable(true);
             $table->integer('kind');
-            $table->string('tags', 512)->nullable(); // antes era jsonb
+            $table->string('tags', 512)->nullable(); 
             $table->string('published_by', 100);
             $table->bigInteger('published_at');
             $table->bigInteger('ref_count')

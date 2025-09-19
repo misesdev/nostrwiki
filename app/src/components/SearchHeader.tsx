@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 const SearchHeader = () => {
 
     const router = useRouter()
-    const urlApiDocs = (process.env.NEXT_PUBLIC_API_ENGINE_URL??"").replace("api", "docs/api")
+    const urlApiDocs = (process.env.NEXT_PUBLIC_API_ENGINE_URL??"").replace("api", "")
 
     const handleSearch = (searchTerm: string) => {
         router.push(`${window.location.pathname}?term=${searchTerm.trim()}`)
@@ -20,7 +20,7 @@ const SearchHeader = () => {
             <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center lg:items-stretch p-4 lg:p-6 gap-4 lg:gap-0">
                 
                 {/* Logo */}
-                <div className="flex items-center justify-between w-full lg:w-auto">
+                <div className="hidden sm:flex items-center justify-between w-full lg:w-auto">
                     <Link href="/">
                         <div className="flex items-center gap-3">
                             <AppImage
@@ -38,8 +38,8 @@ const SearchHeader = () => {
                     {/* Mobile API Docs */}
                     <Link
                         target="_blank"
-                        href="https://find.nosbook.org"
-                        className="lg:hidden bg-[#3e2eb3] text-white px-6 py-2 font-medium rounded-md hover:brightness-105 hover:shadow-md transition-shadow"
+                        href={urlApiDocs}
+                        className="lg:hidden bg-[#3e2eb3] text-white px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-md hover:brightness-105 hover:shadow-md transition"
                     >
                         API Docs
                     </Link>

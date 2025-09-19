@@ -38,6 +38,8 @@ export type Note = {
     title: string;
     content: string;
     published_at: string;
+    published_by: string;
+    tags: string[]|string;
     author: User;
 }
 
@@ -52,3 +54,27 @@ export type NFile = {
     author: User;
 }
 
+export type AutocompleteNote = {
+    type: "note";
+    score: number;
+    id: string;
+    pubkey: string;
+    title?: string;
+    content?: string;
+    published_by?: string;
+    published_at?: string;
+    tags?: string[];
+};
+
+export type AutocompleteUser = {
+    type: "user";
+    score: number;
+    pubkey: string;
+    name?: string;
+    display_name?: string;
+    about?: string;
+    picture?: string;
+    banner?: string;
+};
+
+export type AutocompleteResult = AutocompleteNote | AutocompleteUser;

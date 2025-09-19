@@ -6,6 +6,7 @@ import BlurModal from "../commons/BlurModal"
 import AppImage from "../commons/AppImage"
 import NoteContent from "../note/NoteContent"
 import SearchService from "@/services/api/SearchService"
+import Content from "../note/Content"
 
 type UserModalProps = {
     user: User
@@ -25,7 +26,7 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
             try {
                 const service = new SearchService()
                 const notes = await service.userNotes({
-                    pubkey: user.pubkey, skip: 0, take: 45
+                    pubkey: user.pubkey, skip: 0, take: 35
                 })
                 setNotes(notes)
             } catch (err) {
@@ -56,7 +57,7 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
                             {user.display_name || user.name}
                         </h2>
                         <p className="text-gray-300 mt-1 line-clamp-3">
-                            {user.about || "Without Descriptino"}
+                            <Content content={user.about || "Without Descriptino"} />
                         </p>
                     </div>
                 </div>
@@ -80,7 +81,7 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
                             <h3 className="text-lg font-semibold text-gray-200 mb-2">
                                 {note.title || "Without Title"}
                             </h3>
-                            <NoteContent content={note.content} />
+                            <NoteContent note={note} />
                         </div>
                     ))}
                 </div>

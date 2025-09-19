@@ -9,7 +9,7 @@ import UserModal from "../user/UserModal"
 import NoteContent from "./NoteContent"
 
 type Props = {
-    note: Note
+    note: Note;
 }
 
 const NoteItem = ({ note }: Props) => {
@@ -22,7 +22,6 @@ const NoteItem = ({ note }: Props) => {
         <>
             <div className="bg-gray-800 bg-opacity-35 backdrop-blur-sm shadow-lg rounded-2xl overflow-hidden transition hover:shadow-2xl hover:-translate-y-1 duration-300">
 
-                {/* Header: Autor e data */}
                 <div className="flex items-center justify-between p-4 border-b border-gray-700">
                     <div className="flex items-center gap-3">
                         <button onClick={() => setIsUserOpen(true)}>
@@ -44,7 +43,6 @@ const NoteItem = ({ note }: Props) => {
                     </div>
                 </div>
 
-                {/* Conteúdo da nota */}
                 <div className="p-4 flex flex-col gap-2">
                     {note.title && (
                         <button onClick={() => setIsOpen(true)}>
@@ -54,12 +52,11 @@ const NoteItem = ({ note }: Props) => {
                         </button>
                     )}
 
-                    <p className="text-gray-200 dark:text-gray-300 text-sm line-clamp-3">
-                        {note.content}
-                    </p>
+                    <div className="text-gray-200 dark:text-gray-300 text-sm line-clamp-2">
+                        <NoteContent note={note} cliped />
+                    </div>
                 </div>
 
-                {/* Footer / ações opcionais */}
                 <div className="px-4 pb-4 flex justify-end text-gray-400 text-xs">
                     {/* adicionar botões de ação, likes, etc */}
                 </div>

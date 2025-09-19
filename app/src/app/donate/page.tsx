@@ -4,49 +4,62 @@ import AppImage from "@/components/commons/AppImage";
 import HomeHeader from "@/components/HomeHeader";
 import { useRouter } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
+import toast from "react-hot-toast";
+import { Copy } from "lucide-react"; // ícone minimalista
 
 export default function DonatePage() {
+
     const router = useRouter();
     const lightningAddress = "greatasphalt42@walletofsatoshi.com";
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(lightningAddress)
+        toast.success(`Copied ${lightningAddress} to clipboard!`)
+    }
 
     return (
         <>
             <HomeHeader />
             <div className="flex flex-col items-center px-4 sm:px-0">
                 
-                {/* Logo */}
-                <AppImage
-                    width={200}
-                    height={200}
-                    src="/logo.png"
-                    onError="/logo.png"
-                    alt="Nostr Book Users"
-                    className="w-36 h-auto mb-6"
-                />
-
-                {/* Title */}
-                <h2 className="text-2xl sm:text-3xl text-center text-gray-200 font-bold mb-4">
+                <h1 className="text-2xl sm:text-3xl text-center text-gray-200 font-bold mb-4">
                     Support Nostr Book
-                </h2>
+                </h1>
 
-                {/* Description */}
-                <p className="text-gray-400 text-center max-w-xl mb-10">
+                <h2 className="text-gray-400 text-center max-w-xl mb-10">
                     You can support this project by sending sats to the Lightning Wallet address below. 
                     Simply scan the QR code or copy the address to your wallet.
-                </p>
+                </h2>
 
-                {/* QR Code + Address */}
                 <div className="flex flex-col items-center bg-gray-800 bg-opacity-50 p-8 rounded-xl shadow-lg">
-                    <QRCodeCanvas 
-                        value={`lightning:${lightningAddress}`} 
-                        size={160} 
-                        bgColor="#1f1f1f"
-                        fgColor="#60a5fa"
-                        level="H"
+                    <QRCodeCanvas
+                        value={lightningAddress} 
+                        size={180}
+                        bgColor="#fff"      
+                        fgColor="#000"      
+                        level="M"              
+                        imageSettings={{
+                            src: "/logo.png",   
+                            x: undefined,       
+                            y: undefined,
+                            height: 48,         
+                            width: 48,
+                            excavate: true      
+                        }}
+                        className="rounded-lg shadow-xl"
                     />
-                    <h3 className="text-blue-400 text-lg mt-6 break-all">
-                        {lightningAddress}
-                    </h3>
+                    <div className="flex items-center gap-2 mt-6">
+                        <h3 className="text-blue-400 text-lg break-all">
+                            {lightningAddress}
+                        </h3>
+                        <button 
+                            onClick={handleCopy}
+                            className="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition"
+                            aria-label="Copy lightning address"
+                        >
+                            <Copy size={18} className="text-blue-400" />
+                        </button>
+                    </div>
                     <p className="text-gray-400 text-sm mt-2 text-center max-w-xs">
                         Scan the QR code with your Lightning Wallet or copy the address above to donate.
                     </p>
@@ -61,6 +74,7 @@ export default function DonatePage() {
                         Go Back
                     </button>
                 </div>
+                <div className="h-[100px]" />
             </div>
         </>
     );

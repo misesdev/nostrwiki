@@ -10,7 +10,7 @@ import NoteLoader from "../note/NoteLoader";
 
 const NoteSearch = ({ term }: SearchParams) => {
  
-    const take = 35
+    const take = 25
     const [skip, setSkip] = useState(0)
     const [loading, setLoading] = useState(true)
     const [notes, setNotes] = useState<Note[]>([])

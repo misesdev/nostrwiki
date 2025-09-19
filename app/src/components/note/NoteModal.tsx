@@ -44,7 +44,7 @@ const NoteModal = ({ note, isOpen, onClose }: NoteModalProps) => {
                     {/* {note.content.split("\n").map((line, i) => ( */}
                     {/*     <p key={i}>{line}</p> */}
                     {/* ))} */}
-                    <NoteContent content={note.content} />
+                    <NoteContent note={note} />
                 </div>
             </div>
         </BlurModal>

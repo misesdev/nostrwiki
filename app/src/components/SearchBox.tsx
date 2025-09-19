@@ -1,10 +1,11 @@
 'use client';
 
 import { AiOutlineSearch } from 'react-icons/ai';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SearchService from '@/services/api/SearchService';
 import AutoComplete from './search/AutoComplete';
+import { AutocompleteResult } from '@/types/types';
 
 type SearchBoxProps = {
     handleSearch: (t: string) => void;
@@ -14,7 +15,7 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
 
     const searchParams = useSearchParams()
     const [term, setTerm] = useState(searchParams.get("term") ?? "")
-    const [results, setResults] = useState<any[]>([])
+    const [results, setResults] = useState<AutocompleteResult[]>([])
     const [showDropdown, setShowDropdown] = useState(false)
     const debounceRef = useRef<NodeJS.Timeout | null>(null)
     const containerRef = useRef<HTMLDivElement | null>(null)
@@ -39,8 +40,8 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
             if (value.length >= 3) {
                 fetchResults(value);
             } else {
-                setResults([]);
                 setShowDropdown(false);
+                setResults([]);
             }
         }, 400)
     }
@@ -48,9 +49,9 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
     const fetchResults = async (q: string) => {
         try {
             const service = new SearchService()
-            const res = await service.autocomplete(q.trim())
-            setResults(res.hits?.hits ?? [])
-            setShowDropdown(!!res.hits?.hits?.length)
+            const results = await service.autocomplete(q.trim())
+            setShowDropdown(!!results.length)
+            setResults(results)
         } catch (err) {
             console.error('Error fetching autocomplete:', err)
         }
@@ -76,15 +77,15 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
                     autoComplete="off"
                     minLength={3}
                     onChange={handleChange}
-                    onFocus={() => results.length && setShowDropdown(true)}
+                    onFocus={() => setShowDropdown(!results.length)}
                     className="bg-transparent text-gray-100 placeholder-gray-400 w-full focus:outline-none text-sm sm:text-base"
                 />
             </form>
 
             {/* Dropdown de sugestões */}
-            {showDropdown && results.length > 0 && (
-                <div className="absolute top-full mt-2 w-full bg-gray-900/80 backdrop-blur-md border border-gray-700 rounded-2xl shadow-xl max-h-72 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 transition">
-                    <AutoComplete results={results} onSearch={onSearch} />
+            {showDropdown && results.length && (
+                <div className="absolute top-full mt-1 w-full bg-gray-900/80 backdrop-blur-md border border-gray-700 rounded-2xl shadow-xl max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 transition">
+                    <AutoComplete term={term} results={results} onSearch={onSearch} />
                 </div>
             )}
         </div>

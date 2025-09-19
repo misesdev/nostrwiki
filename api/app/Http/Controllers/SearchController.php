@@ -17,27 +17,93 @@ class SearchController extends Controller
     {
         $term = $request->term;
 
-        // Buscar nos índices 'notes' e 'user'
+        // Search on indexs 'notes' and 'user'
         $indices = 'notes,users';
         $elasticUrl = env('ELASTIC_URL', 'http://elasticsearch:9200');
         $response = Http::post("$elasticUrl/$indices/_search", [
-            'size' => 10,
+            'size' => 23,
+            // 'query' => [
+            //     'bool' => [
+            //         'should' => [
+            //             [
+            //                 'multi_match' => [
+            //                     'query'  => $term,
+            //                     'fields' => [
+            //                         'display_name^5',
+            //                         'name^3',
+            //                         'content^2'
+            //                     ],
+            //                     'type'   => 'phrase_prefix'
+            //                 ]
+            //             ],
+            //             [
+            //                 'multi_match' => [
+            //                     'query'     => $term,
+            //                     'fields'    => [
+            //                         'display_name^2',
+            //                         'name',
+            //                         'about',
+            //                         'content'
+            //                     ],
+            //                     'type'      => 'best_fields',
+            //                     'fuzziness' => 'AUTO'
+            //                 ]
+            //             ]
+            //         ]
+            //     ]
+            // ]
             'query' => [
                 'multi_match' => [
                     'query' => $term,
                     'fields' => [
-                        'content^2', 
+                        'title^4', 
                         'published_by^3', 
-                        'tags',       // for notes
+                        'tags^2',       // for notes
                         'name^2', 
-                        'display_name^3', 
-                        'about'       // for users
+                        'display_name^4', 
+                        'about^1'       // for users
                     ],
-                    'type' => 'bool_prefix'
+                    'type' => 'phrase_prefix'
                 ]
             ]
         ]);
-        return $response->json();
+
+        $hits = $response['hits']['hits'] ?? [];
+
+        $results = [];
+
+        foreach ($hits as $hit) {
+            $source = $hit['_source'] ?? [];
+            $index  = $hit['_index'] ?? null;
+            $score  = $hit['_score'] ?? 0;
+
+            if ($index === 'notes') {
+                $results[] = [
+                    'type'         => 'note',
+                    'score'        => $score,
+                    'id'           => $source['id'] ?? null,
+                    'pubkey'       => $source['pubkey'] ?? null,
+                    'title'        => $source['title'] ?? null,
+                    'content'      => $source['content'] ?? null,
+                    'published_by' => $source['published_by'] ?? null,
+                    'published_at' => $source['published_at'] ?? null,
+                    'tags'         => $source['tags'] ?? null,
+                ];
+            } elseif ($index === 'users') {
+                $results[] = [
+                    'type'         => 'user',
+                    'score'        => $score,
+                    'pubkey'       => $source['pubkey'] ?? null,
+                    'name'         => $source['name'] ?? null,
+                    'display_name' => $source['display_name'] ?? null,
+                    'about'        => $source['about'] ?? null,
+                    'picture'      => $source['picture'] ?? null,
+                    'banner'       => $source['banner'] ?? null,
+                ];
+            }
+        }
+
+        return response()->json($results);
     }
 
     /**

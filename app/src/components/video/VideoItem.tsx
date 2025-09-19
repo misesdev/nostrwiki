@@ -8,10 +8,10 @@ import { AppVideo } from "../commons/AppVideo";
 
 type Props = {
     video: NFile;
-    onClick: (f: NFile) => void;
+    playVideo: (f: NFile) => void;
 }
 
-export const VideoItem = ({ onClick, video }: Props) => {
+export const VideoItem = ({ playVideo, video }: Props) => {
 
     const handleCopy = () => {
         navigator.clipboard.writeText(video.url)
@@ -27,7 +27,7 @@ export const VideoItem = ({ onClick, video }: Props) => {
                     <AppVideo url={video.url} />
 
                     {/* Botão de play */}
-                    <button
+                    <button onClick={() => playVideo(video)}
                         className="absolute inset-0 m-auto w-16 h-16 bg-white/80 dark:bg-gray-700/80 rounded-full flex items-center justify-center opacity-80 hover:opacity-100 transition"
                         //onClick={() => window.open(video.url, "_blank")}
                     >
