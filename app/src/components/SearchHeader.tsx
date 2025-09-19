@@ -3,53 +3,69 @@
 import Link from 'next/link';
 import SearchBox from './SearchBox';
 import SearchHeaderOptions from './SearchHeaderOptions';
-import { ReactNode } from 'react';
 import AppImage from './commons/AppImage';
+import { useRouter } from 'next/navigation';
 
-export default function SearchHeader(): ReactNode {
+const SearchHeader = () => {
+
+    const router = useRouter()
+    const urlApiDocs = (process.env.NEXT_PUBLIC_API_ENGINE_URL??"").replace("api", "docs/api")
+
+    const handleSearch = (searchTerm: string) => {
+        router.push(`${window.location.pathname}?term=${searchTerm.trim()}`)
+    }
 
     return (
-        <header className='top-0 bg-gray-800'>
-            <div className='lg:flex w-full p-4 lg:p-6'>
-                <div className='hidden lg:flex'>
-                    <Link href='/'>
-                        <AppImage
-                            src='/logo.png'
-                            alt='Nostr Book Users'
-                            width={40}
-                            height={40}
-                            onError='hidden'
-                        />
-                    </Link>
-                </div>
-                <div className='lg:hidden w-full mb-4 flex px-2'>
-                    <Link href='/'>
-                        <div className='flex'>
+        <header className="fixed top-0 left-0 w-full bg-gray-900/90 backdrop-blur-md z-50 shadow-md">
+            <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center lg:items-stretch p-4 lg:p-6 gap-4 lg:gap-0">
+                
+                {/* Logo */}
+                <div className="flex items-center justify-between w-full lg:w-auto">
+                    <Link href="/">
+                        <div className="flex items-center gap-3">
                             <AppImage
-                                src='/logo.png'
-                                alt='Nostr Book Users'
-                                width={32}
-                                height={32}
-                                priority
-                                onError='hidden'
+                                src="/logo.png"
+                                alt="Nosbook Logo"
+                                width={40}
+                                height={40}
+                                className="rounded-full"
+                                onError="hidden"
                             />
-                            <h3 className='text-[16px] font-bold mt-1 ml-5 text-gray-400'>Nosbook</h3>
+                            <h1 className="text-lg font-bold text-gray-200 lg:hidden">Nosbook</h1>
                         </div>
                     </Link>
-                </div>
-                <div className='flex-1'>
-                    <SearchBox />
-                </div>
-                <div className='hidden lg:flex items-center'>
-                    <Link target='_blank'
-                        href="https://find.nosbook.org" 
-                        className='bg-[#3e2eb3] text-gray-300 px-6 py-2 font-medium rounded-md hover:brightness-105 hover:shadow-md transition-shadow'
+
+                    {/* Mobile API Docs */}
+                    <Link
+                        target="_blank"
+                        href="https://find.nosbook.org"
+                        className="lg:hidden bg-[#3e2eb3] text-white px-6 py-2 font-medium rounded-md hover:brightness-105 hover:shadow-md transition-shadow"
                     >
-                        API Documentation
+                        API Docs
+                    </Link>
+                </div>
+
+                {/* Search */}
+                <div className="flex-1 w-full lg:mx-8">
+                    <SearchBox handleSearch={handleSearch} />
+                </div>
+
+                {/* Desktop Actions */}
+                <div className="hidden lg:flex items-center gap-4">
+                    <Link target="_blank" 
+                        href={urlApiDocs} 
+                        className='bg-[#3e2eb3] text-white px-6 py-2 font-medium rounded-md hover:brightness-105 hover:shadow-md transition-shadow'>
+                        API Docs
                     </Link>
                 </div>
             </div>
-            <SearchHeaderOptions />
+
+            {/* Header options / tabs */}
+            <div className="w-full">
+                <SearchHeaderOptions />
+            </div>
         </header>
-    );
+    )
 }
+
+export default SearchHeader

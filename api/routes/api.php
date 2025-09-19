@@ -20,9 +20,9 @@ Route::middleware('cache.response')->group(function () {
     
     Route::get('/users/profile/{pubkey}', [UserController::class, 'profile']);
 
-    Route::get('/users/friends/{pubkey}', [UserController::class, 'friends']);
+    Route::get('/users/friends', [UserController::class, 'friends']);
     
-    Route::get('/users/notes/{pubkey}', [UserController::class, 'notes']);
+    Route::post('/users/notes', [UserController::class, 'notes']);
     
     # Relays
     Route::post('/search/relays', [SearchController::class, 'search_relays']);

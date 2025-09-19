@@ -15,3 +15,16 @@ input:focus {
 input:-webkit-autofill {
     background: transparent !important;
 }
+
+/* scrollbar invisível mas ainda funcional */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 9999px;
+  border: none;
+}

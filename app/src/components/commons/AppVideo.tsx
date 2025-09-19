@@ -38,7 +38,7 @@ export const AppVideo = ({ url }: Props) => {
 
     const handleMouseLeave = () => {
         videoRef.current?.pause();
-        //videoRef.current!.currentTime = 0; // reset para o início
+        videoRef.current!.currentTime = 0; // reset para o início
     }
 
     return (

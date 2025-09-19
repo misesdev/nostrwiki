@@ -1,11 +1,6 @@
 
 export type SearchParams = {
-    searchTerm?: string,
-    pubkey?: string
-}
-
-export type RelayParams = {
-    searchTerm: string
+    term: string;
 }
 
 export type User = {
@@ -32,7 +27,7 @@ export type Relay = {
     supported_nips: string;
     software?: string;
     version?: string;
-    active: boolean;
+    available: boolean;
     ref_count: number;
     icon?: string;
     author?: User;
@@ -42,14 +37,17 @@ export type Note = {
     id: string;
     title: string;
     content: string;
-    created_at: string;
+    published_at: string;
     author: User;
 }
 
 export type NFile = {
     url: string;
+    title: string;
+    description: string;
     pubkey: string;
     note_id: string;
+    published_at: string;
     note: Note;
     author: User;
 }

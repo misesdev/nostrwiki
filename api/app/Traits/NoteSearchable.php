@@ -33,6 +33,7 @@ trait NoteSearchable
             })
             ->orderByDesc('published_at')
             ->orderByDesc('relevance')
+            ->orderByDesc('kind')
             ->skip($skip)
             ->take($take);
     }

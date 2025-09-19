@@ -1,45 +1,54 @@
 'use client';
 
-import { ReactNode } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { AiOutlineCamera, AiOutlineSearch } from 'react-icons/ai';
+import { AiOutlineCamera, AiOutlineUser, AiOutlineFileText } from 'react-icons/ai';
+import { motion } from 'framer-motion';
 
-export default function SearchHeaderOptions(): ReactNode {
-    
+const tabs = [
+    { key: 'notes', label: 'Notes', icon: AiOutlineFileText },
+    { key: 'users', label: 'Users', icon: AiOutlineUser },
+    { key: 'images', label: 'Images', icon: AiOutlineCamera },
+    { key: 'videos', label: 'Videos', icon: AiOutlineCamera },
+    { key: 'relays', label: 'Relays', icon: AiOutlineCamera },
+];
+
+export default function SearchHeaderOptions() {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const searchTerm = searchParams.get('searchTerm');
+    const term = searchParams.get('term') ?? '';
 
     const selectTab = (tab: string) => {
-        router.push(`/search/${tab}?searchTerm=${searchTerm}`)
+        router.push(`/search/${tab}?term=${term}`);
     }
-    
+
     return (
-        <div className='flex space-x-2 select-none w-full justify-start pl-5 lg:pl-10 text-gray-700 text-sm'>
-            <div onClick={()=>selectTab("web")} 
-                className={`text-[11px] lg:text-[14px] text-gray-200 flex items-center space-x-1 border-b-4 border-transparent active:text-blue-500 cursor-pointer pb-3 px-2 ${pathname === '/search/web' && '!text-blue-600 !border-blue-600'}`}>
-                <AiOutlineSearch className='text-md' />
-                <p>Profile</p>
-            </div>
-            <div onClick={()=>selectTab("image")} 
-                className={`text-[11px] lg:text-[14px] text-gray-200 flex items-center space-x-1 border-b-4 border-transparent active:text-blue-500 cursor-pointer pb-3 px-2 ${pathname === '/search/image' && '!text-blue-600 !border-blue-600'}`}>
-                <AiOutlineCamera className='text-md' />
-                <p>Images</p>
-            </div>
-            <div onClick={()=>selectTab("video")} 
-                className={`text-[11px] lg:text-[14px] text-gray-200 flex items-center space-x-1 border-b-4 border-transparent active:text-blue-500 cursor-pointer pb-3 px-2 ${pathname === '/search/video' && '!text-blue-600 !border-blue-600'}`}>
-                <AiOutlineCamera className='text-md' />
-                <p>Videos</p>
-            </div>
-            <div onClick={()=>selectTab("relays")} 
-                className={`text-[11px] lg:text-[14px] text-gray-200 flex items-center space-x-1 border-b-4 border-transparent active:text-blue-500 cursor-pointer pb-3 px-2 ${pathname === '/search/relays' && '!text-blue-600 !border-blue-600'}`}>
-                <AiOutlineCamera className='text-md' />
-                <p>Relays</p>
+        <div className="h-12 w-full overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+            <div className="flex px-5 space-x-1 lg:space-x-2">
+                {tabs.map(({ key, label, icon: Icon }) => {
+                    const isActive = pathname?.includes(`/search/${key}`);
+                    return (
+                        <div
+                            key={key}
+                            onClick={() => selectTab(key)}
+                            className="relative flex items-center space-x-2 cursor-pointer py-2 lg:py-3 px-2 lg:px-3 transition-all group"
+                        >
+                            <Icon
+                                className={`text-md lg:text-lg ${isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-blue-400'}`}
+                            />
+                            <p className={`text-[12px] lg:text-sm font-medium transition-colors ${isActive ? 'text-blue-500' : 'text-gray-300 group-hover:text-blue-400'}`}>
+                                {label}
+                            </p>
+                            {isActive && (
+                                <motion.div
+                                    layoutId="tab-indicator"
+                                    className="absolute -bottom-1 left-0 right-0 h-1 rounded-full bg-blue-500"
+                                />
+                            )}
+                        </div>
+                    )
+                })}
             </div>
         </div>
-    );
+    )
 }
-
-
-

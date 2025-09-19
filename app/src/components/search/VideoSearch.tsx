@@ -1,47 +1,80 @@
+'use client'
+
 import { NFile, SearchParams } from '@/types/types';
-import { normalizeImage } from '@/utils/utils';
-import Link from 'next/link';
-import VideoSearchResults from './VideoSearchResult';
+import SearchService from '@/services/api/SearchService';
+import VideoLoader from '../video/VideoLoader';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import EmptyResults from './EmptyResults';
+import { normalizeFile } from '@/utils/utils';
+import VideoResults from '../video/VideoResults';
 
-const VideoSearch = async ({ searchTerm }: SearchParams) => {
+const VideoSearch = ({ term }: SearchParams) => {
 
-    const response = await fetch(`${process.env.API_ENGINE_URL}/videos/search`, {
-        method: "post",
-        headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            term: searchTerm?.trim(),
-            skip: 0, take: 75
-        })
-    })
+    const take = 35
+    const [skip, setSkip] = useState(0)
+    const [loading, setLoading] = useState(true)
+    const [videos, setVideos] = useState<NFile[]>([])
+    const [endOfResults, setEndOfResults] = useState(false)
+    const loaderRef = useRef<HTMLDivElement | null>(null);
 
-    if(!response.ok) throw Error('Error')
+    useEffect(() => { 
+        setSkip(0)
+        setVideos([])
+        setLoading(true)
+        setEndOfResults(false)
+        const load = async () => {
+            const service = new SearchService()
+            const videos = await service.search<NFile>("/search/videos", { term, skip:0, take })
+            setVideos(prev => [...prev, ...videos.map(v => normalizeFile(v))])
+            setEndOfResults(!videos.length)
+            setSkip(prev => prev + take)
+            setLoading(false)
+        }
+        load() 
+    }, [term])
 
-    const videos: NFile[] = await response.json()
+    const fetchVideos = useCallback(async () => {
+        setLoading(true)
+        const service = new SearchService()
+        const videos = await service.search<NFile>("/search/videos", { term, skip, take })
+        setVideos(prev => [...prev, ...videos.map(v => normalizeFile(v))])
+        setEndOfResults(!videos.length)
+        setSkip(prev => prev + take)
+        setLoading(false)
+    }, [term, skip, take])
 
-    videos.forEach(image => image = normalizeImage(image))
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !loading && !endOfResults) {
+                    fetchVideos();
+                }
+            },
+            { threshold: 1 }
+        );
 
-    if (!videos.length) {
-        return (
-            <div className='flex flex-col justify-center items-center pt-10'>
-                <h1 className='text-[20px] lg:text-3xl mb-4 text-gray-400 text-center'>
-                    No results found for `{searchTerm}`
-                </h1>
-                <p className='text-[12px] lg:text-lg text-gray-300 text-center'>
-                    Try searching the web or images for something else{' '}
-                    <Link href='/' className='text-blue-500'>
-                        Home
-                    </Link>
-                </p>
-            </div>
-        )
-    }
+        const target = loaderRef.current; 
+        if (target) {
+            observer.observe(target);
+        }
+        return () => {
+            if (target) {
+                observer.unobserve(target); 
+            }
+        };
+    }, [loading, endOfResults, fetchVideos]);
+
+    if (!loading && !videos.length) 
+    return <EmptyResults term={term} /> 
 
     return (
-        <div>
-            {videos.length && <VideoSearchResults results={videos} />}
+        <div className='w-full'>
+            {loading && <VideoLoader />}
+            <VideoResults videos={videos} />
+            {endOfResults && 
+                <p className="text-center text-gray-500">No more results</p>
+            }
+            <div ref={loaderRef} className="h-100" />
         </div>
     )
 }

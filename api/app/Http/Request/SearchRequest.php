@@ -11,7 +11,7 @@ class SearchRequest extends FormRequest
         return [
             'term' => 'required|string|min:2',
             'skip' => 'nullable|integer|min:0',
-            'take' => 'nullable|integer|min:1|max:75',
+            'take' => 'nullable|integer|min:1|max:50',
         ];
     }
 }

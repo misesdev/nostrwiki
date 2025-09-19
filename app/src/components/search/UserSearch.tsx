@@ -1,44 +1,44 @@
 'use client'
 
-import { Relay, SearchParams } from "@/types/types"
-import { normalizeRelay } from "@/utils/utils"
-import SearchService from "@/services/api/SearchService"
-import { useCallback, useEffect, useRef, useState } from "react"
-import EmptyResults from "./EmptyResults"
-import RelayLoader from "../relay/RelayLoader"
-import { RelayResults } from "../relay/RelayResults"
+import { SearchParams, User } from "@/types/types";
+import SearchService from "@/services/api/SearchService";
+import { normalizeUser } from "@/utils/utils";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { UserLoader } from "../user/UserLoader";
+import EmptyResults from "./EmptyResults";
+import { UsersResults } from "../user/UserResults";
 
-const RelaySearch = ({ term }: SearchParams) => {
-    
+const UserSearch = ({ term }: SearchParams) => {
+ 
     const take = 35
     const [skip, setSkip] = useState(0)
     const [loading, setLoading] = useState(true)
-    const [relays, setRelays] = useState<Relay[]>([])
+    const [users, setUsers] = useState<User[]>([])
     const [endOfResults, setEndOfResults] = useState(false)
     const loaderRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => { 
         setSkip(0)
-        setRelays([])
+        setUsers([])
         setLoading(true)
         setEndOfResults(false)
         const load = async () => {
             const service = new SearchService()
-            const relays = await service.search<Relay>("/search/relays", { term, skip: 0, take })
-            setRelays(relays.map(v => normalizeRelay(v)))
+            const users = await service.search<User>("/search/users", { term, skip:0, take })
+            setUsers(prev => [...prev,...users.map(u => normalizeUser(u))])
+            setEndOfResults(!users.length)
             setSkip(prev => prev + take)
-            setEndOfResults(!relays.length)
             setLoading(false)
         }
-        load()
+        load() 
     }, [term])
 
-    const fetchRelays = useCallback(async () => {
+    const fetchUsers = useCallback(async () => {
         setLoading(true)
         const service = new SearchService()
-        const relays = await service.search<Relay>("/search/relays", { term, skip, take })
-        setRelays(prev => [...prev, ...relays.map(v => normalizeRelay(v))])
-        setEndOfResults(!relays.length)
+        const users = await service.search<User>("/search/users", { term, skip, take })
+        setUsers(prev => [...prev,...users.map(u => normalizeUser(u))])
+        setEndOfResults(!users.length)
         setSkip(prev => prev + take)
         setLoading(false)
     }, [term, skip, take])
@@ -47,11 +47,11 @@ const RelaySearch = ({ term }: SearchParams) => {
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting && !loading && !endOfResults) {
-                    fetchRelays();
+                    fetchUsers();
                 }
             },
             { threshold: 1 }
-        );
+        )
         const target = loaderRef.current; 
         if (target) {
             observer.observe(target);
@@ -61,22 +61,21 @@ const RelaySearch = ({ term }: SearchParams) => {
                 observer.unobserve(target); 
             }
         };
-    }, [loading, endOfResults, fetchRelays]);
+    }, [loading, endOfResults, fetchUsers]);
 
-    if (!loading && !relays.length) 
-        return <EmptyResults term={term} />
+    if (!loading && !users.length) 
+        return <EmptyResults term={term} /> 
 
     return (
         <div className="w-full">
-            {loading && <RelayLoader />}
-            <RelayResults relays={relays} />
+            {loading && <UserLoader />}
+            <UsersResults users={users} />
             {endOfResults && 
                 <p className="text-center text-gray-500">No more results</p>
             }
-            <div ref={loaderRef} className="h-[50px]" />
+            <div ref={loaderRef} className="h-100" />
         </div>
     )
 }
 
-export default RelaySearch
-
+export default UserSearch 

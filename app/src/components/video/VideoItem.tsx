@@ -2,19 +2,16 @@
 
 import { NFile } from "@/types/types"
 import toast from "react-hot-toast"
-import { Copy, LinkIcon, Play, X } from "lucide-react"
+import { Copy, LinkIcon, Play } from "lucide-react"
 import AppImage from '../commons/AppImage';
-import { useState } from "react";
 import { AppVideo } from "../commons/AppVideo";
-import ModalVideoPlayer from "../commons/ModalVideoPlayer";
 
 type Props = {
-    video: NFile
+    video: NFile;
+    onClick: (f: NFile) => void;
 }
 
-export const VideoItem = ({ video }: Props) => {
-
-    const [isOpen, setIsOpen] = useState(false);
+export const VideoItem = ({ onClick, video }: Props) => {
 
     const handleCopy = () => {
         navigator.clipboard.writeText(video.url)
@@ -22,11 +19,9 @@ export const VideoItem = ({ video }: Props) => {
     }
 
     return (
-        <>
             <div className="bg-white dark:bg-gray-800 shadow-md rounded-xl overflow-hidden flex flex-col transition hover:shadow-lg">
                 {/* Video / capa */}
                 <div
-                    onClick={() => setIsOpen(true)}
                     className="relative w-full h-64 md:h-48 lg:h-64 overflow-hidden cursor-pointer"
                 >
                     <AppVideo url={video.url} />
@@ -89,13 +84,5 @@ export const VideoItem = ({ video }: Props) => {
                     </div>
                 </div>
             </div>
-
-            {/* Modal com animação e blur */}
-            <ModalVideoPlayer 
-                url={video.url}
-                isOpen={isOpen} 
-                onClose={() => setIsOpen(false)} 
-            />
-        </>
     )
 }

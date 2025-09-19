@@ -1,13 +1,14 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { ReactNode } from "react";
 
 type Props = {
-    url: string;
     isOpen: boolean;
     onClose: () => void;
+    children: ReactNode;
 }
 
-const ModalVideoPlayer = ({ url, isOpen, onClose }: Props) => {
+const BlurModal = ({ children, isOpen, onClose }: Props) => {
 
     if(!isOpen) return <></>
 
@@ -34,16 +35,7 @@ const ModalVideoPlayer = ({ url, isOpen, onClose }: Props) => {
                         >
                             <X className="w-6 h-6" />
                         </button>
-
-                        <video
-                            muted
-                            src={url}
-                            controls
-                            autoPlay
-                            className="w-full h-auto max-h-[95vh] rounded-xl bg-black"
-                        >
-                            Your browser does not support the video tag.
-                        </video>
+                        {children}
                     </motion.div>
                 </motion.div>
             )}
@@ -52,4 +44,4 @@ const ModalVideoPlayer = ({ url, isOpen, onClose }: Props) => {
 }
 
 
-export default ModalVideoPlayer
+export default BlurModal

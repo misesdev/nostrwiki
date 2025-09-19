@@ -1,44 +1,44 @@
 'use client'
 
-import { Relay, SearchParams } from "@/types/types"
-import { normalizeRelay } from "@/utils/utils"
-import SearchService from "@/services/api/SearchService"
-import { useCallback, useEffect, useRef, useState } from "react"
-import EmptyResults from "./EmptyResults"
-import RelayLoader from "../relay/RelayLoader"
-import { RelayResults } from "../relay/RelayResults"
+import { Note, SearchParams } from "@/types/types";
+import SearchService from "@/services/api/SearchService";
+import { useCallback, useEffect, useRef, useState } from "react";
+import EmptyResults from "./EmptyResults";
+import { normalizeNote } from "@/utils/utils";
+import NoteResults from "../note/NoteResults";
+import NoteLoader from "../note/NoteLoader";
 
-const RelaySearch = ({ term }: SearchParams) => {
-    
+const NoteSearch = ({ term }: SearchParams) => {
+ 
     const take = 35
     const [skip, setSkip] = useState(0)
     const [loading, setLoading] = useState(true)
-    const [relays, setRelays] = useState<Relay[]>([])
+    const [notes, setNotes] = useState<Note[]>([])
     const [endOfResults, setEndOfResults] = useState(false)
     const loaderRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => { 
         setSkip(0)
-        setRelays([])
+        setNotes([])
         setLoading(true)
         setEndOfResults(false)
         const load = async () => {
             const service = new SearchService()
-            const relays = await service.search<Relay>("/search/relays", { term, skip: 0, take })
-            setRelays(relays.map(v => normalizeRelay(v)))
+            const notes = await service.search<Note>("/search/notes", { term, skip:0, take })
+            setNotes(prev => [...prev,...notes.map(n => normalizeNote(n))])
+            setEndOfResults(!notes.length)
             setSkip(prev => prev + take)
-            setEndOfResults(!relays.length)
             setLoading(false)
         }
-        load()
+        load() 
     }, [term])
 
-    const fetchRelays = useCallback(async () => {
+    const fetchNotes = useCallback(async () => {
         setLoading(true)
         const service = new SearchService()
-        const relays = await service.search<Relay>("/search/relays", { term, skip, take })
-        setRelays(prev => [...prev, ...relays.map(v => normalizeRelay(v))])
-        setEndOfResults(!relays.length)
+        const notes = await service.search<Note>("/search/notes", { term, skip, take })
+        setNotes(prev => [...prev,...notes.map(n => normalizeNote(n))])
+        setEndOfResults(!notes.length)
         setSkip(prev => prev + take)
         setLoading(false)
     }, [term, skip, take])
@@ -47,11 +47,11 @@ const RelaySearch = ({ term }: SearchParams) => {
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0].isIntersecting && !loading && !endOfResults) {
-                    fetchRelays();
+                    fetchNotes();
                 }
             },
             { threshold: 1 }
-        );
+        )
         const target = loaderRef.current; 
         if (target) {
             observer.observe(target);
@@ -61,22 +61,21 @@ const RelaySearch = ({ term }: SearchParams) => {
                 observer.unobserve(target); 
             }
         };
-    }, [loading, endOfResults, fetchRelays]);
+    }, [loading, endOfResults, fetchNotes]);
 
-    if (!loading && !relays.length) 
-        return <EmptyResults term={term} />
+    if (!loading && !notes.length) 
+        return <EmptyResults term={term} /> 
 
     return (
         <div className="w-full">
-            {loading && <RelayLoader />}
-            <RelayResults relays={relays} />
+            {loading && <NoteLoader />}
+            <NoteResults notes={notes} />
             {endOfResults && 
                 <p className="text-center text-gray-500">No more results</p>
             }
-            <div ref={loaderRef} className="h-[50px]" />
+            <div ref={loaderRef} className="h-100" />
         </div>
     )
 }
 
-export default RelaySearch
-
+export default NoteSearch 

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Request\NoteRequest;
-use App\Http\Request\SearchRequest;
 use App\Note;
+use App\User;
 
 class NoteController extends Controller
 {
@@ -13,9 +13,9 @@ class NoteController extends Controller
      */
     function note(NoteRequest $request)
     {
-        $note = Note::find($request->id);
+        $note = Note::with('author')->find($request->id);
 
-        if(!$note) return response()->json(['message' => 'user not found'], 404);
+        if(!$note) return response()->json(['message' => 'note not found'], 404);
 
         return response()->json($note);
     }

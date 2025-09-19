@@ -1,45 +1,81 @@
-import ImageSearchResults from '@/components/search/ImageSearchResults';
+'use client'
+
+import SearchService from '@/services/api/SearchService';
 import { NFile, SearchParams } from '@/types/types';
-import { normalizeImage } from '@/utils/utils';
-import Link from 'next/link';
+import { normalizeFile } from '@/utils/utils';
+import EmptyResults from './EmptyResults';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import ImageLoader from '../images/ImageLoader';
+import ImageResults from '../images/ImageResults';
 
-const ImageSearch = async ({ searchTerm }: SearchParams) => {
+const ImageSearch = ({ term }: SearchParams) => {
 
-    const response = await fetch(`${process.env.API_ENGINE_URL}/images/search`, {
-        method: "post",
-        headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            term: searchTerm?.trim(),
-            skip: 0, take: 75
-        })
-    })
+    const take = 25
+    const [skip, setSkip] = useState(0)
+    const [loading, setLoading] = useState(true)
+    const [images, setImages] = useState<NFile[]>([])
+    const [endOfResults, setEndOfResults] = useState(false)
+    const loaderRef = useRef<HTMLDivElement | null>(null);
 
-    if(!response.ok) throw Error('Error')
+    useEffect(() => { 
+        setSkip(0)
+        setImages([])
+        setLoading(true)
+        setEndOfResults(false)
+        const load = async () => {
+            const service = new SearchService()
+            const images = await service.search<NFile>("/search/images", { term, skip:0, take })
+            setImages(prev => [...prev, ...images.map(i => normalizeFile(i))])
+            setEndOfResults(!images.length)
+            setSkip(prev => prev + take)
+            setLoading(false)
+        }
+        load() 
+    }, [term])
 
-    const images: NFile[] = await response.json()
+    const fetchImages = useCallback(async () => {
+        setLoading(true)
+        const service = new SearchService()
+        const images = await service.search<NFile>("/search/images", { term, skip, take })
+        setImages(prev => [...prev, ...images.map(i => normalizeFile(i))])
+        setEndOfResults(!images.length)
+        setSkip(prev => prev + take)
+        setLoading(false)
+    }, [term, skip, take])
 
-    images.forEach(image => image = normalizeImage(image))
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !loading && !endOfResults) {
+                    fetchImages();
+                }
+            },
+            { threshold: 1 }
+        );
+        const target = loaderRef.current; 
+        if (target) {
+            observer.observe(target);
+        }
+        return () => {
+            if (target) {
+                observer.unobserve(target); 
+            }
+        };
+    }, [loading, endOfResults, fetchImages]);
 
-    if (!images.length) {
-        return (
-            <div className='flex flex-col justify-center items-center pt-10'>
-                <h1 className='text-[20px] lg:text-3xl mb-4 text-gray-400 text-center'>
-                    No results found for `{searchTerm}`
-                </h1>
-                <p className='text-[12px] lg:text-lg text-gray-300 text-center'>
-                    Try searching the web or images for something else{' '}
-                    <Link href='/' className='text-blue-500'>
-                        Home
-                    </Link>
-                </p>
-            </div>
-        )
-    }
+    if (!loading && !images.length) 
+        return <EmptyResults term={term} />
 
-    return (<div>{images.length && <ImageSearchResults results={images} />}</div>)
+    return (
+        <div className='w-full'>
+            {loading && <ImageLoader />}
+            <ImageResults images={images} />
+            {endOfResults && 
+                <p className="text-center text-gray-500">No more results</p>
+            }
+            <div ref={loaderRef} className="h-100" />
+        </div>
+    )
 }
 
 export default ImageSearch
