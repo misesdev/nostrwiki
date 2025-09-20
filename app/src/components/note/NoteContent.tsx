@@ -22,7 +22,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
     const [isUserOpen, setIsUserOpen] = useState(false)
     const videoRefs = useRef<HTMLVideoElement[]>([])
-    const tokens: Token[] = parseContent(note.content, note.tags.map(t => ["t", t]))
+    const tokens: Token[] = parseContent(note.content)
 
     useEffect(() => {
         const fetchProfiles = async () => {

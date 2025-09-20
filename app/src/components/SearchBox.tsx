@@ -43,15 +43,15 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
                 setShowDropdown(false);
                 setResults([]);
             }
-        }, 400)
+        }, 500)
     }
 
     const fetchResults = async (q: string) => {
         try {
             const service = new SearchService()
             const results = await service.autocomplete(q.trim())
-            setShowDropdown(!!results.length)
             setResults(results)
+            setShowDropdown(results.length > 0)
         } catch (err) {
             console.error('Error fetching autocomplete:', err)
         }
@@ -62,6 +62,19 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
         setTerm(searchTerm.trim())
         setShowDropdown(false)
     }
+
+    
+    const handleFocus = () => {
+        if (results.length > 0 && term.length >= 3) {
+            setShowDropdown(true);
+        }
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Escape') {
+            setShowDropdown(false);
+        }
+    };
 
     return (
         <div ref={containerRef} className="w-full lg:max-w-3xl mx-auto relative z-50">
@@ -77,7 +90,8 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
                     autoComplete="off"
                     minLength={3}
                     onChange={handleChange}
-                    onFocus={() => setShowDropdown(!results.length)}
+                    onFocus={handleFocus}
+                    onKeyDown={handleKeyDown}
                     className="bg-transparent text-gray-100 placeholder-gray-400 w-full focus:outline-none text-sm sm:text-base"
                 />
             </form>
