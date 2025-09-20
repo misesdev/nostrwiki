@@ -39,7 +39,7 @@ return [
         /*
          * Define the title of the documentation's website. App name is used when this config is `null`.
          */
-        'title' => "Nostr Search Engine",
+        'title' => "Nostr Wiki Search Engine",
 
         /*
          * Define the theme of the documentation. Available options are `light` and `dark`.
@@ -54,7 +54,7 @@ return [
         /*
          * URL to an image that displays as a small square logo next to the title, above the table of contents.
          */
-        'logo' => 'https://find.nosbook.org/favicon.ico',
+        'logo' => 'https://zap.nostrwiki.org/favicon.ico',
 
         /*
          * Use to fetch the credential policy for the Try It feature. Options are: omit, include (default), and same-origin
@@ -77,7 +77,7 @@ return [
      * ```
      */
     'servers' => [
-        'Prod' => "https://find.nosbook.org/api",
+        'Prod' => "https://zap.nostrwiki.org/api",
         'Dev' => "http://localhost:8001/api"
     ],
 
