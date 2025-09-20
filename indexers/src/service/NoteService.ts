@@ -100,11 +100,11 @@ class NoteService
                 id: event.id,
                 kind: event.kind,
                 pubkey: event.pubkey,
-                title: this.extractTitle(event),
+                title: this.extractTitle(event).substring(0, 255),
                 content: event.content,
-                published_by: author?.display_name || author?.name,
+                published_by: (author?.display_name || author?.name)?.substring(0, 100),
                 published_at: event.created_at,
-                tags: distinct(tags).join(" "),
+                tags: distinct(tags).slice(0, 10).join(" "),
                 created_at: new Date(),
                 ref_count: 1
             })
@@ -129,12 +129,12 @@ class NoteService
                     url,
                     type,
                     note_id: event.id,
-                    title: event.title,
+                    title: event.title.substring(0, 255),
                     description: description,
-                    published_by: event.published_by,
+                    published_by: event.published_by?.substring(0, 100),
                     published_at: event.published_at,
                     pubkey: event.pubkey,
-                    tags: event.tags,
+                    tags: event.tags?.substring(0, 512),
                     created_at: new Date(),
                     ref_count: 1
                 })
@@ -221,23 +221,18 @@ class NoteService
     private isIndexable(event: NostrEvent): boolean 
     {
         const MIN_CONTENT_LENGTH = 64;
-
         // Sempre indexar se tiver links de arquivos/media
         const hasFile = /https?:\/\/\S+\.(jpg|jpeg|png|gif|mp4|webm|pdf|mp3|ogg|wav)/i.test(event.content);
-
         // Ignorar se for comentário/reply (tags tipo "e" indicam referências a outros eventos)
         const isReply = event.tags.some(t => t[0] === "e");
-
         // Conteúdo muito curto sem arquivos não vale a pena indexar
         const isTooShort = event.content.trim().length < MIN_CONTENT_LENGTH;
-
         // Filtro de conteúdo vazio ou só links de npub/nprofile/note/nevent/naddr
         const cleaned = event.content
             .replace(/\b(npub|nprofile|note|nevent|naddr)1[0-9a-z]{50,}\b/g, "")
             .replace(/\s+/g, " ")
             .trim();
         const isEmptyAfterClean = cleaned.length === 0;
-
         // Decisão final
         return !isReply && (hasFile || (!isTooShort && !isEmptyAfterClean));
     }
@@ -292,7 +287,7 @@ class NoteService
 
         const finalText = truncatedWords.join(" ").trim();
 
-        return finalText.length < text.length ? finalText + "…" : finalText;
+        return finalText.split(" ").slice(0, 15).join();
     }
 }
 
