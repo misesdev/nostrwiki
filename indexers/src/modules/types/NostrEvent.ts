@@ -7,3 +7,8 @@ export type NostrEvent = {
     tags: [string[]],
     sig: string
 }
+
+export type EventLink = {
+    id: string;
+    link: string;
+}

@@ -1,5 +1,5 @@
 import { NFile } from "../modules/types/File";
-import { NostrEvent } from "../modules/types/NostrEvent";
+import { EventLink, NostrEvent } from "../modules/types/NostrEvent";
 import { Note, RefNote } from "../modules/types/Note";
 import { RefPubkey, User } from "../modules/types/User";
 import { Settings } from "../settings/types";
@@ -63,7 +63,8 @@ class NoteService
             await this._dbNotes.upRefs(eventRefs)
             
             // indexing files
-            await this.loadFiles(notes)
+            const metaUrls = this.urlsFromEvents(events)
+            await this.loadFiles(notes, metaUrls)
 
             const relays = events.map(event => RelayService.relaysFromEvent(event))
             accumulateRelays(relays.flat())
@@ -112,20 +113,20 @@ class NoteService
         return distinctNotes(notes);
     }
 
-    private async loadFiles(events: Note[]): Promise<void>
+    private async loadFiles(events: Note[], metaUrls: EventLink[]): Promise<void>
     {
-        const files: NFile[] = []
-
+        const files = new Map<string, NFile>()
         for (let event of events)
         {
-            const urls = extractUrls(event.content)
-            if (!urls.length) continue;
-
-            for (const url of urls) {
+            const links: string[] = metaUrls
+                .filter(l => l.id == event.id).map(l => l.link)
+            links.push(...extractUrls(event.content))
+            if (!links.length) continue;
+            for (const url of links) {
                 const type = mediaType(url)
                 const description = event.content
                     .split(" ").filter(t => t.length <= 15).slice(0, 25).join(" ")
-                files.push({
+                files.set(url, {
                     url,
                     type,
                     note_id: event.id,
@@ -140,13 +141,14 @@ class NoteService
                 })
             }
         }
-        
+
         let betch = 25
         const limit = pLimit(10)
         const validFiles: NFile[] = []
-        for(let i = 0; i < files.length; i += betch)
+        const uniqueFiles = Array.from(files.values())
+        for(let i = 0; i < uniqueFiles.length; i += betch)
         {
-            const betchFiles = files.slice(i, i+betch)
+            const betchFiles = uniqueFiles.slice(i, i+betch)
             const results = await Promise.all(
                 betchFiles.map(async file => limit(async () => {
                     const valid = await checkMediaAccessible(file.url)
@@ -154,9 +156,11 @@ class NoteService
                     return null
                 }))
             )
-            const allFiles: NFile[] = distinctFiles(results.flat())
+            const allFiles: NFile[] = results.flat()
+
             validFiles.push(...allFiles)
         }
+
         console.log("saving", validFiles.length, "files from notes")
         await this._dbFiles.upsert(validFiles)
     }
@@ -199,28 +203,28 @@ class NoteService
             .map(([id, count]) => ({ id, count }));
     }
 
-    public filesFromEvents(events : NostrEvent[]): NFile[] 
+    public urlsFromEvents(events : NostrEvent[]): EventLink[] 
     {
-        const files: NFile[] = []
+        let urls = new Map<string, EventLink>()
         events.forEach(event => {
-            let urls: string[] = []
             event.tags.forEach(item => {
                 if(item[0] == "imeta") {
                     for(let tag of item) {
                         const pick = tag.split(" ")
-                        if(pick[0] == "url") urls.push(pick[0])
+                        if(pick[0] == "url")
+                            urls.set(pick[1], { link: pick[1], id: event.id })
                     }
                 }
                 if(item[0] == "image")
-                    urls.push(item[1])
+                    urls.set(item[1], { link: item[1], id: event.id })
             })
         })
-        return files
+        return Array.from(urls.values()) 
     }
 
     private isIndexable(event: NostrEvent): boolean 
     {
-        const MIN_CONTENT_LENGTH = 64;
+        const MIN_CONTENT_LENGTH = 50;
         // Sempre indexar se tiver links de arquivos/media
         const hasFile = /https?:\/\/\S+\.(jpg|jpeg|png|gif|mp4|webm|pdf|mp3|ogg|wav)/i.test(event.content);
         // Ignorar se for comentário/reply (tags tipo "e" indicam referências a outros eventos)
@@ -271,10 +275,10 @@ class NoteService
             .replace(/\s+/g, " ") // múltiplos espaços
             .trim();
 
-        if (!text) return "(sem título)";
+        if (!text) return "(without title)";
 
         // Pegar apenas até o primeiro ponto relevante dentro das primeiras 10–15 palavras
-        let truncatedWords = text.split(" ").slice(0, 15);
+        let truncatedWords = text.split(" ").slice(0, 12);
 
         // Procurar ponto que não faça parte de abreviações
         for (let i = 0; i < truncatedWords.length; i++) {
@@ -287,7 +291,7 @@ class NoteService
 
         const finalText = truncatedWords.join(" ").trim();
 
-        return finalText.split(" ").slice(0, 15).join();
+        return finalText.split(" ").slice(0, 15).join(" ");
     }
 }
 

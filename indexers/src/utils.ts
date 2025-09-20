@@ -103,8 +103,9 @@ export const npubToHex = (npub: string): string => {
 
 export const extractUrls = (content: string): string[] => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return (content.match(urlRegex) || [])
+    const urls = (content.match(urlRegex) || [])
         .map((u: string) => u.trim());
+    return distinct(urls)
 }
 
 export const mediaType = (url: string): "image" | "video" | "audio" | "iframe" => {
