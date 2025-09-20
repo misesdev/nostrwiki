@@ -119,10 +119,15 @@ class NoteService
         for (let event of events)
         {
             const links: string[] = metaUrls
-                .filter(l => l.id == event.id).map(l => l.link)
+                .filter(l => l.id == event.id && !!l?.link).map(l => l.link)
+
             links.push(...extractUrls(event.content))
+
             if (!links.length) continue;
-            for (const url of links) {
+
+            for (const url of links) 
+            {
+                if(!url) continue;
                 const type = mediaType(url)
                 const description = event.content
                     .split(" ").filter(t => t.length <= 15).slice(0, 25).join(" ")
@@ -157,8 +162,7 @@ class NoteService
                 }))
             )
             const allFiles: NFile[] = results.flat()
-
-            validFiles.push(...allFiles)
+            validFiles.push(...allFiles.filter(f => !!f?.url))
         }
 
         console.log("saving", validFiles.length, "files from notes")
@@ -219,7 +223,8 @@ class NoteService
                     urls.set(item[1], { link: item[1], id: event.id })
             })
         })
-        return Array.from(urls.values()) 
+        return Array.from(urls.values())
+                    .filter(link => !!link?.link)
     }
 
     private isIndexable(event: NostrEvent): boolean 
