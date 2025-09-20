@@ -1,25 +1,24 @@
+'use client'
 
 const ImageLoader = () => {
-   
     const LoadingItem = () => {
         return (
-            <div className='animate-pulse'>
-                <div className='h-48 w-80 mb-4 bg-gray-200 rounded-md'></div>
-                <div className='h-2 w-48 mb-2.5 bg-gray-200 rounded-md'></div>
-                <div className='h-2 w-48 mb-2.5 bg-gray-200 rounded-md'></div>
+            <div className="animate-pulse flex flex-col space-y-3 w-full">
+                {/* Imagem */}
+                <div className="h-48 w-full bg-gray-200 rounded-xl"></div>
+
+                {/* Títulos / legendas */}
+                <div className="h-3 w-3/4 bg-gray-200 rounded-md"></div>
+                <div className="h-3 w-1/2 bg-gray-200 rounded-md"></div>
             </div>
         )
     }
 
-    const Loading = () => (
-        <div className='pt-10 mx-2 pl-24 lg:pl-52 max-w-6xl flex sm:space-x-4 flex-col sm:flex-row pb-42'>
-            {Array.from({ length: 4 }).map((i, key) => <LoadingItem key={key} />)} 
-        </div>
-    )
-
     return (
-        <div className="w-full">
-            {Array.from({ length: 2 }).map((i, key) => <Loading key={key} />)} 
+        <div className="w-full max-w-7xl mx-auto p-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, key) => (
+                <LoadingItem key={key} />
+            ))}
         </div>
     )
 }

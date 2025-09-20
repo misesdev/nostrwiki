@@ -66,7 +66,7 @@ const buildNotePreview = (note: Note, term: string, words: number) => {
         if (Array.isArray(note.tags)) tagsArr = note.tags;
         else if (typeof note.tags === "string") tagsArr = note.tags.split(/[,;\s]+/);
         const goodTags = tagsArr.map(t => t.replace(/^[^\w#@]+|[^\w#@]+$/g, "")).filter(Boolean).slice(0, Math.max(1, Math.min(3, words)));
-        if (goodTags.length) return goodTags.map(t => (t.startsWith("#") ? t : `#${t}`)).join(" ");
+        if (goodTags.length) return goodTags.map(t => (t.startsWith("#") ? t : `${t}`)).join(" ");
     }
 
     // fallback: se não houver nada, tentar uma substring curta do content (removendo links)
