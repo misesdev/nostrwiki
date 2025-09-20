@@ -32,7 +32,7 @@ class UserService
         let skipe = this._settings.max_fetch_events
         for (let i = 0; i <= pubkeys.length; i += skipe) 
         {
-            let users: User[] = []
+            let users = new Map<string, User>()
             let events = await pool.fechEvents({
                 authors: pubkeys.slice(i, i + skipe),
                 limit: skipe,
@@ -40,19 +40,18 @@ class UserService
             })
 
             console.log("users...:", events.length)
-
             for(let i = 0; i < events.length; i++) 
             {
                 try 
                 {
                     const user = this.userFromEvent(events[i])
-                    users.push(user)
+                    users.set(events[i].pubkey, user)
                     const urls = RelayService.relaysFromEvent(events[i])
                     relayUrls.push(...urls)
                 } 
                 catch {}
             }
-            const distincts = distinctUsers(users)
+            const distincts = Array.from(users.values()) 
             await this._dbUsers.upsert(distincts)
         }
         accumulateRelays(relayUrls)
