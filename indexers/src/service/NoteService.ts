@@ -73,7 +73,7 @@ class NoteService
 
     private notesFromEvents(events: NostrEvent[], authors: User[]): Note[]   
     {
-        const notes: Note[] = [];
+        const notes = new Map<string, Note>();
         for (const event of events)
         {
             // nao indexar notas muito curtas sem links
@@ -97,7 +97,7 @@ class NoteService
                     .slice(0, 6)
             }
             const author = authors.find(u => u.pubkey == event.pubkey)
-            notes.push({
+            notes.set(event.id, {
                 id: event.id,
                 kind: event.kind,
                 pubkey: event.pubkey,
@@ -110,7 +110,7 @@ class NoteService
                 ref_count: 1
             })
         }
-        return distinctNotes(notes);
+        return Array.from(notes.values());
     }
 
     private async loadFiles(events: Note[], metaUrls: EventLink[]): Promise<void>
@@ -226,7 +226,10 @@ class NoteService
     {
         const MIN_CONTENT_LENGTH = 50;
         // Sempre indexar se tiver links de arquivos/media
-        const hasFile = /https?:\/\/\S+\.(jpg|jpeg|png|gif|mp4|webm|pdf|mp3|ogg|wav)/i.test(event.content);
+        const hasFile = (
+            /https?:\/\/\S+\.(jpg|jpeg|png|gif|mp4|webm|pdf|mp3|ogg|wav)/i.test(event.content) ||
+            !!this.urlsFromEvents([event]).length
+        );
         // Ignorar se for comentário/reply (tags tipo "e" indicam referências a outros eventos)
         const isReply = event.tags.some(t => t[0] === "e");
         // Conteúdo muito curto sem arquivos não vale a pena indexar
