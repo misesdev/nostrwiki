@@ -17,12 +17,30 @@ type Props = {
     endOfResults: boolean;
 };
 
+const variants = {
+    enter: (direction: number) => ({
+        x: direction === 1 ? 300 : -300,
+        opacity: 0,
+        position: "absolute" as const
+    }),
+    center: {
+        x: 0,
+        opacity: 1,
+        position: "relative" as const
+    },
+    exit: (direction: number) => ({
+        x: direction === 1 ? -300 : 300,
+        opacity: 0,
+        position: "absolute" as const
+    }),
+};
+
 const PRELOAD_THRESHOLD = 3;
 
 const NoteSlide = ({ notes, noteIndex, endOfResults, fetchMoreNotes, isOpen, onClose }: Props) => {
+    
     const [index, setIndex] = useState(noteIndex);
-    const [direction, setDirection] = useState<1 | -1>(1); // direção da animação
-
+    const [direction, setDirection] = useState<1 | -1>(1);
     const note = useMemo(() => notes[index], [index, notes]);
     const date = useMemo(() => {
         return format(new Date(notes[index].published_at * 1000), "dd MMM yyyy");
@@ -93,10 +111,11 @@ const NoteSlide = ({ notes, noteIndex, endOfResults, fetchMoreNotes, isOpen, onC
                     <motion.div
                         key={index}
                         custom={direction}
-                        initial={{ x: direction === 1 ? 300 : -300, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        exit={{ x: direction === 1 ? -300 : 300, opacity: 0 }}
-                        transition={{ duration: 0.35 }}
+                        variants={variants}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        transition={{ duration: 0.35, ease: "easeInOut" }}
                         drag="x"
                         dragConstraints={{ left: 0, right: 0 }}
                         dragElastic={0.2}
@@ -115,7 +134,7 @@ const NoteSlide = ({ notes, noteIndex, endOfResults, fetchMoreNotes, isOpen, onC
                                 width={100}
                                 height={100}
                                 src={note.author.picture}
-                                onError={e => (e.currentTarget.src = "/default-avatar.png")}
+                                onError={(e) => (e.currentTarget.src = "/default-avatar.png")}
                                 alt={note.author.display_name || note.author.name}
                                 className="w-14 h-14 rounded-full object-cover border-2 border-gray-700"
                             />

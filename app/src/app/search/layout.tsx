@@ -5,7 +5,7 @@ import './../globals.css';
 
 export default function layout({ children }: any) {
     return (
-        <div className="bg-gray-900">
+        <div className="mt-[45px] md:mt-0 bg-gray-900">
             <SearchHeader />
             {children}
         </div>

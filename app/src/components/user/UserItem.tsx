@@ -72,7 +72,7 @@ const UserItem = ({ user }: UserItemProps) => {
                                 rel="noopener noreferrer"
                                 className="flex items-center justify-center sm:justify-start gap-2 text-[12px] md:text-sm text-blue-400 hover:underline mt-2"
                             >
-                                <Globe className="w-4 h-4" /> {user.website}
+                                <Globe className="w-4 h-4" /> {shortenString(user.website, 24)}
                             </a>
                         )}
 

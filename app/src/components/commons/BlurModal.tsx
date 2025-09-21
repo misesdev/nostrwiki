@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 
 type Props = {
     isOpen: boolean;
@@ -12,6 +12,23 @@ const BlurModal = ({ children, isOpen, onClose }: Props) => {
 
     if(!isOpen) return <></>
 
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handlePopState = (e: PopStateEvent) => {
+            e.preventDefault();
+            onClose(); 
+            window.history.pushState(null, "", window.location.href);
+        };
+
+        window.history.pushState(null, "", window.location.href);
+        window.addEventListener("popstate", handlePopState);
+
+        return () => {
+            window.removeEventListener("popstate", handlePopState);
+        };
+    }, [isOpen, onClose]);
+    
     return (
         <AnimatePresence>
             {isOpen && (

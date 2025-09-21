@@ -43,7 +43,7 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
 
     return (
         <BlurModal isOpen={isOpen} onClose={onClose}>
-            <div className="max-h-[90vh] overflow-y-auto px-2 py-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+            <div className="max-w-[100%] max-h-[90vh] overflow-y-auto px-2 py-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                 {/* Header do usuário */}
                 <div className="flex p-3 md:p-5 flex-col sm:flex-row items-center sm:items-start gap-4 mb-6">
                     <AppImage

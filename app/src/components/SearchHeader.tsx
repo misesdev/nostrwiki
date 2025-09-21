@@ -17,10 +17,10 @@ const SearchHeader = () => {
 
     return (
         <header className="fixed top-0 left-0 w-full bg-gray-900/90 backdrop-blur-md z-50 shadow-md">
-            <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center lg:items-stretch p-4 lg:p-6 gap-4 lg:gap-0">
+            <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center lg:items-stretch p-2 lg:p-6 gap-4 lg:gap-0">
                 
                 {/* Logo */}
-                <div className="hidden sm:flex items-center justify-between w-full lg:w-auto">
+                <div className="flex items-center justify-between w-full lg:w-auto">
                     <Link href="/">
                         <div className="flex items-center gap-3">
                             <AppImage
@@ -28,10 +28,10 @@ const SearchHeader = () => {
                                 alt="Nosbook Logo"
                                 width={40}
                                 height={40}
-                                className="rounded-full"
+                                className="w-8 h-8 md:w-15 md:h-15 rounded-full"
                                 onError="hidden"
                             />
-                            <h1 className="text-lg font-bold text-gray-200 lg:hidden">Nosbook</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-200 ">Nosbook</h1>
                         </div>
                     </Link>
 
@@ -39,7 +39,7 @@ const SearchHeader = () => {
                     <Link
                         target="_blank"
                         href={urlApiDocs}
-                        className="lg:hidden bg-[#3e2eb3] text-white px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-md hover:brightness-105 hover:shadow-md transition"
+                        className="text-[10px] lg:hidden bg-[#3e2eb3] text-white px-3 py-1 sm:px-4 sm:py-2 text-sm sm:text-base font-medium rounded-md hover:brightness-105 hover:shadow-md transition"
                     >
                         API Docs
                     </Link>

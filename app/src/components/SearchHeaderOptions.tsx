@@ -32,18 +32,18 @@ export default function SearchHeaderOptions() {
                         <div
                             key={key}
                             onClick={() => selectTab(key)}
-                            className="relative flex items-center space-x-2 cursor-pointer py-2 lg:py-3 px-2 lg:px-3 transition-all group"
+                            className="relative flex items-center space-x-2 cursor-pointer py-2 lg:py-3 px-1 lg:px-3 transition-all group"
                         >
-                            <Icon
-                                className={`text-md lg:text-lg ${isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-blue-400'}`}
-                            />
+                            {/* <Icon */}
+                            {/*     className={`text-md lg:text-lg ${isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-blue-400'}`} */}
+                            {/* /> */}
                             <p className={`text-[12px] lg:text-sm font-medium transition-colors ${isActive ? 'text-blue-500' : 'text-gray-300 group-hover:text-blue-400'}`}>
                                 {label}
                             </p>
                             {isActive && (
                                 <motion.div
                                     layoutId="tab-indicator"
-                                    className="absolute -bottom-1 left-0 right-0 h-1 rounded-full bg-blue-500"
+                                    className="absolute -bottom-1 -left-1 md:left-0 right-0 h-1 rounded-full bg-blue-500"
                                 />
                             )}
                         </div>

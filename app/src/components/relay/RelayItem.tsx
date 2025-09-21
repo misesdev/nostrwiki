@@ -25,7 +25,7 @@ export const RelayItem = ({ relay }: Props) => {
                     src={relay.icon ?? ""}
                     onError="/default-icon.jpg"
                     alt={relay.name || "Relay Icon"}
-                    className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border border-gray-700 shadow-sm"
+                    className="w-12 h-12 md:w-20 md:h-20 rounded-full object-cover border border-gray-700 shadow-sm"
                 />
             </div>
 
@@ -33,9 +33,11 @@ export const RelayItem = ({ relay }: Props) => {
             <div className="flex-1 flex flex-col justify-between">
                 <div>
                     <div className="flex items-center justify-between gap-3">
-                        <h2 className="text-xl font-bold text-gray-100">{relay.name}</h2>
+                        <h2 className="text-[14px] md:text-xl font-bold text-gray-100">
+                            {relay.url}
+                        </h2>
                         <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            className={`px-2 py-1 rounded-full text-[12px] md:text-sm ${
                                 relay.available
                                 ? "bg-green-500/20 text-green-400"
                                 : "bg-red-500/20 text-red-400"
@@ -46,23 +48,23 @@ export const RelayItem = ({ relay }: Props) => {
                     </div>
 
                     {relay.description && (
-                        <p className="text-gray-400 mt-2 text-sm leading-snug line-clamp-3">
+                        <p className="text-gray-400 mt-2 text-[12px] md:text-sm leading-snug line-clamp-3">
                             {relay.description}
                         </p>
                     )}
 
                     <div className="mt-3 space-y-1">
-                        <p className="text-gray-300 text-sm">
-                            <strong className="text-gray-400">URL:</strong> {relay.url}
-                        </p>
+                        {/* <p className="text-gray-300 text-[12px] md:text-sm"> */}
+                        {/*     <strong className="text-gray-400">URL:</strong> {relay.url} */}
+                        {/* </p> */}
                         {relay.software && (
-                            <p className="text-gray-300 text-sm">
+                            <p className="text-gray-300 text-[12px] md:text-sm">
                                 <strong className="text-gray-400">Software:</strong>{" "}
                                 {relay.software}
                             </p>
                         )}
                         {relay.version && (
-                            <p className="text-gray-300 text-sm">
+                            <p className="text-gray-300 text-[12px] md:text-sm">
                                 <strong className="text-gray-400">Version:</strong>{" "}
                                 {relay.version}
                             </p>
@@ -79,7 +81,7 @@ export const RelayItem = ({ relay }: Props) => {
                                 alt={relay.author.display_name}
                                 className="w-8 h-8 rounded-full mr-2 object-cover border border-gray-600"
                             />
-                            <span className="text-gray-300 text-sm">
+                            <span className="text-gray-300 text-[12px] md:text-sm">
                                 <strong>
                                     {relay.author.display_name || relay.author.name}
                                 </strong>{" "}
