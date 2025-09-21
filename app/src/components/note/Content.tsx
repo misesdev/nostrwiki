@@ -71,10 +71,9 @@ const Content = ({ content, cliped = false }: Props) => {
         // Texto normal
         if (token.type === "text") {
             const clip = token.content.split(" ").slice(0, 38).join(" ")
-            const content = cliped ? `${clip.replaceAll("nostr:", "")}...` : 
-                token.content.replaceAll("nostr:", "")
+            const content = cliped ? `${clip}...` : token.content
             return (
-                <MarkdownContent key={i} content={content} />
+                <MarkdownContent key={i} content={content.replaceAll("nostr:", "")} />
             )
         }
         // Hashtags

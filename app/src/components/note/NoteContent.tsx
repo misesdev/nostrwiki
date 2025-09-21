@@ -61,7 +61,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
         entries.forEach(entry => {
             const video = entry.target as HTMLVideoElement
             if (!entry.isIntersecting) {
-            video.pause()
+                video.pause()
             }
         })
     }, [])
@@ -75,10 +75,9 @@ const NoteContent = ({ note, cliped=false }: Props) => {
     const renderToken = (token: Token, i: number) => {
         if (token.type === "text") {
             const clip = token.content.split(" ").slice(0, 65).join(" ")
-            const content = cliped ? clip.replaceAll("nostr:", "") :
-                token.content.replaceAll("nostr:", "")
+            const content = cliped ? `${clip}...` : token.content
             return (
-                <MarkdownContent key={i} content={content} />
+                <MarkdownContent key={i} content={content.replaceAll("nostr:", "")} />
             )
         }
         if (token.type === "hashtag") {

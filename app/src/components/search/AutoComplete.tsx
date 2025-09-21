@@ -22,9 +22,10 @@ const safeSplitTokens = (text?: string) => {
     if (!text) return [];
     // split por espaços, remover pontuação de borda, manter #/@, decode entities mínimas
     return text
-        .replace(/\n/g, " ")
+        .replaceAll(/\n/g, " ")
         .split(/\s+/)
-        .map(t => t.replace(/^[^\w#@]+|[^\w#@]+$/g, "").trim())
+        .map(t => t.replaceAll(/^[^\w#@]+|[^\w#@]+$/g, "").trim())
+        .map(t => t.replaceAll("#", "").trim())
         .filter(Boolean);
 }
 
@@ -54,11 +55,13 @@ const buildNotePreview = (note: Note, term: string, words: number) => {
 
     // tenta title
     const titleTokens = takeTokens(note.title);
-    if (titleTokens.length) return titleTokens.join(" ");
-
+    if (titleTokens.length) 
+        return titleTokens.join(" ");
     // tenta content
     const contentTokens = takeTokens(note.content);
-    if (contentTokens.length) return contentTokens.join(" ");
+    if (contentTokens.length)
+        return contentTokens.join(" ");
+    console.log("content tokens", contentTokens)   
 
     // tenta tags (note.tags pode ser array ou string)
     if (note.tags) {
@@ -66,7 +69,7 @@ const buildNotePreview = (note: Note, term: string, words: number) => {
         if (Array.isArray(note.tags)) tagsArr = note.tags;
         else if (typeof note.tags === "string") tagsArr = note.tags.split(/[,;\s]+/);
         const goodTags = tagsArr.map(t => t.replace(/^[^\w#@]+|[^\w#@]+$/g, "")).filter(Boolean).slice(0, Math.max(1, Math.min(3, words)));
-        if (goodTags.length) return goodTags.map(t => (t.startsWith("#") ? t : `${t}`)).join(" ");
+        if (goodTags.length) return goodTags.map(t => t.replaceAll("#", "")).join(" ");
     }
 
     // fallback: se não houver nada, tentar uma substring curta do content (removendo links)
@@ -114,7 +117,7 @@ const NoteResult = ({ term, item, onSearch }: ResultProps) => {
     const note: Note = normalizeNote(item as any);
 
     // calcula quantas palavras mostrar com base no termo
-    const words = Math.max(3, term.trim() ? term.trim().split(/\s+/).length * 2 : 3);
+    const words = Math.max(3, term.trim() ? term.trim().split(" ").length + 1 : 3);
 
     const preview = buildNotePreview(note, term, words);
     if (!preview) return null;
