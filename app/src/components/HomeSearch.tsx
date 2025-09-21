@@ -1,5 +1,6 @@
 'use client';
 
+import Link from "next/link";
 import { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import SearchBox from './SearchBox';
@@ -22,14 +23,13 @@ export default function HomeSearch(): ReactNode {
                 <AppImage
                     src='/logo.png'
                     onError='/logo.png'
-                    alt='Nostr Book - Search Users'
+                    alt='Nostr Wiki - Explorer'
                     width={100}
                     height={100}
-                    className='w-120 lg:w-200'
+                    className='w-[90px] md:w-[120px] lg:w-[200px]'
                 />
                 <h1 
-                    style={{ fontSize: 24 }}
-                    className="text-[20px] lg:text-[24px] text-gray-400 mt-5 font-bold"
+                    className="text-[18px] md:text-[24px] text-gray-400 mt-2 font-bold"
                 >
                     Nostr Wiki - Explorer
                 </h1>
@@ -39,26 +39,26 @@ export default function HomeSearch(): ReactNode {
                 <SearchBox handleSearch={handleSearch} />
             </div>
 
+            <h2 className="mt-6 text-gray-400 text-[12px] md:text-sm text-center max-w-xl">
+                Search notes, users, images, videos and relays Nostr. Explore millions of posts!
+            </h2>
+
             {/* Botões de ação */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-8">
+            <div className="text-[12px] flex flex-col sm:flex-row gap-4 mt-8">
                 <button
                     onClick={() => router.push('/donate')}
                     className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:scale-105 transition-transform duration-200"
                 >
                     Donate
                 </button>
-                <a target='_blank'
+                <Link target='_blank'
                     href='https://github.com/misesdev/nostrwiki'
                     className="bg-gray-700 text-gray-200 font-semibold px-6 py-3 rounded-lg shadow hover:bg-gray-600 transition-colors"
                 >
                     Github
-                </a>
+                </Link>
             </div>
 
-            {/* Sugestão visual ou footer */}
-            <h2 className="mt-6 text-gray-400 text-sm text-center max-w-xl">
-                Search notes, users, images, videos and relays Nostr. Explore millions of posts!
-            </h2>
         </div>
     );
 }
