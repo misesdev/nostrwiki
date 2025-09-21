@@ -79,7 +79,9 @@ const UserItem = ({ user }: UserItemProps) => {
                         {/* Lightning */}
                         {lightning && (
                             <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
-                                <span className="text-sm text-yellow-400 break-all">{lightning}</span>
+                                <span className="text-sm text-yellow-400 break-all">
+                                    {shortenString(lightning, 24)}
+                                </span>
                                 <button
                                     onClick={() => handleCopy("Lightning address", lightning)}
                                     className="p-1 rounded bg-gray-700 hover:bg-gray-600 transition"
@@ -92,7 +94,7 @@ const UserItem = ({ user }: UserItemProps) => {
                         {/* npub */}
                         <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
                             <span className="text-sm text-purple-300 break-all">
-                                {shortenString(npub, 24)}
+                                {shortenString(npub, 26)}
                             </span>
                             <button
                                 onClick={() => handleCopy("Npub", npub)}
