@@ -7,6 +7,7 @@ import AppImage from "../commons/AppImage"
 import NoteContent from "../note/NoteContent"
 import SearchService from "@/services/api/SearchService"
 import Content from "../note/Content"
+import { format } from "date-fns"
 
 type UserModalProps = {
     user: User
@@ -15,6 +16,7 @@ type UserModalProps = {
 }
 
 const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
+
     const [notes, setNotes] = useState<Note[]>([])
     const [loading, setLoading] = useState(false)
 
@@ -72,7 +74,7 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
                         <div key={note.id} className="overflow-hidden bg-gray-900 bg-opacity-50 rounded-xl p-4 shadow-md transition hover:shadow-lg">
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-sm text-gray-500">
-                                    {new Date(note.published_at).toLocaleString()}
+                                    {format(new Date(note.published_at * 1000), "dd MMM yyyy")}
                                 </span>
                                 {/* <span className="text-gray-400 text-sm"> */}
                                 {/*     {note.author.display_name || note.author.name} */}
