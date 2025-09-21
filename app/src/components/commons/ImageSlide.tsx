@@ -67,9 +67,9 @@ const ImageSlide = ({ images, imageIndex, endOfResults, fetchMoreImages, isOpen,
                 {/* Botão voltar */}
                 <button
                     onClick={onPrev}
-                    className="absolute left-2 sm:left-6 z-20 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition"
+                    className="absolute left-0 z-20 p-1 md:p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition"
                 >
-                    <ChevronLeft size={32} />
+                    <ChevronLeft size={28} />
                 </button>
 
                 {/* Loader */}
@@ -84,31 +84,31 @@ const ImageSlide = ({ images, imageIndex, endOfResults, fetchMoreImages, isOpen,
                     onLoad={() => setLoading(false)}
                     src={image.url}
                     alt={image.title}
-                    className="max-w-[95%] h-auto max-h-[86vh] rounded-xl shadow-lg bg-gray-900 bg-opacity-50"
+                    className="w-auto max-w-[98%] md:max-w-[96%] h-auto max-h-[82vh] md:max-h-[86vh] rounded-xl shadow-lg bg-gray-900 bg-opacity-50"
                 />
 
                 {/* Botão próximo */}
                 <button
                     onClick={onNext}
-                    className="absolute right-2 sm:right-6 z-20 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition"
+                    className="absolute right-0 z-20 p-1 md:p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition"
                 >
-                    <ChevronRight size={32} />
+                    <ChevronRight size={28} />
                 </button>
             </div>
 
             {/* Overlay do perfil e título */}
-            <div className="m-2 max-w-[80%] lg:max-w-[38%] z-0 bg-black/60 backdrop-blur-sm rounded-xl p-3 mx-auto flex items-start gap-3">
+            <div className="m-1 max-w-[80%] lg:max-w-[38%] z-0 bg-black/60 backdrop-blur-sm rounded-xl p-1 mx-auto flex items-start gap-3">
                 {image.author && (
                     <img
                         width={50}
                         height={50}
                         src={image.author.picture}
                         alt={image.author.display_name || image.author.name}
-                        className="w-10 h-10 rounded-full border border-gray-700"
+                        className="w-9 h-9 rounded-full border border-gray-700"
                         onError={(e) => e.currentTarget.src = "/default-avatar.png"}
                     />
                 )}
-                <div className="flex flex-col text-white text-sm line-clamp-2">
+                <div className="flex flex-col text-white text-[11px] md:text-sm line-clamp-2">
                     {image.author && (
                         <span className="font-semibold">
                             {image.author.display_name || image.author.name}

@@ -81,7 +81,7 @@ const Content = ({ content, cliped = false }: Props) => {
             return (
                 <strong
                     key={i}
-                    className="text-purple-400 hover:underline cursor-pointer mr-1"
+                    className="text-[12px] md:text-sm text-purple-400 hover:underline cursor-pointer mr-1"
                 >
                     #{token.content}
                 </strong>
@@ -96,7 +96,7 @@ const Content = ({ content, cliped = false }: Props) => {
             return (
                 <span
                     key={i}
-                    className="text-blue-400 cursor-pointer hover:underline mr-1"
+                    className="text-[12px] md:text-sm text-blue-400 cursor-pointer hover:underline mr-1"
                     onClick={() => {
                     }}
                 >
@@ -111,7 +111,7 @@ const Content = ({ content, cliped = false }: Props) => {
             return (
                 <span
                     key={i}
-                    className="text-blue-500 underline hover:opacity-80"
+                    className="text-[12px] md:text-sm text-blue-500 underline hover:opacity-80"
                     onClick={() => {
                         // TODO: abrir modal da nota
                         console.log("Abrir modal note:", note)
@@ -160,7 +160,7 @@ const Content = ({ content, cliped = false }: Props) => {
     }
 
     return (
-        <div className="prose dark:prose-invert max-w-none leading-relaxed">
+        <div className="text-[12px] md:text-sm prose dark:prose-invert max-w-none leading-relaxed">
             {tokens.map(renderToken)}
         </div>
     )

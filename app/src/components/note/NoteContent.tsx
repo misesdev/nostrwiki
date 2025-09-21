@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Note, User } from "@/types/types"
-import AppImage from "../commons/AppImage"
 import SearchService from "@/services/api/SearchService"
 import { parseContent, Token } from "@konemono/nostr-content-parser"
 import { npubToHex, nprofileToPubkey, neventToId } from "@/utils/utils"
@@ -97,7 +96,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
             return (
                 <span
                     key={i}
-                    className="text-blue-400 cursor-pointer hover:underline mr-1 break-all"
+                    className="text-[12px] md:text-sm text-blue-400 cursor-pointer hover:underline mr-1 break-all"
                     onClick={() => {
                         if (profile) {
                           setSelectedUser(profile)

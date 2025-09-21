@@ -27,7 +27,7 @@ const UserItem = ({ user }: UserItemProps) => {
         <>
             <div className="bg-gray-800 bg-opacity-35 shadow-md rounded-xl overflow-hidden flex flex-col transition hover:shadow-lg">
                 {/* Banner */}
-                <div className="relative h-28 sm:h-32 w-full bg-cover bg-center">
+                <div className="relative h-28 md:h-32 w-full bg-cover bg-center">
                     <AppImage
                         width={350}
                         height={120}
@@ -39,7 +39,7 @@ const UserItem = ({ user }: UserItemProps) => {
                 </div>
 
                 {/* Content */}
-                <div className="p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                <div className="p-2 flex flex-col sm:flex-row items-center sm:items-start gap-4">
                     {/* Avatar */}
                     <button className="z-0" onClick={() => setIsModalOpen(true)}>
                         <AppImage
@@ -47,20 +47,20 @@ const UserItem = ({ user }: UserItemProps) => {
                             height={100}
                             src={user.picture}
                             alt={user.display_name || user.name}
-                            className="w-20 h-20 sm:w-16 sm:h-16 rounded-full border-4 border-white dark:border-gray-800 -mt-12 sm:mt-0"
+                            className="w-20 h-20 md:w-16 md:h-16 rounded-full border-4 border-white dark:border-gray-800 -mt-12 md:mt-0"
                             onError={"/default-avatar.png"}
                         />
                     </button>
 
                     {/* Info */}
-                    <div className="flex-1 text-center sm:text-left">
+                    <div className="flex-1 max-w-[70%] text-center sm:text-left">
                         <button
                             onClick={() => setIsModalOpen(true)}
                             className="text-lg font-semibold text-gray-200 hover:text-white transition"
                         >
                             {user.display_name || user.name}
                         </button>
-                        <p className="text-sm text-gray-400 mt-1 line-clamp-2 sm:line-clamp-3">
+                        <p className="text-[12px] md:text-sm text-gray-400 mt-1 line-clamp-3">
                             {user.about}
                         </p>
 
@@ -70,7 +70,7 @@ const UserItem = ({ user }: UserItemProps) => {
                                 href={user.website.startsWith("http") ? user.website : `https://${user.website}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center justify-center sm:justify-start gap-2 text-sm text-blue-400 hover:underline mt-2"
+                                className="flex items-center justify-center sm:justify-start gap-2 text-[12px] md:text-sm text-blue-400 hover:underline mt-2"
                             >
                                 <Globe className="w-4 h-4" /> {user.website}
                             </a>
@@ -79,7 +79,7 @@ const UserItem = ({ user }: UserItemProps) => {
                         {/* Lightning */}
                         {lightning && (
                             <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
-                                <span className="text-sm text-yellow-400 break-all">
+                                <span className="text-[12px] md:text-sm text-yellow-400 break-all">
                                     {shortenString(lightning, 24)}
                                 </span>
                                 <button
@@ -93,7 +93,7 @@ const UserItem = ({ user }: UserItemProps) => {
 
                         {/* npub */}
                         <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
-                            <span className="text-sm text-purple-300 break-all">
+                            <span className="text-[12px] md:text-sm text-purple-300 break-all">
                                 {shortenString(npub, 26)}
                             </span>
                             <button

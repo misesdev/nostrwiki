@@ -74,21 +74,21 @@ const NoteSlide = ({ notes, noteIndex, endOfResults, fetchMoreNotes, isOpen, onC
             {/* button latest */}
             <button
                 onClick={onPrev}
-                className="absolute left-1 sm:left-6 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition hover:scale-110"
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-1 md:p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition hover:scale-110"
             >
-                <ChevronLeft size={32} />
+                <ChevronLeft size={28} />
             </button>
 
             {/* button next */}
             <button
                 onClick={onNext}
-                className="absolute right-1 sm:right-6 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition hover:scale-110"
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-1 md:p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition hover:scale-110"
             >
-                <ChevronRight size={32} />
+                <ChevronRight size={28} />
             </button>
 
             {/* animation content */}
-            <div className="flex justify-center items-center px-4 sm:px-8 py-10 w-full h-full">
+            <div className="flex justify-center items-center px-0 py-10 w-full h-full">
                 <AnimatePresence initial={false} custom={direction}>
                     <motion.div
                         key={index}
@@ -120,7 +120,7 @@ const NoteSlide = ({ notes, noteIndex, endOfResults, fetchMoreNotes, isOpen, onC
                                 className="w-14 h-14 rounded-full object-cover border-2 border-gray-700"
                             />
                             <div>
-                                <p className="text-lg font-semibold">
+                                <p className="text-[14px] md:text-lg font-semibold">
                                     {note.author.display_name || note.author.name}
                                 </p>
                                 <p className="text-sm text-gray-400">{date}</p>
@@ -129,11 +129,11 @@ const NoteSlide = ({ notes, noteIndex, endOfResults, fetchMoreNotes, isOpen, onC
 
                         {/* Título */}
                         {note.title && (
-                            <h2 className="text-2xl font-bold mb-4 text-white">{note.title}</h2>
+                            <h2 className="text-[14px] md:text-2xl font-bold mb-4 text-white">{note.title}</h2>
                         )}
 
                         {/* Conteúdo */}
-                        <div className="prose dark:prose-invert max-w-none leading-relaxed">
+                        <div className="prose dark:prose-invert leading-relaxed">
                             <NoteContent note={note} />
                         </div>
                     </motion.div>

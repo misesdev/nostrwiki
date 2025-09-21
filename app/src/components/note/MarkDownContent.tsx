@@ -24,7 +24,7 @@ const MarkdownContent = ({ content }: MarkdownProps) => {
                 blockquote: ({ node, ...props }) => (
                     <blockquote
                         {...props}
-                        className="border-l-4 border-purple-400 pl-3 italic text-gray-400 my-2 break-words"
+                        className="text-[12px] md:text-sm border-l-4 border-purple-400 pl-3 italic text-gray-400 my-2 break-words"
                     />
                 ),
                 ul: ({ node, ...props }) => (
@@ -34,21 +34,21 @@ const MarkdownContent = ({ content }: MarkdownProps) => {
                     <ol {...props} className="list-decimal list-inside text-gray-300 my-2 break-words" />
                 ),
                 li: ({ node, ...props }) => (
-                    <li {...props} className="ml-4 my-1 text-gray-300 break-words" />
+                    <li {...props} className="text-[12px] md:text-sm ml-4 my-1 text-gray-300 break-words" />
                 ),
                 strong: ({ node, ...props }) => (
-                    <strong className="font-semibold text-white break-words" {...props} />
+                    <strong className="text-[12px] md:text-sm font-semibold text-white break-words" {...props} />
                 ),
                 em: ({ node, ...props }) => (
                     <em className="italic text-gray-400 break-words" {...props} />
                 ),
                 code: ({ node, ...props }) => (
-                    <code className="bg-gray-800 px-1 rounded text-purple-300 break-words" {...props} />
+                    <code className="text-[12px] md:text-sm bg-gray-800 px-1 rounded text-purple-300 break-words" {...props} />
                 ),
                 p: ({ node, ...props }) => (
                     <p
                         {...props}
-                        className="text-gray-200 dark:text-gray-300 text-sm break-words whitespace-pre-wrap"
+                        className="text-[12px] md:text-sm text-gray-200 dark:text-gray-300 break-words whitespace-pre-wrap"
                     />
                 )
             }}
