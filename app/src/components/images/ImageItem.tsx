@@ -81,7 +81,7 @@ export const ImageItem = ({ image, showInSlide }: Props) => {
                             onError="/default-avatar.png"
                         />
                         <div>
-                            <span className="text-gray-100 font-medium text-sm block">
+                            <span className="text-gray-100 font-medium text-[12px] md:text-sm block">
                                 {image.author.display_name || image.author.name}
                             </span>
                             <span className="text-xs text-gray-400">Autor</span>

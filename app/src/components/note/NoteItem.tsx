@@ -34,7 +34,7 @@ const NoteItem = ({ note, showInSlide }: Props) => {
                             />
                         </button>
                         <div className="flex flex-col">
-                            <span className="text-gray-100 font-semibold text-sm">
+                            <span className="text-gray-100 font-semibold text-[14px] md:text-sm">
                                 {note.author.display_name || note.author.name}
                             </span>
                             <span className="text-gray-400 text-xs">{date}</span>
@@ -45,13 +45,13 @@ const NoteItem = ({ note, showInSlide }: Props) => {
                 <div className="p-4 flex flex-col gap-2">
                     {note.title && (
                         <button onClick={() => showInSlide(note)}>
-                            <h3 className="text-lg font-bold text-blue-500 dark:text-blue-400 hover:text-blue-400 dark:hover:text-blue-300 hover:underline line-clamp-2 transition">
+                            <h3 className="text-[14px] md:text-lg font-bold text-blue-500 dark:text-blue-400 hover:text-blue-400 dark:hover:text-blue-300 hover:underline line-clamp-2 transition">
                                 {note.title}
                             </h3>
                         </button>
                     )}
 
-                    <div className="text-gray-200 dark:text-gray-300 text-sm line-clamp-2">
+                    <div className="text-gray-200 dark:text-gray-300 text-[12px] md:text-sm line-clamp-2">
                         <NoteContent note={note} cliped />
                     </div>
                 </div>
@@ -61,10 +61,6 @@ const NoteItem = ({ note, showInSlide }: Props) => {
                 </div>
             </div>
 
-            {/* Modais */}
-            {/* {isOpen && ( */}
-            {/*     <NoteModal note={note} isOpen={isOpen} onClose={() => setIsOpen(false)} /> */}
-            {/* )} */}
             {isUserOpen && (
                 <UserModal
                     user={note.author}
