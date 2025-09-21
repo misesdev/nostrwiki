@@ -1,21 +1,22 @@
+
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import BlurModal from "./BlurModal";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { NFile } from "@/types/types";
-import { AnimatePresence, motion } from "framer-motion";
+import { Note } from "@/types/types";
+import NoteContent from "../note/NoteContent";
+import { format } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Props = {
-    videos: NFile[];         
-    playIndex: number;     
+    notes: Note[];
+    noteIndex: number;
     isOpen: boolean;
     onClose: () => void;
-    fetchMoreVideos: () => Promise<void>;
+    fetchMoreNotes: () => Promise<void>;
     endOfResults: boolean;
 };
-
-const PRELOAD_THRESHOLD = 3
 
 const variants = {
     enter: (direction: number) => ({
@@ -35,33 +36,38 @@ const variants = {
     }),
 };
 
-const VideoPlayer = ({ videos, playIndex, endOfResults, fetchMoreVideos, isOpen, onClose }: Props) => {
+const PRELOAD_THRESHOLD = 3;
 
-    const [index, setIndex] = useState(playIndex)
+const NoteSlide = ({ notes, noteIndex, endOfResults, fetchMoreNotes, isOpen, onClose }: Props) => {
+    
+    const [index, setIndex] = useState(noteIndex);
     const [direction, setDirection] = useState<1 | -1>(1);
-    const video = useMemo(() => videos[index], [index, videos]);
+    const note = useMemo(() => notes[index], [index, notes]);
+    const date = useMemo(() => {
+        return format(new Date(notes[index].published_at * 1000), "dd MMM yyyy");
+    }, [index, notes]);
 
     const onPrev = useCallback(() => {
         if (index > 0) {
             setDirection(-1);
             setIndex(prev => prev - 1);
         }
-    }, [setIndex, index])
+    }, [index]);
 
     const onNext = useCallback(async () => {
-        setDirection(1);
         const nextIndex = index + 1;
-        if(nextIndex < videos.length) { 
-            setIndex(prev => prev+1)
-        } else if(endOfResults && nextIndex == videos.length) {
-            setIndex(0)
+        setDirection(1);
+        if (nextIndex < notes.length) {
+            setIndex(prev => prev + 1);
+        } else if (endOfResults && nextIndex === notes.length) {
+            setIndex(0);
         }
-        if (!endOfResults && videos.length - nextIndex <= PRELOAD_THRESHOLD) {
-            await fetchMoreVideos();
+        if (!endOfResults && notes.length - nextIndex <= PRELOAD_THRESHOLD) {
+            await fetchMoreNotes();
         }
-    }, [setIndex, index, videos, endOfResults, fetchMoreVideos])
+    }, [index, notes, endOfResults, fetchMoreNotes]);
 
-    // Atalhos de teclado ← →
+    // Teclado ← →
     useEffect(() => {
         if (!isOpen) return;
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -71,19 +77,18 @@ const VideoPlayer = ({ videos, playIndex, endOfResults, fetchMoreVideos, isOpen,
             } else if (e.key === "ArrowRight") {
                 e.preventDefault();
                 onNext();
+            } else if (e.key === "Escape") {
+                onClose();
             }
         };
         window.addEventListener("keydown", handleKeyDown);
-        return () => {
-            window.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [onPrev, onNext]);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [onPrev, onNext, onClose, isOpen]);
 
-    if (!video) return null;
+    if (!note) return null;
 
     return (
         <BlurModal isOpen={isOpen} onClose={onClose}>
-
 
             {/* button latest */}
             <button
@@ -102,7 +107,7 @@ const VideoPlayer = ({ videos, playIndex, endOfResults, fetchMoreVideos, isOpen,
             </button>
 
             {/* animation content */}
-            <div className="flex justify-center items-center w-full h-full">
+            <div className="flex justify-center items-center px-0 py-10 w-full h-full">
                 <AnimatePresence initial={false} custom={direction}>
                     <motion.div
                         key={index}
@@ -122,48 +127,40 @@ const VideoPlayer = ({ videos, playIndex, endOfResults, fetchMoreVideos, isOpen,
                                 onPrev();
                             }
                         }}
-                        className="relative rounded-xl max-w-3xl w-full max-h-[90vh] min-h-[40vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent p-0"
+                        className="relative bg-gray-800 bg-opacity-35 rounded-xl shadow-2xl text-gray-200 max-w-3xl w-full max-h-[90vh] min-h-[40vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent p-6 sm:p-10"
                     >
-                        <video
-                            loop
-                            src={video.url}
-                            controls
-                            autoPlay
-                            className="w-full h-auto max-h-[95vh] rounded-xl bg-gray-900 bg-opacity-50"
-                        >
-                            Your browser does not support the video tag.
-                        </video>
+                        {/* Cabeçalho */}
+                        <div className="flex items-center gap-4 mb-6">
+                            <img
+                                width={100}
+                                height={100}
+                                src={note.author.picture}
+                                onError={(e) => (e.currentTarget.src = "/default-avatar.png")}
+                                alt={note.author.display_name || note.author.name}
+                                className="w-14 h-14 rounded-full object-cover border-2 border-gray-700"
+                            />
+                            <div>
+                                <p className="text-[14px] md:text-lg font-semibold">
+                                    {note.author.display_name || note.author.name}
+                                </p>
+                                <p className="text-sm text-gray-400">{date}</p>
+                            </div>
+                        </div>
+
+                        {/* Título */}
+                        {note.title && (
+                            <h2 className="text-[14px] md:text-2xl font-bold mb-4 text-white">{note.title}</h2>
+                        )}
+
+                        {/* Conteúdo */}
+                        <div className="prose dark:prose-invert leading-relaxed">
+                            <NoteContent note={note} />
+                        </div>
                     </motion.div>
                 </AnimatePresence>
             </div>
-
-            {/* <div className="relative flex items-center justify-center"> */}
-            {/*     <button */}
-            {/*         onClick={onPrev} */}
-            {/*         className="absolute left-2 sm:left-6 z-20 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" */}
-            {/*     > */}
-            {/*         <ChevronLeft size={32} /> */}
-            {/*     </button> */}
-
-            {/*     <video */}
-            {/*         loop */}
-            {/*         src={video.url} */}
-            {/*         controls */}
-            {/*         autoPlay */}
-            {/*         className="w-full h-auto max-h-[95vh] rounded-xl bg-gray-900 bg-opacity-50" */}
-            {/*     > */}
-            {/*         Your browser does not support the video tag. */}
-            {/*     </video> */}
-
-            {/*     <button */}
-            {/*         onClick={onNext} */}
-            {/*         className="absolute right-2 sm:right-6 z-20 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white" */}
-            {/*     > */}
-            {/*         <ChevronRight size={32} /> */}
-            {/*     </button> */}
-            {/* </div> */}
         </BlurModal>
     );
 };
 
-export default VideoPlayer;
+export default NoteSlide;
