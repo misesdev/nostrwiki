@@ -135,8 +135,8 @@ const NoteContent = ({ note, cliped=false }: Props) => {
                         height={600}
                         src={token.content}
                         onError={e => e.currentTarget.src = "/default-banner.jpg"}
-                        alt="image"
                         className="max-w-full max-h-[90vh] my-2 rounded-xl object-contain"
+                        alt="image"
                     />
                 )
             }

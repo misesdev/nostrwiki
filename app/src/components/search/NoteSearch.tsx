@@ -2,7 +2,7 @@
 
 import { Note, SearchParams } from "@/types/types";
 import SearchService from "@/services/api/SearchService";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import EmptyResults from "./EmptyResults";
 import { normalizeNote } from "@/utils/utils";
 import NoteResults from "../note/NoteResults";
@@ -19,6 +19,7 @@ const NoteSearch = ({ term }: SearchParams) => {
     const loaderRef = useRef<HTMLDivElement | null>(null);
     const [slideOpen, setSlideOpen] = useState(false)
     const [noteIndex, setNoteIndex] = useState(0)
+    const uniques = useRef(new Map<string, Note>()) 
 
     useEffect(() => { 
         setSkip(0)
@@ -28,10 +29,11 @@ const NoteSearch = ({ term }: SearchParams) => {
         const load = async () => {
             const service = new SearchService()
             const results = await service.search<Note>("/search/notes", { term, skip:0, take })
-            const notes = results
-                .filter(n => n.content.split(" ").length >= 10)
-                .map(n => normalizeNote(n))
-            setNotes(prev => [...prev, ...notes])
+            results.forEach(note => {
+                if(note.content.split(" ").length >= 10)
+                    uniques.current.set(note.id, note)
+            })
+            setNotes(Array.from(uniques.current.values()))
             setEndOfResults(!notes.length)
             setSkip(prev => prev + take)
             setLoading(false)
@@ -42,11 +44,12 @@ const NoteSearch = ({ term }: SearchParams) => {
     const fetchNotes = useCallback(async () => {
         setLoading(true)
         const service = new SearchService()
-        const results = await service.search<Note>("/search/notes", { term, skip:0, take })
-        const notes = results
-            .filter(n => n.content.split(" ").length >= 10)
-            .map(n => normalizeNote(n))
-        setNotes(prev => [...prev, ...notes])
+        const results = await service.search<Note>("/search/notes", { term, skip, take })
+        results.forEach(note => {
+            if(note.content.split(" ").length >= 10)
+                uniques.current.set(note.id, normalizeNote(note))
+        })
+        setNotes(Array.from(uniques.current.values()))
         setEndOfResults(!notes.length)
         setSkip(prev => prev + take)
         setLoading(false)

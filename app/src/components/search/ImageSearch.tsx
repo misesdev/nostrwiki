@@ -19,6 +19,7 @@ const ImageSearch = ({ term }: SearchParams) => {
     const loaderRef = useRef<HTMLDivElement | null>(null);
     const [slideOpen, setSlideOpen] = useState(false)
     const [imageIndex, setImageIndex] = useState(0)
+    const uniques = useRef(new Map<string, NFile>()) 
 
     useEffect(() => { 
         setSkip(0)
@@ -28,7 +29,10 @@ const ImageSearch = ({ term }: SearchParams) => {
         const load = async () => {
             const service = new SearchService()
             const images = await service.search<NFile>("/search/images", { term, skip:0, take })
-            setImages(prev => [...prev, ...images.map(i => normalizeFile(i))])
+            images.forEach(image => {
+                uniques.current.set(image.url, normalizeFile(image))
+            })
+            setImages(Array.from(uniques.current.values()))
             setEndOfResults(!images.length)
             setSkip(prev => prev + take)
             setLoading(false)
@@ -40,7 +44,10 @@ const ImageSearch = ({ term }: SearchParams) => {
         setLoading(true)
         const service = new SearchService()
         const images = await service.search<NFile>("/search/images", { term, skip, take })
-        setImages(prev => [...prev, ...images.map(i => normalizeFile(i))])
+        images.forEach(image => {
+            uniques.current.set(image.url, normalizeFile(image))
+        })
+        setImages(Array.from(uniques.current.values()))
         setEndOfResults(!images.length)
         setSkip(prev => prev + take)
         setLoading(false)

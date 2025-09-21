@@ -16,6 +16,7 @@ const RelaySearch = ({ term }: SearchParams) => {
     const [relays, setRelays] = useState<Relay[]>([])
     const [endOfResults, setEndOfResults] = useState(false)
     const loaderRef = useRef<HTMLDivElement | null>(null);
+    const uniques = useRef(new Map<string, Relay>()) 
 
     useEffect(() => { 
         setSkip(0)
@@ -25,7 +26,10 @@ const RelaySearch = ({ term }: SearchParams) => {
         const load = async () => {
             const service = new SearchService()
             const relays = await service.search<Relay>("/search/relays", { term, skip: 0, take })
-            setRelays(relays.map(v => normalizeRelay(v)))
+            relays.forEach(relay => {
+                uniques.current.set(relay.url, normalizeRelay(relay))
+            })
+            setRelays(Array.from(uniques.current.values()))
             setSkip(prev => prev + take)
             setEndOfResults(!relays.length)
             setLoading(false)
@@ -37,7 +41,10 @@ const RelaySearch = ({ term }: SearchParams) => {
         setLoading(true)
         const service = new SearchService()
         const relays = await service.search<Relay>("/search/relays", { term, skip, take })
-        setRelays(prev => [...prev, ...relays.map(v => normalizeRelay(v))])
+        relays.forEach(relay => {
+            uniques.current.set(relay.url, normalizeRelay(relay))
+        })
+        setRelays(Array.from(uniques.current.values()))
         setEndOfResults(!relays.length)
         setSkip(prev => prev + take)
         setLoading(false)

@@ -19,6 +19,7 @@ const VideoSearch = ({ term }: SearchParams) => {
     const loaderRef = useRef<HTMLDivElement | null>(null);
     const [slideOpen, setSlideOpen] = useState(false)
     const [playIndex, setPlayIndex] = useState(0)
+    const uniques = useRef(new Map<string, NFile>()) 
 
     useEffect(() => { 
         setSkip(0)
@@ -28,7 +29,10 @@ const VideoSearch = ({ term }: SearchParams) => {
         const load = async () => {
             const service = new SearchService()
             const videos = await service.search<NFile>("/search/videos", { term, skip:0, take })
-            setVideos(prev => [...prev, ...videos.map(v => normalizeFile(v))])
+            videos.forEach(video => {
+                uniques.current.set(video.url, normalizeFile(video))
+            })
+            setVideos(Array.from(uniques.current.values()))
             setEndOfResults(!videos.length)
             setSkip(prev => prev + take)
             setLoading(false)
@@ -38,11 +42,12 @@ const VideoSearch = ({ term }: SearchParams) => {
 
     const fetchVideos = useCallback(async () => {
         setLoading(true)
-        if(skip != 0)
-            console.log("load more videos")
         const service = new SearchService()
         const videos = await service.search<NFile>("/search/videos", { term, skip, take })
-        setVideos(prev => [...prev, ...videos.map(v => normalizeFile(v))])
+        videos.forEach(video => {
+            uniques.current.set(video.url, normalizeFile(video))
+        })
+        setVideos(Array.from(uniques.current.values()))
         setEndOfResults(!videos.length)
         setSkip(prev => prev + take)
         setLoading(false)

@@ -16,6 +16,7 @@ const UserSearch = ({ term }: SearchParams) => {
     const [users, setUsers] = useState<User[]>([])
     const [endOfResults, setEndOfResults] = useState(false)
     const loaderRef = useRef<HTMLDivElement | null>(null);
+    const uniques = useRef(new Map<string, User>()) 
 
     useEffect(() => { 
         setSkip(0)
@@ -25,7 +26,10 @@ const UserSearch = ({ term }: SearchParams) => {
         const load = async () => {
             const service = new SearchService()
             const users = await service.search<User>("/search/users", { term, skip:0, take })
-            setUsers(prev => [...prev,...users.map(u => normalizeUser(u))])
+            users.forEach(user => {
+                uniques.current.set(user.pubkey, normalizeUser(user))
+            })
+            setUsers(Array.from(uniques.current.values()))
             setEndOfResults(!users.length)
             setSkip(prev => prev + take)
             setLoading(false)
@@ -37,7 +41,10 @@ const UserSearch = ({ term }: SearchParams) => {
         setLoading(true)
         const service = new SearchService()
         const users = await service.search<User>("/search/users", { term, skip, take })
-        setUsers(prev => [...prev,...users.map(u => normalizeUser(u))])
+        users.forEach(user => {
+            uniques.current.set(user.pubkey, normalizeUser(user))
+        })
+        setUsers(Array.from(uniques.current.values()))
         setEndOfResults(!users.length)
         setSkip(prev => prev + take)
         setLoading(false)
