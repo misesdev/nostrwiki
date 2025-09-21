@@ -10,8 +10,6 @@ type Props = {
 
 const BlurModal = ({ children, isOpen, onClose }: Props) => {
 
-    if(!isOpen) return <></>
-
     useEffect(() => {
         if (!isOpen) return;
 
@@ -29,6 +27,8 @@ const BlurModal = ({ children, isOpen, onClose }: Props) => {
         };
     }, [isOpen, onClose]);
     
+    if(!isOpen) return null
+
     return (
         <AnimatePresence>
             {isOpen && (
