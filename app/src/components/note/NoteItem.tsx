@@ -4,7 +4,6 @@ import { Note } from "@/types/types"
 import { format } from "date-fns"
 import AppImage from "../commons/AppImage"
 import { useState } from "react"
-import NoteModal from "./NoteModal"
 import UserModal from "../user/UserModal"
 import NoteContent from "./NoteContent"
 

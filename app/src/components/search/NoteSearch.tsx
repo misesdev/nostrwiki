@@ -2,7 +2,7 @@
 
 import { Note, SearchParams } from "@/types/types";
 import SearchService from "@/services/api/SearchService";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import EmptyResults from "./EmptyResults";
 import { normalizeNote } from "@/utils/utils";
 import NoteResults from "../note/NoteResults";
