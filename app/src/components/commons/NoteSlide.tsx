@@ -92,7 +92,7 @@ const NoteSlide = ({ notes, noteIndex, endOfResults, fetchMoreNotes, isOpen, onC
             {/* button latest */}
             <button
                 onClick={onPrev}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-1 md:p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition hover:scale-110"
+                className="absolute left-1 top-1/2 -translate-y-1/2 z-20 p-1 md:p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition hover:scale-110"
             >
                 <ChevronLeft size={28} />
             </button>
@@ -100,7 +100,7 @@ const NoteSlide = ({ notes, noteIndex, endOfResults, fetchMoreNotes, isOpen, onC
             {/* button next */}
             <button
                 onClick={onNext}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-1 md:p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition hover:scale-110"
+                className="absolute right-1 top-1/2 -translate-y-1/2 z-20 p-1 md:p-2 rounded-full bg-black/50 hover:bg-black/70 text-white transition hover:scale-110"
             >
                 <ChevronRight size={28} />
             </button>
