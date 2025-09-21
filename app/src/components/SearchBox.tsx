@@ -80,7 +80,7 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
         <div ref={containerRef} className="w-full lg:max-w-3xl mx-auto relative z-50">
             <form
                 onSubmit={e => { e.preventDefault(); onSearch(term) }}
-                className="relative flex items-center w-full bg-gray-900/70 backdrop-blur-md border border-gray-700 rounded-3xl shadow-lg px-4 py-2"
+                className="text-[12px] md:text-sm relative flex items-center w-full bg-gray-900/70 backdrop-blur-md border border-gray-700 rounded-3xl shadow-lg px-4 py-2"
             >
                 <AiOutlineSearch className="text-gray-400 text-2xl mr-3 cursor-pointer hover:text-gray-200 transition" />
                 <input
@@ -92,7 +92,7 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
                     onChange={handleChange}
                     onFocus={handleFocus}
                     onKeyDown={handleKeyDown}
-                    className="bg-transparent text-gray-100 placeholder-gray-400 w-full focus:outline-none text-sm sm:text-base"
+                    className="text-[12px] md:text-sm bg-transparent text-gray-100 placeholder-gray-400 w-full focus:outline-none text-sm sm:text-base"
                 />
             </form>
 

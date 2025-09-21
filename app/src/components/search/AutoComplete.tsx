@@ -156,7 +156,7 @@ const AutoComplete = ({ term, results, onSearch }: AutoCompleteProps) => {
     }, [results])
 
     return (
-        <div className="w-full bg-gray-800 bg-opacity-15 mt-5 rounded-b-lg overflow-y-auto max-h-80 sm:max-h-64 z-50 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+        <div className="text-[12px] md:text-sm w-full bg-gray-800 bg-opacity-15 mt-5 rounded-b-lg overflow-y-auto max-h-80 sm:max-h-64 z-50 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
             {items.map((item) => {
                 if(item.type == "user")
                     return <UserResult key={Math.random()} term={term} item={item} onSearch={onSearch} />
