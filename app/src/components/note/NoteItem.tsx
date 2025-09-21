@@ -10,13 +10,13 @@ import NoteContent from "./NoteContent"
 
 type Props = {
     note: Note;
+    showInSlide: (f: Note) => void;
 }
 
-const NoteItem = ({ note }: Props) => {
+const NoteItem = ({ note, showInSlide }: Props) => {
 
-    const [isOpen, setIsOpen] = useState(false)
     const [isUserOpen, setIsUserOpen] = useState(false)
-    const date = format(new Date(note.published_at), "dd MMM yyyy")
+    const date = format(new Date(note.published_at * 1000), "dd MMM yyyy")
 
     return (
         <>
@@ -45,7 +45,7 @@ const NoteItem = ({ note }: Props) => {
 
                 <div className="p-4 flex flex-col gap-2">
                     {note.title && (
-                        <button onClick={() => setIsOpen(true)}>
+                        <button onClick={() => showInSlide(note)}>
                             <h3 className="text-lg font-bold text-blue-500 dark:text-blue-400 hover:text-blue-400 dark:hover:text-blue-300 hover:underline line-clamp-2 transition">
                                 {note.title}
                             </h3>
@@ -63,9 +63,9 @@ const NoteItem = ({ note }: Props) => {
             </div>
 
             {/* Modais */}
-            {isOpen && (
-                <NoteModal note={note} isOpen={isOpen} onClose={() => setIsOpen(false)} />
-            )}
+            {/* {isOpen && ( */}
+            {/*     <NoteModal note={note} isOpen={isOpen} onClose={() => setIsOpen(false)} /> */}
+            {/* )} */}
             {isUserOpen && (
                 <UserModal
                     user={note.author}

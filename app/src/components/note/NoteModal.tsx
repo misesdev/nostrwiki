@@ -4,6 +4,7 @@ import { Note } from "@/types/types"
 import BlurModal from "../commons/BlurModal"
 import NoteContent from "./NoteContent"
 import AppImage from "../commons/AppImage"
+import { format } from "date-fns"
 
 type NoteModalProps = {
     note: Note
@@ -12,6 +13,7 @@ type NoteModalProps = {
 }
 
 const NoteModal = ({ note, isOpen, onClose }: NoteModalProps) => {
+    const date = format(new Date(note.published_at * 1000), "dd MMM yyyy")
     return (
         <BlurModal isOpen={isOpen} onClose={onClose}>
             <div className="bg-gray-800 bg-opacity-35 text-gray-400 p-8 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
@@ -31,7 +33,7 @@ const NoteModal = ({ note, isOpen, onClose }: NoteModalProps) => {
                             {note.author.display_name || note.author.name}
                         </p>
                         <p className="text-sm text-gray-500">
-                            {new Date(note.published_at).toLocaleString("pt-BR")}
+                            {date}
                         </p>
                     </div>
                 </div>

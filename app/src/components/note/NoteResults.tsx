@@ -5,14 +5,19 @@ import NoteItem from "./NoteItem";
 
 type NoteResultsProps = {
     notes: Note[];
+    showInSlide: (f: Note) => void;
 }
 
-const NoteResults = ({ notes }: NoteResultsProps) => {
+const NoteResults = ({ notes, showInSlide }: NoteResultsProps) => {
     if (!notes.length) return null
     return (
         <div className="p-5 max-w-4xl mx-auto lg:mt-6 space-y-3">
             {notes.map((note, i) => (
-                <NoteItem key={note.id+i} note={note} />
+                <NoteItem
+                    key={note.id+i} 
+                    showInSlide={showInSlide}
+                    note={note} 
+                />
             ))}
         </div>
     )

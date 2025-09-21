@@ -5,7 +5,6 @@ import BlurModal from "./BlurModal";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NFile } from "@/types/types";
 import Content from "../note/Content";
-import AppImage from "./AppImage";
 
 type Props = {
     images: NFile[];         
@@ -88,30 +87,6 @@ const ImageSlide = ({ images, imageIndex, endOfResults, fetchMoreImages, isOpen,
                     className="max-w-[95%] h-auto max-h-[86vh] rounded-xl shadow-lg bg-gray-900 bg-opacity-50"
                 />
 
-                {/* Overlay do perfil e título */}
-                {/* <div className="absolute bottom-0 z-0 bg-black/60 backdrop-blur-sm rounded-xl p-3 mx-auto flex items-start gap-3 max-w-[80%]"> */}
-                {/*     {image.author && ( */}
-                {/*         <AppImage */}
-                {/*             width={50} */}
-                {/*             height={50} */}
-                {/*             src={image.author.picture} */}
-                {/*             alt={image.author.display_name || image.author.name} */}
-                {/*             className="w-10 h-10 rounded-full border border-gray-700" */}
-                {/*             onError="/default-avatar.png" */}
-                {/*         /> */}
-                {/*     )} */}
-                {/*     <div className="flex flex-col text-white text-sm line-clamp-2"> */}
-                {/*         {image.author && ( */}
-                {/*             <span className="font-semibold"> */}
-                {/*                 {image.author.display_name || image.author.name} */}
-                {/*             </span> */}
-                {/*         )} */}
-                {/*         {images[index].note?.content && ( */}
-                {/*             <Content content={images[index].note.title} cliped /> */}
-                {/*         )} */}
-                {/*     </div> */}
-                {/* </div> */}
-
                 {/* Botão próximo */}
                 <button
                     onClick={onNext}
@@ -124,13 +99,13 @@ const ImageSlide = ({ images, imageIndex, endOfResults, fetchMoreImages, isOpen,
             {/* Overlay do perfil e título */}
             <div className="m-2 max-w-[80%] lg:max-w-[38%] z-0 bg-black/60 backdrop-blur-sm rounded-xl p-3 mx-auto flex items-start gap-3">
                 {image.author && (
-                    <AppImage
+                    <img
                         width={50}
                         height={50}
                         src={image.author.picture}
                         alt={image.author.display_name || image.author.name}
                         className="w-10 h-10 rounded-full border border-gray-700"
-                        onError="/default-avatar.png"
+                        onError={(e) => e.currentTarget.src = "/default-avatar.png"}
                     />
                 )}
                 <div className="flex flex-col text-white text-sm line-clamp-2">

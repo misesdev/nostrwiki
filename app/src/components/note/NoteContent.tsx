@@ -15,14 +15,13 @@ type Props = {
 }
 
 const NoteContent = ({ note, cliped=false }: Props) => {
-
     let filesCount = 0
     const [profiles, setProfiles] = useState<Record<string, User | null>>({})
     const [events, setEvents] = useState<Record<string, any>>({})
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
     const [isUserOpen, setIsUserOpen] = useState(false)
     const videoRefs = useRef<HTMLVideoElement[]>([])
-    const tokens: Token[] = parseContent(note.content)
+    const tokens: Token[] = parseContent(note.content, (note.tags as string[])?.map(t => (["t", t])))
 
     useEffect(() => {
         const fetchProfiles = async () => {
@@ -53,7 +52,6 @@ const NoteContent = ({ note, cliped=false }: Props) => {
         }
 
         fetchProfiles()
-
     }, [note])
 
     // Pausar vídeos que saem da tela
@@ -84,22 +82,22 @@ const NoteContent = ({ note, cliped=false }: Props) => {
             return (
                 <span
                     key={i}
-                    className="text-purple-400 hover:underline cursor-pointer mx-1"
+                    className="text-purple-400 hover:underline cursor-pointer mx-1 break-words"
                 >
-                    #{token.content}
+                    {token.content}
                 </span>
             )
         }
 
         if (token.type === "nip19" &&
             (token.content.includes("npub1") || 
-                token.content.includes("nprofile1"))) {
+             token.content.includes("nprofile1"))) {
             const profile = profiles[token.content]
             const display = profile?.display_name || profile?.name || token.content.slice(0, 12) + "…"
             return (
                 <span
                     key={i}
-                    className="text-blue-400 cursor-pointer hover:underline mr-1"
+                    className="text-blue-400 cursor-pointer hover:underline mr-1 break-all"
                     onClick={() => {
                         if (profile) {
                           setSelectedUser(profile)
@@ -118,10 +116,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
             return (
                 <span
                     key={i}
-                    className="text-blue-500 underline hover:opacity-80"
-                    // onClick={() => {
-                    //     console.log("Abrir modal note:", note)
-                    // }}
+                    className="text-blue-500 underline hover:opacity-80 break-all"
                 >
                     {note?.title || token.content.slice(0, 12) + "…"}
                 </span>
@@ -134,14 +129,14 @@ const NoteContent = ({ note, cliped=false }: Props) => {
                 if(cliped && filesCount > 0) return null;
                 filesCount = filesCount + 1
                 return (
-                    <AppImage
+                    <img
                         key={i}
                         width={600}
                         height={600}
                         src={token.content}
-                        onError="hidden"
+                        onError={e => e.currentTarget.src = "/default-banner.jpg"}
                         alt="image"
-                        className="max-w-[100%] max-h-[90vh] my-2 rounded-xl"
+                        className="max-w-full max-h-[90vh] my-2 rounded-xl object-contain"
                     />
                 )
             }
@@ -155,7 +150,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
                         src={token.content}
                         controls
                         ref={el => { if (el) videoRefs.current[i] = el }}
-                        className="w-full h-auto max-w-[100%] max-h-[90vh] rounded-xl bg-gray-900 bg-opacity-35 my-2"
+                        className="w-full h-auto max-w-full max-h-[90vh] rounded-xl bg-gray-900 bg-opacity-35 my-2"
                     />
                 )
             }
@@ -169,7 +164,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
 
     return (
         <>
-            <div className="prose dark:prose-invert max-w-none leading-relaxed">
+            <div className="prose dark:prose-invert max-w-none leading-relaxed break-words">
                 {tokens.map(renderToken)}
             </div>
             {selectedUser && isUserOpen && (

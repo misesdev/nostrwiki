@@ -1,7 +1,7 @@
 'use client';
 
 import { AiOutlineSearch } from 'react-icons/ai';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SearchService from '@/services/api/SearchService';
 import AutoComplete from './search/AutoComplete';
@@ -99,7 +99,7 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
             {/* Dropdown de sugestões */}
             {showDropdown && results.length && (
                 <div className="absolute top-full mt-1 w-full bg-gray-900/80 backdrop-blur-md border border-gray-700 rounded-2xl shadow-xl max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 transition">
-                    <AutoComplete term={term} results={results} onSearch={onSearch} />
+                    <AutoComplete term={term.trim()} results={results} onSearch={onSearch} />
                 </div>
             )}
         </div>

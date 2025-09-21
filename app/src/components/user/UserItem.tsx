@@ -1,9 +1,9 @@
 'use client'
 
 import { User } from "@/types/types"
-import { hexToNpub } from "@/utils/utils"
+import { hexToNpub, shortenString } from "@/utils/utils"
 import toast from "react-hot-toast"
-import { Copy } from "lucide-react"
+import { Copy, Globe } from "lucide-react"
 import AppImage from "../commons/AppImage"
 import { useState } from "react"
 import UserModal from "./UserModal"
@@ -13,65 +13,99 @@ type UserItemProps = {
 }
 
 const UserItem = ({ user }: UserItemProps) => {
-
     const [isModalOpen, setIsModalOpen] = useState(false)
-    const handleCopy = () => {
-        navigator.clipboard.writeText(hexToNpub(user.pubkey))
-        toast.success("Copied npub to clipboard!")
+
+    const handleCopy = (label: string, value: string) => {
+        navigator.clipboard.writeText(value)
+        toast.success(`${label} copied to clipboard!`)
     }
+
+    const npub = hexToNpub(user.pubkey)
+    const lightning = user.lud16 || user.lud06 || ""
 
     return (
         <>
             <div className="bg-gray-800 bg-opacity-35 shadow-md rounded-xl overflow-hidden flex flex-col transition hover:shadow-lg">
                 {/* Banner */}
-                <div className="relative h-32 w-full bg-cover bg-center">
+                <div className="relative h-28 sm:h-32 w-full bg-cover bg-center">
                     <AppImage
                         width={350}
                         height={120}
                         src={user.banner}
                         alt="Banner"
-                        className="h-32 w-full object-cover"
+                        className="h-full w-full object-cover"
                         onError={"/default-banner.jpg"}
                     />
                 </div>
 
-                <div className="p-4 flex flex-col bg-gray-800 bg-opacity-35 sm:flex-row items-center sm:items-start gap-4">
-                    {/* Foto */}
+                {/* Content */}
+                <div className="p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                    {/* Avatar */}
                     <button className="z-0" onClick={() => setIsModalOpen(true)}>
                         <AppImage
                             width={100}
                             height={100}
                             src={user.picture}
                             alt={user.display_name || user.name}
-                            className="w-25 h-25 md:w-14 md:h-14 rounded-full border-4 border-white dark:border-gray-800 -mt-12 sm:mt-0"
+                            className="w-20 h-20 sm:w-16 sm:h-16 rounded-full border-4 border-white dark:border-gray-800 -mt-12 sm:mt-0"
                             onError={"/default-avatar.png"}
                         />
                     </button>
 
                     {/* Info */}
-                    <div className="flex-1 text-left min-h-[3.8rem]">
-                        <button onClick={() => setIsModalOpen(true)}
-                            className="text-lg font-semibold text-gray-300">
+                    <div className="flex-1 text-center sm:text-left">
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="text-lg font-semibold text-gray-200 hover:text-white transition"
+                        >
                             {user.display_name || user.name}
                         </button>
-                        <p className="max-w-[18rem] text-sm text-gray-500 dark:text-gray-400 min-h-[3.8rem] line-clamp-2">
+                        <p className="text-sm text-gray-400 mt-1 line-clamp-2 sm:line-clamp-3">
                             {user.about}
                         </p>
-                        {/* <span className=" text-xs text-gray-400 py-2"> */}
-                        {/*     <strong>references</strong>: {user.ref_count} */}
-                        {/* </span> */}
-                    </div>
 
-                    {/* Botão copiar chave */}
-                    <button
-                        onClick={handleCopy}
-                        className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
-                        title="Copiar chave pública"
-                    >
-                        <Copy className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                    </button>
+                        {/* Website */}
+                        {user.website && (
+                            <a
+                                href={user.website.startsWith("http") ? user.website : `https://${user.website}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center sm:justify-start gap-2 text-sm text-blue-400 hover:underline mt-2"
+                            >
+                                <Globe className="w-4 h-4" /> {user.website}
+                            </a>
+                        )}
+
+                        {/* Lightning */}
+                        {lightning && (
+                            <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
+                                <span className="text-sm text-yellow-400 break-all">{lightning}</span>
+                                <button
+                                    onClick={() => handleCopy("Lightning address", lightning)}
+                                    className="p-1 rounded bg-gray-700 hover:bg-gray-600 transition"
+                                >
+                                    <Copy className="w-4 h-4 text-gray-200" />
+                                </button>
+                            </div>
+                        )}
+
+                        {/* npub */}
+                        <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
+                            <span className="text-sm text-purple-300 break-all">
+                                {shortenString(npub, 24)}
+                            </span>
+                            <button
+                                onClick={() => handleCopy("Npub", npub)}
+                                className="p-1 rounded bg-gray-700 hover:bg-gray-600 transition"
+                            >
+                                <Copy className="w-4 h-4 text-gray-200" />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            {/* Modal */}
             <UserModal
                 user={user}
                 isOpen={isModalOpen}

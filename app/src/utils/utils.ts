@@ -72,6 +72,12 @@ export const getClipedContent = (content: string, limit: number=50): string => {
     return content
 }
 
+export const shortenString = (value: string, size: number): string =>
+{
+    let length = Math.ceil(size / 2);
+    return `${value.substring(0, length)}...${value.slice(-length)}`
+}
+
 export const normalizeUser = (user: User): User => {
     if(!isValidImageUrl(user.picture))
     user.picture = "/default-avatar.png"

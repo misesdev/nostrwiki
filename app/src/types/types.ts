@@ -37,7 +37,7 @@ export type Note = {
     id: string;
     title: string;
     content: string;
-    published_at: string;
+    published_at: number;
     published_by: string;
     tags: string[]|string;
     author: User;
@@ -49,7 +49,8 @@ export type NFile = {
     description: string;
     pubkey: string;
     note_id: string;
-    published_at: string;
+    published_at: number;
+    published_by: string;
     note: Note;
     author: User;
 }
@@ -62,7 +63,7 @@ export type AutocompleteNote = {
     title?: string;
     content?: string;
     published_by?: string;
-    published_at?: string;
+    published_at?: number;
     tags?: string[];
 };
 

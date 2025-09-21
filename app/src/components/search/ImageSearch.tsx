@@ -82,7 +82,7 @@ const ImageSearch = ({ term }: SearchParams) => {
                 {endOfResults && 
                     <p className="text-center text-gray-500">No more results</p>
                 }
-                <div ref={loaderRef} className="h-100" />
+                <div ref={loaderRef} className="h-[100px]" />
             </div>
             {/* Modal Player */}
             {slideOpen && (

@@ -4,6 +4,7 @@ import { AutocompleteNote, AutocompleteResult, AutocompleteUser, Note, User } fr
 import { normalizeNote, normalizeUser } from "@/utils/utils";
 import AppImage from "../commons/AppImage";
 import { AiOutlineSearch } from "react-icons/ai";
+import { useEffect, useState } from "react";
 
 type AutoCompleteProps = {
     term: string;
@@ -46,44 +47,37 @@ const isBadToken = (t: string) => {
  * Gera preview com base na prioridade: title -> content -> tags.
  * Remove tokens longos (npub, urls...) e limita pelo número de palavras (words).
  */
-const buildNotePreview = (note: Note, term: string, words: number) => {
+const buildNotePreview = (note: Note, words: number) => {
     const takeTokens = (text?: string) => {
         const tokens = safeSplitTokens(text);
         const filtered = tokens.filter(t => !isBadToken(t) && t.length <= 12);
         return filtered.slice(0, words);
     }
-
-    // tenta title
     const titleTokens = takeTokens(note.title);
-    if (titleTokens.length) 
-        return titleTokens.join(" ");
-    // tenta content
-    const contentTokens = takeTokens(note.content);
-    if (contentTokens.length)
-        return contentTokens.join(" ");
-    console.log("content tokens", contentTokens)   
+    if (titleTokens.length)
+        return titleTokens.slice(0, words).join(" ");
 
-    // tenta tags (note.tags pode ser array ou string)
+    const contentTokens = takeTokens(note.content);
+    if (contentTokens.length) 
+        return contentTokens.slice(0, words).join(" ");
+
     if (note.tags) {
         let tagsArr: string[] = [];
         if (Array.isArray(note.tags)) tagsArr = note.tags;
         else if (typeof note.tags === "string") tagsArr = note.tags.split(/[,;\s]+/);
         const goodTags = tagsArr.map(t => t.replace(/^[^\w#@]+|[^\w#@]+$/g, "")).filter(Boolean).slice(0, Math.max(1, Math.min(3, words)));
-        if (goodTags.length) return goodTags.map(t => t.replaceAll("#", "")).join(" ");
+        if (goodTags.length)
+            return goodTags.slice(0, words).map(t => t.replaceAll("#", "")).join(" ");
     }
-
-    // fallback: se não houver nada, tentar uma substring curta do content (removendo links)
     if (note.content) {
         const plain = note.content.replace(/https?:\/\/\S+/g, "").trim();
         if (plain.length > 0) {
-            return plain.split(/\s+/).slice(0, Math.max(3, words)).join(" ");
+            return plain.split(/\s+/).slice(0, words).join(" ");
         }
     }
-
     return null;
 }
 
-/** Result components **/
 const UserResult = ({ item, onSearch }: ResultProps) => {
     const user: User = normalizeUser(item as any);
     return (
@@ -113,24 +107,18 @@ const UserResult = ({ item, onSearch }: ResultProps) => {
     );
 }
 
-const NoteResult = ({ term, item, onSearch }: ResultProps) => {
+const NoteResult = ({ item, onSearch }: ResultProps) => {
     const note: Note = normalizeNote(item as any);
-
-    // calcula quantas palavras mostrar com base no termo
-    const words = Math.max(3, term.trim() ? term.trim().split(" ").length + 1 : 3);
-
-    const preview = buildNotePreview(note, term, words);
-    if (!preview) return null;
 
     return (
         <div
             className="flex items-start gap-2 p-3 hover:bg-gray-700 cursor-pointer"
-            onClick={() => onSearch(preview)}
+            onClick={() => onSearch(note.title)}
         >
             <AiOutlineSearch className="text-sm my-1 mx-2 text-gray-500" />
             <div className="min-w-0">
                 <div className="text-gray-200 text-sm truncate">
-                    {preview}
+                    {note.title}
                 </div>
                 {/* uma linha pequena com origem/autor se existir */}
                 {note.published_by && (
@@ -143,9 +131,33 @@ const NoteResult = ({ term, item, onSearch }: ResultProps) => {
     );
 }
 const AutoComplete = ({ term, results, onSearch }: AutoCompleteProps) => {
+
+    const [items, setItems] = useState<AutocompleteResult[]>([])
+
+    useEffect(() => {
+        const load = () => {
+            const uniqueResults = new Map<string, AutocompleteResult>()
+            results.forEach(item => {
+                if(item.type == "note") {
+                    const note: Note = normalizeNote(item as any);
+                    // calcula quantas palavras mostrar com base no termo
+                    const words = Math.max(3, term.split(" ").length + 1);
+                    const preview = buildNotePreview(note, words);
+                    if (preview) 
+                        uniqueResults.set(preview, {...item, title: preview })
+                } else if(item.type == "user") {
+                    const user: User = normalizeUser(item as any);
+                    uniqueResults.set(user.display_name, item) 
+                }
+            })
+            setItems(Array.from(uniqueResults.values()))
+        }
+        load()        
+    }, [results])
+
     return (
         <div className="w-full bg-gray-800 bg-opacity-15 mt-5 rounded-b-lg overflow-y-auto max-h-80 sm:max-h-64 z-50 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-            {results.map((item) => {
+            {items.map((item) => {
                 if(item.type == "user")
                     return <UserResult key={Math.random()} term={term} item={item} onSearch={onSearch} />
                 else
