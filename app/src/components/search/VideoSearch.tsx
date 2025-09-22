@@ -53,7 +53,7 @@ const VideoSearch = ({ term }: SearchParams) => {
         setEndOfResults(!videos.length)
         setSkip(prev => prev + take)
         setLoading(false)
-    }, [term, skip, take])
+    }, [term, take])
 
     useEffect(() => {
         const observer = new IntersectionObserver(
