@@ -88,10 +88,10 @@ const NoteSearch = ({ term }: SearchParams) => {
     return (
         <>
             <div className="w-full text-[12px] md:text-sm">
-                {loading && <NoteLoader />}
                 {!!notes.length && (
                     <NoteResults showInSlide={showInSlide} notes={notes} />
                 )}
+                {loading && <NoteLoader />}
                 {endOfResults && 
                     <p className="text-center text-gray-500">No more results</p>
                 }
