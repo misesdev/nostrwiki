@@ -87,8 +87,10 @@ const VideoSearch = ({ term }: SearchParams) => {
     return (
         <>
             <div className='w-full text-[12px] md:text-sm'>
+                {!!videos.length && (
+                    <VideoResults playVideo={playVideo} videos={videos} />
+                )}
                 {loading && <VideoLoader />}
-                <VideoResults playVideo={playVideo} videos={videos} />
                 {endOfResults && 
                     <p className="text-center text-gray-500">No more results</p>
                 }

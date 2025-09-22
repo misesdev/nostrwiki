@@ -20,7 +20,7 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        if (!isOpen || !user?.pubkey) return
+        if (!isOpen || !user) return
 
         const fetchNotes = async () => {
             setLoading(true)

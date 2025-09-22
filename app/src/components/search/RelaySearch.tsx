@@ -1,7 +1,7 @@
 'use client'
 
 import { Relay, SearchParams, User } from "@/types/types"
-import { normalizeRelay } from "@/utils/utils"
+import { normalizeRelay, normalizeUser } from "@/utils/utils"
 import SearchService from "@/services/api/SearchService"
 import { useCallback, useEffect, useRef, useState } from "react"
 import EmptyResults from "./EmptyResults"
@@ -75,7 +75,7 @@ const RelaySearch = ({ term }: SearchParams) => {
     }, [loading, endOfResults, fetchRelays]);
 
     const viewManteiner = useCallback((user: User) => {
-        setAuthor(user)
+        setAuthor(normalizeUser(user))
         setIsOpen(true)
     }, [isOpen])
 
@@ -85,14 +85,16 @@ const RelaySearch = ({ term }: SearchParams) => {
     return (
         <>
             <div className="w-full text-[12px] md:text-sm">
+                {!!relays.length && (
+                    <RelayResults viewManteiner={viewManteiner} relays={relays} />
+                )}
                 {loading && <RelayLoader />}
-                <RelayResults viewManteiner={viewManteiner} relays={relays} />
                 {endOfResults && 
                     <p className="text-center text-gray-500">No more results</p>
                 }
                 <div ref={loaderRef} className="h-[100px]" />
             </div>
-            {isOpen && (
+            {isOpen && !!author?.pubkey && (
                 <UserModal
                     isOpen={isOpen}
                     onClose={() => setIsOpen(false)}

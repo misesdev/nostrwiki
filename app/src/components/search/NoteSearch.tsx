@@ -89,7 +89,9 @@ const NoteSearch = ({ term }: SearchParams) => {
         <>
             <div className="w-full text-[12px] md:text-sm">
                 {loading && <NoteLoader />}
-                <NoteResults showInSlide={showInSlide} notes={notes} />
+                {!!notes.length && (
+                    <NoteResults showInSlide={showInSlide} notes={notes} />
+                )}
                 {endOfResults && 
                     <p className="text-center text-gray-500">No more results</p>
                 }

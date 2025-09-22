@@ -24,8 +24,9 @@ const NoteContent = ({ note, cliped=false }: Props) => {
     const [isUserOpen, setIsUserOpen] = useState(false)
     const videoRefs = useRef<HTMLVideoElement[]>([])
 
-    const text = stripMarkdownLinks(note.content)
-    const tags = hashtagsFromContent(note.content)
+    const short = note.content.split(" ").slice(0, 38)
+    const text = stripMarkdownLinks(cliped ? short.join(" ") : note.content)
+    const tags = hashtagsFromContent(cliped ? short.join(" ") : note.content)
     const tokens: Token[] = parseContent(text, tags.map(t => ["t", t]))
 
     useEffect(() => {

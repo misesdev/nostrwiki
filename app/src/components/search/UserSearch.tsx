@@ -76,8 +76,8 @@ const UserSearch = ({ term }: SearchParams) => {
 
     return (
         <div className="w-full text-[12px] md:text-sm">
+            {!!users.length && <UsersResults users={users} />}
             {loading && <UserLoader />}
-            <UsersResults users={users} />
             {endOfResults && 
                 <p className="text-center text-gray-500">No more results</p>
             }

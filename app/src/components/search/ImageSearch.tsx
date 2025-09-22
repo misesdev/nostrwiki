@@ -86,8 +86,10 @@ const ImageSearch = ({ term }: SearchParams) => {
     return (
         <>
             <div className='w-full text-[12px] md:text-sm'>
+                {!!images.length && (
+                    <ImageResults showInSlide={showInSlide} images={images} />
+                )}
                 {loading && <ImageLoader />}
-                <ImageResults showInSlide={showInSlide} images={images} />
                 {endOfResults && 
                     <p className="text-center text-gray-500">No more results</p>
                 }
