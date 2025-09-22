@@ -81,7 +81,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
             return (
                 <span
                     key={i}
-                    className="text-purple-400 hover:underline cursor-pointer mx-1 break-words"
+                    className="text-[12px] md:text-sm text-purple-400 hover:underline cursor-pointer mx-1 break-words"
                 >
                     {token.content}
                 </span>

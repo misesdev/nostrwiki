@@ -60,10 +60,10 @@ export type AutocompleteNote = {
     score: number;
     id: string;
     pubkey: string;
-    title?: string;
-    content?: string;
-    published_by?: string;
-    published_at?: number;
+    title: string;
+    content: string;
+    published_by: string;
+    published_at: number;
     tags?: string[];
 };
 
@@ -71,9 +71,9 @@ export type AutocompleteUser = {
     type: "user";
     score: number;
     pubkey: string;
-    name?: string;
+    name: string;
     display_name?: string;
-    about?: string;
+    about: string;
     picture?: string;
     banner?: string;
 };

@@ -7,7 +7,8 @@ import EmptyResults from './EmptyResults';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import ImageLoader from '../images/ImageLoader';
 import ImageResults from '../images/ImageResults';
-import ImageSlide from '../commons/ImageSlide';
+import AppSlide from '../commons/AppSlide';
+import ImageSlideItem from '../images/ImageSlideItem';
 
 const ImageSearch = ({ term }: SearchParams) => {
 
@@ -26,6 +27,7 @@ const ImageSearch = ({ term }: SearchParams) => {
         setImages([])
         setLoading(true)
         setEndOfResults(false)
+        uniques.current = new Map<string, NFile>()
         const load = async () => {
             const service = new SearchService()
             const images = await service.search<NFile>("/search/images", { term, skip:0, take })
@@ -83,7 +85,7 @@ const ImageSearch = ({ term }: SearchParams) => {
 
     return (
         <>
-            <div className='w-full'>
+            <div className='w-full text-[12px] md:text-sm'>
                 {loading && <ImageLoader />}
                 <ImageResults showInSlide={showInSlide} images={images} />
                 {endOfResults && 
@@ -93,13 +95,14 @@ const ImageSearch = ({ term }: SearchParams) => {
             </div>
             {/* Modal Player */}
             {slideOpen && (
-                <ImageSlide
-                    images={images}
+                <AppSlide
+                    items={images}
                     isOpen={slideOpen}
                     onClose={() => setSlideOpen(false)}
-                    imageIndex={imageIndex}
-                    fetchMoreImages={fetchImages}
+                    currentIndex={imageIndex}
+                    fetchMoreItems={fetchImages}
                     endOfResults={endOfResults}
+                    component={ImageSlideItem}
                 />
             )}
         </>

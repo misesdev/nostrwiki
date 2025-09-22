@@ -14,6 +14,7 @@ export type User = {
     updated_at?: Date;
     available: boolean;
     ref_count: number;
+    since?: number;
 }
 
 

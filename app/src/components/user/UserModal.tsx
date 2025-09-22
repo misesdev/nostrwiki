@@ -58,9 +58,9 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
                         <h2 className="text-[14px] md:text-2xl font-bold text-gray-300">
                             {user.display_name || user.name}
                         </h2>
-                        <p className="text-gray-300 mt-1">
+                        <div className="text-gray-300 mt-1">
                             <Content content={user.about || "Without Descriptino"} />
-                        </p>
+                        </div>
                     </div>
                 </div>
 

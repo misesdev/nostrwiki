@@ -23,6 +23,7 @@ const UserSearch = ({ term }: SearchParams) => {
         setUsers([])
         setLoading(true)
         setEndOfResults(false)
+        uniques.current = new Map<string, User>()
         const load = async () => {
             const service = new SearchService()
             const users = await service.search<User>("/search/users", { term, skip:0, take })
@@ -74,7 +75,7 @@ const UserSearch = ({ term }: SearchParams) => {
         return <EmptyResults term={term} /> 
 
     return (
-        <div className="w-full">
+        <div className="w-full text-[12px] md:text-sm">
             {loading && <UserLoader />}
             <UsersResults users={users} />
             {endOfResults && 

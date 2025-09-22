@@ -21,6 +21,7 @@ export default function HomeSearch(): ReactNode {
             {/* </h1> */}
             <div className='flex flex-col items-center pb-5'>
                 <AppImage
+                    priority
                     src='/logo.png'
                     onError='/logo.png'
                     alt='Nostr Wiki - Explorer'

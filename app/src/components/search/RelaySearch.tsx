@@ -23,6 +23,7 @@ const RelaySearch = ({ term }: SearchParams) => {
         setRelays([])
         setLoading(true)
         setEndOfResults(false)
+        uniques.current = new Map<string, Relay>()
         const load = async () => {
             const service = new SearchService()
             const relays = await service.search<Relay>("/search/relays", { term, skip: 0, take })
@@ -74,7 +75,7 @@ const RelaySearch = ({ term }: SearchParams) => {
         return <EmptyResults term={term} />
 
     return (
-        <div className="w-full">
+        <div className="w-full text-[12px] md:text-sm">
             {loading && <RelayLoader />}
             <RelayResults relays={relays} />
             {endOfResults && 

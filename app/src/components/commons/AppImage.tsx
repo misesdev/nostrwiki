@@ -10,10 +10,11 @@ type AppImageProps = {
     alt: string;
     fill?: boolean;
     onError: string|"hidden";
+    onLoad?: () => void;
 }
 
 const AppImage = ({ 
-    src, onError, alt, width, height, fill, className, priority=false
+    src, onError, alt, width, height, fill, className, priority=false, onLoad
 }: AppImageProps) => {
     const [source, setSource] = useState(src)
     if(source.includes("hidden")) return <></>
@@ -27,6 +28,7 @@ const AppImage = ({
             priority={priority}
             className={className}
             onError={() => setSource(onError)}
+            onLoad={onLoad}
         />
     )
 }

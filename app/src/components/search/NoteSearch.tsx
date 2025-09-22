@@ -7,7 +7,8 @@ import EmptyResults from "./EmptyResults";
 import { normalizeNote } from "@/utils/utils";
 import NoteResults from "../note/NoteResults";
 import NoteLoader from "../note/NoteLoader";
-import NoteSlide from "../commons/NoteSlide";
+import AppSlide from "../commons/AppSlide";
+import NoteSlideItem from "../note/NoteSlideItem";
 
 const NoteSearch = ({ term }: SearchParams) => {
  
@@ -26,6 +27,7 @@ const NoteSearch = ({ term }: SearchParams) => {
         setNotes([])
         setLoading(true)
         setEndOfResults(false)
+        uniques.current = new Map<string, Note>()
         const load = async () => {
             const service = new SearchService()
             const results = await service.search<Note>("/search/notes", { term, skip:0, take })
@@ -85,7 +87,7 @@ const NoteSearch = ({ term }: SearchParams) => {
 
     return (
         <>
-            <div className="w-full">
+            <div className="w-full text-[12px] md:text-sm">
                 {loading && <NoteLoader />}
                 <NoteResults showInSlide={showInSlide} notes={notes} />
                 {endOfResults && 
@@ -94,13 +96,14 @@ const NoteSearch = ({ term }: SearchParams) => {
                 <div ref={loaderRef} className="h-[100px]" />
             </div>
             {slideOpen && (
-                <NoteSlide
-                    notes={notes}
+                <AppSlide
+                    items={notes}
                     isOpen={slideOpen}
                     onClose={() => setSlideOpen(false)}
-                    noteIndex={noteIndex}
-                    fetchMoreNotes={fetchNotes}
+                    currentIndex={noteIndex}
+                    fetchMoreItems={fetchNotes}
                     endOfResults={endOfResults}
+                    component={NoteSlideItem}
                 />
             )}
         </>

@@ -66,10 +66,12 @@ export const hexToNpub = (hex: string) => {
 }
 
 export const getClipedContent = (content: string, limit: number=50): string => {
-    if(!content) return ""
-    if(content.length > limit)
-    return `${content.substring(0,limit)}...`
-    return content
+    if (!content) return "";
+    const chars = Array.from(content); 
+    if (chars.length > limit) {
+        return `${chars.slice(0, limit).join("")}...`;
+    }
+    return content;
 }
 
 export const shortenString = (value: string, size: number): string =>

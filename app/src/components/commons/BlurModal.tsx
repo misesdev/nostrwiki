@@ -47,7 +47,7 @@ const BlurModal = ({ children, isOpen, onClose }: Props) => {
                     </button>
 
                     <motion.div
-                        className="relative w-full md:max-w-[90%] max-w-[96%] mx-4 rounded-xl overflow-hidden"
+                        className="relative w-full max-w-[98%] md:max-w-[90%] mx-4 rounded-xl overflow-visible"
                         initial={{ scale: 0.8 }}
                         animate={{ scale: 1 }}
                         exit={{ scale: 0.8 }}

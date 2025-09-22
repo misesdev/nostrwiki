@@ -25,14 +25,14 @@ export default function SearchHeaderOptions() {
 
     return (
         <div className="h-12 w-full overflow-x-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-            <div className="flex px-5 space-x-1 lg:space-x-2">
+            <div className="flex px-4 space-x-2">
                 {tabs.map(({ key, label, icon: Icon }) => {
                     const isActive = pathname?.includes(`/search/${key}`);
                     return (
                         <div
                             key={key}
                             onClick={() => selectTab(key)}
-                            className="relative flex items-center space-x-2 cursor-pointer py-2 lg:py-3 px-1 lg:px-3 transition-all group"
+                            className="relative flex items-center space-x-2 cursor-pointer py-1 lg:py-2 px-1 lg:px-2 transition-all group"
                         >
                             {/* <Icon */}
                             {/*     className={`text-md lg:text-lg ${isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-blue-400'}`} */}

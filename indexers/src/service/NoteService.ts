@@ -34,6 +34,14 @@ class NoteService
         if(!users.length) return
 
         let skipe = this._settings.pubkeys_per_notes
+        let oldestSince: number|undefined = undefined
+
+        const allHaveSince = users.every(user => user.since !== null)
+        if(allHaveSince)
+            oldestSince = users
+              .map(user => user.since)
+              .filter((s): s is number => s !== null && s !== undefined)
+              .reduce((min, s) => Math.min(min, s), Number.MAX_SAFE_INTEGER)
 
         console.log(`loading notes...`)
         for(let i = 0; i < users.length; i += skipe) 
@@ -42,8 +50,8 @@ class NoteService
             let events = await pool.fechEvents({
                 authors: authors.map(u => u.pubkey),
                 limit: this._settings.max_fetch_notes,
-                since: this._settings.note_since,
-                kinds: [1, 30023, 30818]
+                kinds: [1, 30023, 30818],
+                since: oldestSince
             })
 
             console.log("found notes...:", events.length)

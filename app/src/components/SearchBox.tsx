@@ -1,7 +1,7 @@
 'use client';
 
 import { AiOutlineSearch } from 'react-icons/ai';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SearchService from '@/services/api/SearchService';
 import AutoComplete from './search/AutoComplete';
@@ -14,11 +14,12 @@ type SearchBoxProps = {
 const SearchBox = ({ handleSearch }: SearchBoxProps) => {
 
     const searchParams = useSearchParams()
-    const [term, setTerm] = useState(searchParams.get("term") ?? "")
+    const [searchTerm, setSearchTerm] = useState(searchParams.get("term")??"")
     const [results, setResults] = useState<AutocompleteResult[]>([])
     const [showDropdown, setShowDropdown] = useState(false)
     const debounceRef = useRef<NodeJS.Timeout | null>(null)
     const containerRef = useRef<HTMLDivElement | null>(null)
+    const inputRef = useRef<HTMLInputElement | null>(null)
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -31,14 +32,11 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
     }, [])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setTerm(value)
-
+        setSearchTerm(e.target.value)
         if (debounceRef.current) clearTimeout(debounceRef.current)
-
         debounceRef.current = setTimeout(() => {
-            if (value.length >= 3) {
-                fetchResults(value);
+            if (searchTerm.trim().length >= 3) {
+                fetchResults(searchTerm);
             } else {
                 setShowDropdown(false);
                 setResults([]);
@@ -50,56 +48,61 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
         try {
             const service = new SearchService()
             const results = await service.autocomplete(q.trim())
+            if (inputRef.current?.matches(':focus'))
+                setShowDropdown(!!results.length)
             setResults(results)
-            setShowDropdown(results.length > 0)
         } catch (err) {
             console.error('Error fetching autocomplete:', err)
         }
     }
 
-    const onSearch = (searchTerm: string) => {
+    const onSearch = useCallback((searchTerm: string) => {
+        inputRef.current?.blur()
+        setSearchTerm(searchTerm.trim())
         handleSearch(searchTerm.trim())
-        setTerm(searchTerm.trim())
         setShowDropdown(false)
-    }
-
+    }, [searchTerm, inputRef, handleSearch])
     
-    const handleFocus = () => {
-        if (results.length > 0 && term.length >= 3) {
-            setShowDropdown(true);
+    const handleFocus = async () => {
+        if (results.length > 0 && searchTerm.length >= 3) {
+            await fetchResults(searchTerm.trim())
         }
     }
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Escape') {
-            setShowDropdown(false);
-        }
-    };
+    const handleBlur = () => {
+        setTimeout(() => setShowDropdown(false), 100)
+    }
 
     return (
-        <div ref={containerRef} className="w-full lg:max-w-3xl mx-auto relative z-50">
-            <form
-                onSubmit={e => { e.preventDefault(); onSearch(term) }}
+        <div ref={containerRef} className="text-[12px] md:text-sm w-full lg:max-w-3xl mx-auto relative z-50">
+            <form onSubmit={e => { 
+                    e.preventDefault() 
+                    onSearch(searchTerm) 
+                }}
                 className="text-[12px] md:text-sm relative flex items-center w-full bg-gray-900/70 backdrop-blur-md border border-gray-700 rounded-3xl shadow-lg px-4 py-2"
             >
                 <AiOutlineSearch className="text-gray-400 text-2xl mr-3 cursor-pointer hover:text-gray-200 transition" />
-                <input
-                    type="text"
+                <input 
+                    ref={inputRef}
+                    type="search"
                     placeholder="Search..."
-                    value={term}
+                    value={searchTerm}
                     autoComplete="off"
                     minLength={3}
                     onChange={handleChange}
                     onFocus={handleFocus}
-                    onKeyDown={handleKeyDown}
+                    onBlur={handleBlur}
                     className="text-[12px] md:text-sm bg-transparent text-gray-100 placeholder-gray-400 w-full focus:outline-none text-sm sm:text-base"
                 />
             </form>
 
-            {/* Dropdown de sugestões */}
-            {showDropdown && results.length && (
+            {showDropdown && !!results.length && (
                 <div className="absolute top-full mt-1 w-full bg-gray-900/80 backdrop-blur-md border border-gray-700 rounded-2xl shadow-xl max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 transition">
-                    <AutoComplete term={term.trim()} results={results} onSearch={onSearch} />
+                    <AutoComplete
+                        results={results}
+                        term={searchTerm.trim()}
+                        onSearch={onSearch} 
+                    />
                 </div>
             )}
         </div>

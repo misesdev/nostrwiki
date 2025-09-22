@@ -18,10 +18,13 @@ class DBUsers
     public async list(offset: number, items: number): Promise<User[]>
     {
         const query = `
-            SELECT * 
-            FROM users 
-            WHERE available = true 
-            ORDER BY pubkey 
+            SELECT DISTINCT ON (u.pubkey) 
+                u.*,
+                n.published_at AS since
+            FROM users u
+            LEFT JOIN notes n ON n.pubkey = u.pubkey
+            WHERE u.available = true
+            ORDER BY u.pubkey, n.published_at DESC
             LIMIT $1 OFFSET $2
         `
         const result = await this._db.query<User>(query, [items, offset])

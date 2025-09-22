@@ -24,6 +24,7 @@ const SearchHeader = () => {
                     <Link href="/">
                         <div className="flex items-center gap-3">
                             <AppImage
+                                priority
                                 src="/logo.png"
                                 alt="Nosbook Logo"
                                 width={40}

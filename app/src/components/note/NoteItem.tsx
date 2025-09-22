@@ -6,6 +6,7 @@ import AppImage from "../commons/AppImage"
 import { useState } from "react"
 import UserModal from "../user/UserModal"
 import NoteContent from "./NoteContent"
+import { getClipedContent } from "@/utils/utils"
 
 type Props = {
     note: Note;
@@ -35,7 +36,7 @@ const NoteItem = ({ note, showInSlide }: Props) => {
                         </button>
                         <div className="flex flex-col">
                             <span className="text-gray-100 font-semibold text-[14px] md:text-sm">
-                                {note.author.display_name || note.author.name}
+                                {getClipedContent(note.author.display_name || note.author.name, 24)}
                             </span>
                             <span className="text-gray-400 text-xs">{date}</span>
                         </div>

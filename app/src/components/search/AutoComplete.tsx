@@ -5,6 +5,7 @@ import { normalizeNote, normalizeUser } from "@/utils/utils";
 import AppImage from "../commons/AppImage";
 import { AiOutlineSearch } from "react-icons/ai";
 import { useEffect, useState } from "react";
+import { textSimilarity } from "@/utils/string";
 
 type AutoCompleteProps = {
     term: string;
@@ -130,6 +131,7 @@ const NoteResult = ({ item, onSearch }: ResultProps) => {
         </div>
     );
 }
+
 const AutoComplete = ({ term, results, onSearch }: AutoCompleteProps) => {
 
     const [items, setItems] = useState<AutocompleteResult[]>([])
@@ -140,11 +142,17 @@ const AutoComplete = ({ term, results, onSearch }: AutoCompleteProps) => {
             results.forEach(item => {
                 if(item.type == "note") {
                     const note: Note = normalizeNote(item as any);
-                    // calcula quantas palavras mostrar com base no termo
-                    const words = Math.max(3, term.split(" ").length + 1);
+                    const words = term.split(" ").length + 1;
                     const preview = buildNotePreview(note, words);
-                    if (preview) 
-                        uniqueResults.set(preview, {...item, title: preview })
+                    if (preview) { 
+                        let exits = false;
+                        uniqueResults.forEach(value => {
+                            const similarity = textSimilarity((value as AutocompleteNote).title, preview)
+                            if(similarity >= 0.75) exits = true
+                        })
+                        if(!exits)
+                            uniqueResults.set(preview, {...item, title: preview })
+                    }
                 } else if(item.type == "user") {
                     const user: User = normalizeUser(item as any);
                     uniqueResults.set(user.display_name, item) 
@@ -157,11 +165,11 @@ const AutoComplete = ({ term, results, onSearch }: AutoCompleteProps) => {
 
     return (
         <div className="text-[12px] md:text-sm w-full bg-gray-800 bg-opacity-15 mt-5 rounded-b-lg overflow-y-auto max-h-80 sm:max-h-64 z-50 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-            {items.map((item) => {
+            {items.map((item, key) => {
                 if(item.type == "user")
-                    return <UserResult key={Math.random()} term={term} item={item} onSearch={onSearch} />
+                    return <UserResult key={key} term={term} item={item} onSearch={onSearch} />
                 else
-                    return <NoteResult key={Math.random()} term={term} item={item} onSearch={onSearch} />
+                    return <NoteResult key={key} term={term} item={item} onSearch={onSearch} />
             })}
         </div>
     )

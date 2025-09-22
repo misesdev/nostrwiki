@@ -7,7 +7,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import EmptyResults from './EmptyResults';
 import { normalizeFile } from '@/utils/utils';
 import VideoResults from '../video/VideoResults';
-import VideoSlide from '../commons/VideoSlide';
+import AppSlide from '../commons/AppSlide';
+import VideoSlideItem from '../video/VideoSlideItem';
 
 const VideoSearch = ({ term }: SearchParams) => {
 
@@ -26,6 +27,7 @@ const VideoSearch = ({ term }: SearchParams) => {
         setVideos([])
         setLoading(true)
         setEndOfResults(false)
+        uniques.current = new Map<string, NFile>()
         const load = async () => {
             const service = new SearchService()
             const videos = await service.search<NFile>("/search/videos", { term, skip:0, take })
@@ -84,7 +86,7 @@ const VideoSearch = ({ term }: SearchParams) => {
 
     return (
         <>
-            <div className='w-full'>
+            <div className='w-full text-[12px] md:text-sm'>
                 {loading && <VideoLoader />}
                 <VideoResults playVideo={playVideo} videos={videos} />
                 {endOfResults && 
@@ -94,13 +96,14 @@ const VideoSearch = ({ term }: SearchParams) => {
             </div>
             {/* Modal Player */}
             {slideOpen && (
-                <VideoSlide
-                    videos={videos}
+                <AppSlide
+                    items={videos}
                     isOpen={slideOpen}
                     onClose={() => setSlideOpen(false)}
-                    playIndex={playIndex}
-                    fetchMoreVideos={fetchVideos}
+                    currentIndex={playIndex}
+                    fetchMoreItems={fetchVideos}
                     endOfResults={endOfResults}
+                    component={VideoSlideItem}
                 />
             )}
         </>
