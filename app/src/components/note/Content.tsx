@@ -188,7 +188,7 @@ const Content = ({ content, cliped = false }: Props) => {
 
     return (
         <>
-            <div className="w-full max-w-full leading-relaxed p-4 break-words">
+            <div className="flex leading-relaxed break-words flex-wrap">
                 {tokens.map(renderToken)}
             </div>
             {selectedUser && isUserOpen && (

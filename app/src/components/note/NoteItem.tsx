@@ -5,7 +5,6 @@ import { format } from "date-fns"
 import AppImage from "../commons/AppImage"
 import { useState } from "react"
 import UserModal from "../user/UserModal"
-import NoteContent from "./NoteContent"
 import { getClipedContent } from "@/utils/utils"
 import Content from "./Content"
 
@@ -18,6 +17,8 @@ const NoteItem = ({ note, showInSlide }: Props) => {
 
     const [isUserOpen, setIsUserOpen] = useState(false)
     const date = format(new Date(note.published_at * 1000), "dd MMM yyyy")
+    const words = note.title.split(" ").filter(t => t.length <= 15)
+    const title = words.length ? words.join(" ") : null
 
     return (
         <>
@@ -45,10 +46,10 @@ const NoteItem = ({ note, showInSlide }: Props) => {
                 </div>
 
                 <div className="p-4 flex flex-col gap-2">
-                    {note.title && (
+                    {title && (
                         <button onClick={() => showInSlide(note)}>
                             <h3 className="text-[14px] md:text-lg font-bold text-blue-500 dark:text-blue-400 hover:text-blue-400 dark:hover:text-blue-300 hover:underline line-clamp-2 transition">
-                                {note.title}
+                                {title}
                             </h3>
                         </button>
                     )}

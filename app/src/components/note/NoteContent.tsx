@@ -10,7 +10,6 @@ import MarkdownContent from "./MarkDownContent"
 import UserModal from "../user/UserModal"
 import { hashtagsFromContent, stripMarkdownLinks } from "@/utils/contents"
 import LinkPreview from "../commons/LinkPreview"
-import AppImage from "../commons/AppImage";
 
 type Props = {
     note: Note;
@@ -154,7 +153,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
                             key={i}
                             src={token.content}
                             onError={e => e.currentTarget.src = "/default-banner.jpg"}
-                            className="rounded-xl object-contain"
+                            className="max-w-[96%] max-h-[90vh] rounded-xl object-contain"
                             alt="image"
                         />
                     </div>
@@ -189,7 +188,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
 
     return (
         <>
-            <div className="max-w-none leading-relaxed break-words flex flex-wrap items-center">
+            <div className="max-w-none leading-relaxed break-words flex flex-wrap">
                 {tokens.map(renderToken)}
             </div>
             {selectedUser && isUserOpen && (

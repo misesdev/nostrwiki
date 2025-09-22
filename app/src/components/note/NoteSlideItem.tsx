@@ -10,6 +10,8 @@ const NoteSlideItem = ({ item }: Props) => {
 
     const author = normalizeUser(item.author)
     const date = format(new Date(item.published_at * 1000), "dd MMM yyyy")
+    const words = item.title.split(" ").filter(t => t.length <= 15)
+    const title = words.length ? words.join(" ") : null
 
     return (
         <div className="relative bg-gray-800 bg-opacity-35 rounded-xl shadow-2xl text-gray-200 max-w-3xl w-full max-h-[90vh] min-h-[40vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent p-6 sm:p-10">
@@ -30,9 +32,9 @@ const NoteSlideItem = ({ item }: Props) => {
                 </div>
             </div>
 
-            {item.title && (
+            {title && (
                 <h2 className="text-[14px] md:text-1xl font-bold mb-4 text-white">
-                    {item.title}
+                    {title}
                 </h2>
             )}
 

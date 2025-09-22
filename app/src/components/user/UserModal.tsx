@@ -44,7 +44,7 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
         <BlurModal isOpen={isOpen} onClose={onClose}>
             <div className="max-w-[100%] max-h-[90vh] overflow-y-auto px-2 py-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                 {/* Header do usuário */}
-                <div className="flex p-3 md:p-5 flex-col sm:flex-row items-start gap-4 mb-6 w-full max-w-full">
+                <div className="p-5 max-w-3xl mx-auto lg:mt-6 space-y-3">
                     <AppImage
                         width={100}
                         height={100}
@@ -63,7 +63,7 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
                     </div>
                 </div>
                 {/* Lista de notas */}
-                <div className="flex flex-col gap-6">
+                <div className="p-0 md:p-5 max-w-full md:max-w-3xl mx-auto lg:mt-6 space-y-3">
                     <div className="pl-2 m-1">
                         {loading && 
                             <p className="text-[12px] md:text-sm font-bold text-gray-500">
@@ -81,7 +81,7 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
                             </p>
                         )}
                     </div>
-                    <div className="w-full my-1 flex flex-col items-center">
+                    <div className="p-0 md:p-5 max-w-full md:max-w-3xl mx-auto lg:mt-6 space-y-3">
                         {notes.map((note) => (<NoteViewr key={note.id} note={note}/>))}
                     </div>
                 </div>
