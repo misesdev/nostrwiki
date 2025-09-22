@@ -70,7 +70,7 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
     }
 
     const handleBlur = () => {
-        setTimeout(() => setShowDropdown(false), 100)
+        setTimeout(() => setShowDropdown(false), 200)
     }
 
     return (
