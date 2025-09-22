@@ -5,6 +5,7 @@ import { format } from "date-fns"
 import AppImage from "../commons/AppImage"
 import { useState } from "react"
 import UserModal from "../user/UserModal"
+import NoteContent from "./NoteContent"
 import { getClipedContent } from "@/utils/utils"
 import Content from "./Content"
 
@@ -54,7 +55,7 @@ const NoteItem = ({ note, showInSlide }: Props) => {
                         </button>
                     )}
 
-                    <div className="text-gray-200 dark:text-gray-300 text-[12px] md:text-sm line-clamp-3">
+                    <div className="text-gray-200 dark:text-gray-300 text-[12px] md:text-sm">
                         <Content content={note.content} cliped />
                     </div>
                 </div>

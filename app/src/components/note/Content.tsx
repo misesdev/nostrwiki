@@ -25,8 +25,9 @@ const Content = ({ content, cliped = false }: Props) => {
     const [isUserOpen, setIsUserOpen] = useState(false)
     const videoRefs = useRef<HTMLVideoElement[]>([])
 
-    const text = stripMarkdownLinks(content)
-    const tags = hashtagsFromContent(content)
+    const short = content.split(" ").slice(0, 38)
+    const text = stripMarkdownLinks(cliped ? short.join(" ") : content)
+    const tags = hashtagsFromContent(cliped ? short.join(" ") : content)
     const tokens: Token[] = parseContent(text, tags.map(t => ["t", t]))
 
     useEffect(() => {
@@ -78,11 +79,9 @@ const Content = ({ content, cliped = false }: Props) => {
 
     const renderToken = (token: Token, i: number) => {
         if (token.type === "text") {
-            const clip = token.content.split(" ").slice(0, 65).join(" ")
-            const content = cliped ? `${clip}...` : token.content
             return (
                 <div className="prose dark:prose-invert max-w-full break-words whitespace-pre-wrap">
-                    <MarkdownContent content={content.replaceAll("nostr:", "")} />
+                    <MarkdownContent content={token.content.replaceAll("nostr:", "")} />
                 </div>           
             )
         }
@@ -188,7 +187,7 @@ const Content = ({ content, cliped = false }: Props) => {
 
     return (
         <>
-            <div className="flex leading-relaxed break-words flex-wrap">
+            <div className="max-w-none leading-relaxed break-words flex flex-wrap">
                 {tokens.map(renderToken)}
             </div>
             {selectedUser && isUserOpen && (

@@ -68,9 +68,7 @@ export default function LinkPreview({ link }: Props) {
             >
                 {data?.image && !error && (
                     <div className="relative h-32 md:h-48 w-full bg-cover bg-center">
-                        <Image
-                            width={600}
-                            height={600}
+                        <img
                             src={data.image}
                             alt={data.title || "Preview image"}
                             className="h-full w-full object-cover"
