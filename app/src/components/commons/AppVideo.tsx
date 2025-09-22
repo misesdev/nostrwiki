@@ -2,17 +2,26 @@ import { useEffect, useRef, useState } from "react";
 
 type Props = {
     url: string;
-}
+};
 
 export const AppVideo = ({ url }: Props) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [poster, setPoster] = useState<string>("");
 
     useEffect(() => {
-        if (!videoRef.current) return;
         const vid = videoRef.current;
+        if (!vid) return;
 
-        const captureFrame = () => {
+        const handleLoadedMetadata = () => {
+            // tentar pular meio segundo para evitar frame preto
+            try {
+                vid.currentTime = Math.min(0.5, vid.duration / 10);
+            } catch {
+                // fallback: se não der para mudar currentTime, vai capturar no início mesmo
+            }
+        };
+
+        const handleSeeked = () => {
             try {
                 const canvas = document.createElement("canvas");
                 canvas.width = vid.videoWidth;
@@ -28,18 +37,25 @@ export const AppVideo = ({ url }: Props) => {
             }
         };
 
-        vid.addEventListener("loadeddata", captureFrame, { once: true });
-        return () => vid.removeEventListener("loadeddata", captureFrame);
+        vid.addEventListener("loadedmetadata", handleLoadedMetadata);
+        vid.addEventListener("seeked", handleSeeked, { once: true });
+
+        return () => {
+            vid.removeEventListener("loadedmetadata", handleLoadedMetadata);
+            vid.removeEventListener("seeked", handleSeeked);
+        };
     }, [url]);
 
     const handleMouseEnter = () => {
         videoRef.current?.play();
-    }
+    };
 
     const handleMouseLeave = () => {
-        videoRef.current?.pause();
-        videoRef.current!.currentTime = 0; // reset para o início
-    }
+        if (videoRef.current) {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0;
+        }
+    };
 
     return (
         <video
@@ -50,7 +66,7 @@ export const AppVideo = ({ url }: Props) => {
             playsInline
             preload="metadata"
             controls={false}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover rounded-xl bg-black"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             crossOrigin="anonymous"
