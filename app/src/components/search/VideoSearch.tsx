@@ -53,7 +53,7 @@ const VideoSearch = ({ term }: SearchParams) => {
         setEndOfResults(!videos.length)
         setSkip(prev => prev + take)
         setLoading(false)
-    }, [term, take])
+    }, [term, skip, take])
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -87,14 +87,12 @@ const VideoSearch = ({ term }: SearchParams) => {
     return (
         <>
             <div className='w-full text-[12px] md:text-sm'>
-                {!!videos.length && (
-                    <VideoResults playVideo={playVideo} videos={videos} />
-                )}
-                {loading && <VideoLoader />}
+                <VideoResults playVideo={playVideo} videos={videos} />
+                {loading && !endOfResults && <VideoLoader />}
                 {endOfResults && 
                     <p className="text-center text-gray-500">No more results</p>
                 }
-                <div ref={loaderRef} className="h-[100px]" />
+                <div ref={loaderRef} className="h-[50px]" />
             </div>
             {/* Modal Player */}
             {slideOpen && (

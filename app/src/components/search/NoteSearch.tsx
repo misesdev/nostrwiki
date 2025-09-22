@@ -88,14 +88,12 @@ const NoteSearch = ({ term }: SearchParams) => {
     return (
         <>
             <div className="w-full text-[12px] md:text-sm">
-                {!!notes.length && (
-                    <NoteResults showInSlide={showInSlide} notes={notes} />
-                )}
-                {loading && <NoteLoader />}
+                <NoteResults showInSlide={showInSlide} notes={notes} />
+                {loading && !endOfResults && <NoteLoader />}
                 {endOfResults && 
                     <p className="text-center text-gray-500">No more results</p>
                 }
-                <div ref={loaderRef} className="h-[100px]" />
+                <div ref={loaderRef} className="h-[50px]" />
             </div>
             {slideOpen && (
                 <AppSlide

@@ -86,14 +86,12 @@ const ImageSearch = ({ term }: SearchParams) => {
     return (
         <>
             <div className='w-full text-[12px] md:text-sm'>
-                {!!images.length && (
-                    <ImageResults showInSlide={showInSlide} images={images} />
-                )}
-                {loading && <ImageLoader />}
+                <ImageResults showInSlide={showInSlide} images={images} />
+                {loading && !endOfResults && <ImageLoader />}
                 {endOfResults && 
                     <p className="text-center text-gray-500">No more results</p>
                 }
-                <div ref={loaderRef} className="h-[100px]" />
+                <div ref={loaderRef} className="h-[50px]" />
             </div>
             {/* Modal Player */}
             {slideOpen && (

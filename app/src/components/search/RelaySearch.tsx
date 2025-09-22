@@ -85,14 +85,12 @@ const RelaySearch = ({ term }: SearchParams) => {
     return (
         <>
             <div className="w-full text-[12px] md:text-sm">
-                {!!relays.length && (
-                    <RelayResults viewManteiner={viewManteiner} relays={relays} />
-                )}
-                {loading && <RelayLoader />}
+                <RelayResults viewManteiner={viewManteiner} relays={relays} />
+                {loading && !endOfResults && <RelayLoader />}
                 {endOfResults && 
                     <p className="text-center text-gray-500">No more results</p>
                 }
-                <div ref={loaderRef} className="h-[100px]" />
+                <div ref={loaderRef} className="h-[50px]" />
             </div>
             {isOpen && !!author?.pubkey && (
                 <UserModal
