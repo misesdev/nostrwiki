@@ -25,8 +25,12 @@ const extractMetaTags = (html: string, url: string): UrlMetadata => {
     return { title, subtitle, image, url, domain };
 }
 
-export const getPreviewData = async (url: string) : Promise<UrlMetadata> => {
-    const { data } = await axios.get(url, { timeout: 3000 })
-    return extractMetaTags(data, url);
-}
+// export const getPreviewData = async (url: string) : Promise<UrlMetadata> => {
+//     const { data } = await axios.get(url, { timeout: 3000 })
+//     return extractMetaTags(data, url);
+// }
 
+export const getPreviewData = async (url: string) : Promise<UrlMetadata> => {
+    const { data } = await axios.get(`/api/preview?url=${encodeURIComponent(url)}`)
+    return data;
+}
