@@ -11,7 +11,7 @@ import UserModal from "../user/UserModal"
 
 const RelaySearch = ({ term }: SearchParams) => {
     
-    const take = 35
+    const take = 16
     const [skip, setSkip] = useState(0)
     const [isOpen, setIsOpen] = useState(true)
     const [loading, setLoading] = useState(true)

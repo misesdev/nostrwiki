@@ -56,9 +56,10 @@ function AppSlide<T>({
         setDirection(1);
         if (nextIndex < items.length) {
             setIndex(prev => prev + 1);
-        } else if (endOfResults && nextIndex === items.length) {
-            setIndex(0);
         }
+        // else if (endOfResults && nextIndex === items.length) {
+        //     setIndex(0);
+        // }
         if (!endOfResults && items.length - nextIndex <= PRELOAD_THRESHOLD) {
             await fetchMoreItems();
         }

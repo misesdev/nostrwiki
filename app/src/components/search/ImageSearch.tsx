@@ -12,7 +12,7 @@ import ImageSlideItem from '../images/ImageSlideItem';
 
 const ImageSearch = ({ term }: SearchParams) => {
 
-    const take = 25
+    const take = 16
     const [skip, setSkip] = useState(0)
     const [loading, setLoading] = useState(true)
     const [images, setImages] = useState<NFile[]>([])

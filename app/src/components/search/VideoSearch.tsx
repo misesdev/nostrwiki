@@ -12,7 +12,7 @@ import VideoSlideItem from '../video/VideoSlideItem';
 
 const VideoSearch = ({ term }: SearchParams) => {
 
-    const take = 25
+    const take = 16
     const [skip, setSkip] = useState(0)
     const [loading, setLoading] = useState(true)
     const [videos, setVideos] = useState<NFile[]>([])

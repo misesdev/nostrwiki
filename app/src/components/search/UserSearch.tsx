@@ -10,7 +10,7 @@ import { UsersResults } from "../user/UserResults";
 
 const UserSearch = ({ term }: SearchParams) => {
  
-    const take = 35
+    const take = 16
     const [skip, setSkip] = useState(0)
     const [loading, setLoading] = useState(true)
     const [users, setUsers] = useState<User[]>([])
