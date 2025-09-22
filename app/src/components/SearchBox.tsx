@@ -8,10 +8,12 @@ import AutoComplete from './search/AutoComplete';
 import { AutocompleteResult } from '@/types/types';
 
 type SearchBoxProps = {
+    onBlur?: () => void;
+    onFocus?: () => void;
     handleSearch: (t: string) => void;
 }
 
-const SearchBox = ({ handleSearch }: SearchBoxProps) => {
+const SearchBox = ({ handleSearch, onBlur, onFocus }: SearchBoxProps) => {
 
     const searchParams = useSearchParams()
     const [searchTerm, setSearchTerm] = useState(searchParams.get("term")??"")
@@ -64,13 +66,17 @@ const SearchBox = ({ handleSearch }: SearchBoxProps) => {
     }, [searchTerm, inputRef, handleSearch])
     
     const handleFocus = async () => {
+        if(onFocus) onFocus()
         if (results.length > 0 && searchTerm.length >= 3) {
             await fetchResults(searchTerm.trim())
         }
     }
 
     const handleBlur = () => {
-        setTimeout(() => setShowDropdown(false), 200)
+        setTimeout(() => {
+            setShowDropdown(false)
+            if(onBlur) onBlur()
+        }, 200)
     }
 
     return (

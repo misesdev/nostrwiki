@@ -19,7 +19,6 @@ const SearchHeader = () => {
         <header className="fixed top-0 left-0 w-full bg-gray-900/90 backdrop-blur-md z-50 shadow-md">
             <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center lg:items-stretch p-2 lg:p-6 gap-4 lg:gap-0">
                 
-                {/* Logo */}
                 <div className="flex items-center justify-between w-full lg:w-auto">
                     <Link href="/">
                         <div className="flex items-center gap-3">
@@ -46,12 +45,10 @@ const SearchHeader = () => {
                     </Link>
                 </div>
 
-                {/* Search */}
                 <div className="flex-1 w-full lg:mx-8">
                     <SearchBox handleSearch={handleSearch} />
                 </div>
 
-                {/* Desktop Actions */}
                 <div className="hidden lg:flex items-center gap-4">
                     <Link target="_blank" 
                         href={urlApiDocs} 
@@ -61,7 +58,6 @@ const SearchHeader = () => {
                 </div>
             </div>
 
-            {/* Header options / tabs */}
             <div className="w-full">
                 <SearchHeaderOptions />
             </div>

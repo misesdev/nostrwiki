@@ -7,6 +7,7 @@ import { useState } from "react"
 import UserModal from "../user/UserModal"
 import NoteContent from "./NoteContent"
 import { getClipedContent } from "@/utils/utils"
+import Content from "./Content"
 
 type Props = {
     note: Note;
@@ -38,7 +39,7 @@ const NoteItem = ({ note, showInSlide }: Props) => {
                             <span className="text-gray-100 font-semibold text-[14px] md:text-sm">
                                 {getClipedContent(note.author.display_name || note.author.name, 24)}
                             </span>
-                            <span className="text-gray-400 text-xs">{date}</span>
+                            <span className="text-[12px] md:text-xs text-gray-400">{date}</span>
                         </div>
                     </div>
                 </div>
@@ -52,8 +53,8 @@ const NoteItem = ({ note, showInSlide }: Props) => {
                         </button>
                     )}
 
-                    <div className="text-gray-200 dark:text-gray-300 text-[12px] md:text-sm line-clamp-2">
-                        <NoteContent note={note} cliped />
+                    <div className="text-gray-200 dark:text-gray-300 text-[12px] md:text-sm line-clamp-3">
+                        <Content content={note.content} cliped />
                     </div>
                 </div>
 

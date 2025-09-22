@@ -47,3 +47,32 @@ export function removeMediaLinks(content: string): string {
         return url; // mantém outros links
     });
 }
+
+export const hashtagsFromContent = (content: string): string[] => {
+    // Regex: Search for a #word that:
+    // - is NOT at the beginning of the line followed by a space (# Heading)
+    // - is NOT ## or ### (Markdown headings)
+    // - We allow letters, numbers, underscores, and hyphens in the hashtag
+    const regex = /(^|\s)#(?!#)([\p{L}\p{N}_-]+)/gu;
+    const matches: string[] = [];
+    let match: RegExpExecArray | null;
+
+    while ((match = regex.exec(content)) !== null) {
+        matches.push(match[2].toLowerCase());
+    }
+
+    return matches;
+}
+
+export const stripMarkdownLinks = (content: string): string => {
+  return content
+    // remove images ![alt](url) → url
+    .replace(/!\[.*?\]\((https?:\/\/[^\s)]+)\)/g, "$1")
+    // remove links [text](url) → url
+    .replace(/\[.*?\]\((https?:\/\/[^\s)]+)\)/g, "$1")
+}
+
+export const isStandaloneLink = (text: string, link: string): boolean => {
+      const regex = new RegExp(`(^|\\n)\\s*${link}\\s*($|\\n)`)
+      return regex.test(text)
+}

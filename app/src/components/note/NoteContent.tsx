@@ -1,5 +1,6 @@
 'use client'
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Note, User } from "@/types/types"
 import SearchService from "@/services/api/SearchService"
@@ -7,6 +8,9 @@ import { parseContent, Token } from "@konemono/nostr-content-parser"
 import { npubToHex, nprofileToPubkey, neventToId } from "@/utils/utils"
 import MarkdownContent from "./MarkDownContent"
 import UserModal from "../user/UserModal"
+import { hashtagsFromContent, stripMarkdownLinks } from "@/utils/contents"
+import LinkPreview from "../commons/LinkPreview"
+import AppImage from "../commons/AppImage";
 
 type Props = {
     note: Note;
@@ -20,7 +24,10 @@ const NoteContent = ({ note, cliped=false }: Props) => {
     const [selectedUser, setSelectedUser] = useState<User | null>(null)
     const [isUserOpen, setIsUserOpen] = useState(false)
     const videoRefs = useRef<HTMLVideoElement[]>([])
-    const tokens: Token[] = parseContent(note.content, (note.tags as string[])?.map(t => (["t", t])))
+
+    const text = stripMarkdownLinks(note.content)
+    const tags = hashtagsFromContent(note.content)
+    const tokens: Token[] = parseContent(text, tags.map(t => ["t", t]))
 
     useEffect(() => {
         const fetchProfiles = async () => {
@@ -71,17 +78,20 @@ const NoteContent = ({ note, cliped=false }: Props) => {
 
     const renderToken = (token: Token, i: number) => {
         if (token.type === "text") {
-            const clip = token.content.split(" ").slice(0, 65).join(" ")
+            const clip = token.content
+                .split(" ").slice(0, 65).join(" ")
             const content = cliped ? `${clip}...` : token.content
             return (
-                <MarkdownContent key={i} content={content.replaceAll("nostr:", "")} />
+                <div className="prose dark:prose-invert max-w-none leading-relaxed break-words">
+                    <MarkdownContent content={content.replaceAll("nostr:", "")} />
+                </div>           
             )
         }
         if (token.type === "hashtag") {
             return (
                 <span
-                    key={i}
-                    className="text-[12px] md:text-sm text-purple-400 hover:underline cursor-pointer mx-1 break-words"
+                  key={i}
+                  className="text-[12px] md:text-sm text-purple-400 hover:underline cursor-pointer mx-1 whitespace-nowrap break-normal"
                 >
                     {token.content}
                 </span>
@@ -96,7 +106,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
             return (
                 <span
                     key={i}
-                    className="text-[12px] md:text-sm text-blue-400 cursor-pointer hover:underline mr-1 break-all"
+                    className="text-[12px] md:text-sm text-blue-400 cursor-pointer hover:underline mx-1 break-all"
                     onClick={() => {
                         if (profile) {
                           setSelectedUser(profile)
@@ -121,40 +131,56 @@ const NoteContent = ({ note, cliped=false }: Props) => {
                 </span>
             )
         }
-
+        if(token.type == "relay") {
+            const website = token.content
+                .replace("wss", "https").replace("ws", "http")
+            return (
+                <Link
+                    href={website}
+                    className="mx-2 text-blue-400 hover:underline break-all"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >{token.content}</Link>
+            )
+        }
         // Links / media
         if (token.type === "url") {
             if (token?.metadata?.type === "image") {
                 if(cliped && filesCount > 0) return null;
                 filesCount = filesCount + 1
                 return (
-                    <img
-                        key={i}
-                        width={600}
-                        height={600}
-                        src={token.content}
-                        onError={e => e.currentTarget.src = "/default-banner.jpg"}
-                        className="max-w-full max-h-[90vh] my-2 rounded-xl object-contain"
-                        alt="image"
-                    />
+                    <div className="w-full my-2 flex justify-center">
+                        <img
+                            key={i}
+                            src={token.content}
+                            onError={e => e.currentTarget.src = "/default-banner.jpg"}
+                            className="rounded-xl object-contain"
+                            alt="image"
+                        />
+                    </div>
                 )
             }
             if (token?.metadata?.type === "video") {
                 if(cliped && filesCount > 0) return null;
                 filesCount = filesCount + 1
                 return (
-                    <video
-                        key={i}
-                        loop
-                        src={token.content}
-                        controls
-                        ref={el => { if (el) videoRefs.current[i] = el }}
-                        className="w-full h-auto max-w-full max-h-[90vh] rounded-xl bg-gray-900 bg-opacity-35 my-2"
-                    />
+                    <div className="w-full my-2 flex justify-center">
+                        <video
+                            key={i}
+                            loop
+                            src={token.content}
+                            controls
+                            ref={el => { if (el) videoRefs.current[i] = el }}
+                            className="w-full h-auto max-w-full max-h-[90vh] rounded-xl bg-gray-900 bg-opacity-35 my-2"
+                        />
+                    </div>
                 )
             }
+               
             return (
-                <MarkdownContent key={i} content={token.content} />
+                <div key={i} className="flex w-full my-2">
+                    <LinkPreview link={token.content} />
+                </div>
             )
         }
 
@@ -163,7 +189,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
 
     return (
         <>
-            <div className="prose dark:prose-invert max-w-none leading-relaxed break-words">
+            <div className="w-full max-w-full leading-relaxed p-4 break-words">
                 {tokens.map(renderToken)}
             </div>
             {selectedUser && isUserOpen && (

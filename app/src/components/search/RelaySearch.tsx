@@ -1,22 +1,25 @@
 'use client'
 
-import { Relay, SearchParams } from "@/types/types"
+import { Relay, SearchParams, User } from "@/types/types"
 import { normalizeRelay } from "@/utils/utils"
 import SearchService from "@/services/api/SearchService"
 import { useCallback, useEffect, useRef, useState } from "react"
 import EmptyResults from "./EmptyResults"
 import RelayLoader from "../relay/RelayLoader"
 import { RelayResults } from "../relay/RelayResults"
+import UserModal from "../user/UserModal"
 
 const RelaySearch = ({ term }: SearchParams) => {
     
     const take = 35
     const [skip, setSkip] = useState(0)
+    const [isOpen, setIsOpen] = useState(true)
     const [loading, setLoading] = useState(true)
     const [relays, setRelays] = useState<Relay[]>([])
     const [endOfResults, setEndOfResults] = useState(false)
-    const loaderRef = useRef<HTMLDivElement | null>(null);
-    const uniques = useRef(new Map<string, Relay>()) 
+    const loaderRef = useRef<HTMLDivElement | null>(null)
+    const uniques = useRef(new Map<string, Relay>())
+    const [author, setAuthor] = useState<User|null>(null)
 
     useEffect(() => { 
         setSkip(0)
@@ -71,18 +74,32 @@ const RelaySearch = ({ term }: SearchParams) => {
         };
     }, [loading, endOfResults, fetchRelays]);
 
+    const viewManteiner = useCallback((user: User) => {
+        setAuthor(user)
+        setIsOpen(true)
+    }, [isOpen])
+
     if (!loading && !relays.length) 
         return <EmptyResults term={term} />
 
     return (
-        <div className="w-full text-[12px] md:text-sm">
-            {loading && <RelayLoader />}
-            <RelayResults relays={relays} />
-            {endOfResults && 
-                <p className="text-center text-gray-500">No more results</p>
-            }
-            <div ref={loaderRef} className="h-[100px]" />
-        </div>
+        <>
+            <div className="w-full text-[12px] md:text-sm">
+                {loading && <RelayLoader />}
+                <RelayResults viewManteiner={viewManteiner} relays={relays} />
+                {endOfResults && 
+                    <p className="text-center text-gray-500">No more results</p>
+                }
+                <div ref={loaderRef} className="h-[100px]" />
+            </div>
+            {isOpen && (
+                <UserModal
+                    isOpen={isOpen}
+                    onClose={() => setIsOpen(false)}
+                    user={author as User}
+                />
+            )}
+        </>
     )
 }
 

@@ -1,15 +1,17 @@
 'use client'
 
-import { Relay } from "@/types/types"
+import { Relay, User } from "@/types/types"
 import { Copy } from "lucide-react"
 import toast from "react-hot-toast"
 import AppImage from "../commons/AppImage"
 
 interface Props {
-    relay: Relay
+    relay: Relay;
+    viewManteiner: (u: User) => void;
 }
 
-export const RelayItem = ({ relay }: Props) => {
+export const RelayItem = ({ relay, viewManteiner }: Props) => {
+
     const handleCopy = () => {
         navigator.clipboard.writeText(relay.url)
         toast.success(`Copied ${relay.url} to clipboard!`)
@@ -71,8 +73,10 @@ export const RelayItem = ({ relay }: Props) => {
                         )}
                     </div>
 
-                    {relay.author && (
-                        <div className="flex items-center mt-4">
+                    {!!relay.author && 
+                        <div 
+                            onClick={() => viewManteiner(relay.author as User)}
+                            className="flex md:cursor-pointer items-center mt-4">
                             <AppImage
                                 width={40}
                                 height={40}
@@ -88,7 +92,7 @@ export const RelayItem = ({ relay }: Props) => {
                                 <span className="text-gray-500">(Maintainer)</span>
                             </span>
                         </div>
-                    )}
+                    }
                 </div>
 
                 {/* Rodapé */}

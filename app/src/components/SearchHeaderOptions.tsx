@@ -32,7 +32,7 @@ export default function SearchHeaderOptions() {
                         <div
                             key={key}
                             onClick={() => selectTab(key)}
-                            className="relative flex items-center space-x-2 cursor-pointer py-1 lg:py-2 px-1 lg:px-2 transition-all group"
+                            className="relative flex items-center space-x-2 md:cursor-pointer py-1 lg:py-2 px-1 lg:px-2 transition-all group"
                         >
                             {/* <Icon */}
                             {/*     className={`text-md lg:text-lg ${isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-blue-400'}`} */}

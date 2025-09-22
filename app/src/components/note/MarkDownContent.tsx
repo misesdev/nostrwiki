@@ -50,6 +50,18 @@ const MarkdownContent = ({ content }: MarkdownProps) => {
                         {...props}
                         className="text-[12px] md:text-sm text-gray-200 dark:text-gray-300 break-words whitespace-pre-wrap"
                     />
+                ),
+                h1: ({ node, ...props }) => (
+                    <h1
+                        {...props}
+                        className="text-[14px] md:text-xl font-bold text-gray-200 dark:text-gray-300 break-words whitespace-pre-wrap"
+                    />
+                ),
+                h2: ({ node, ...props }) => (
+                    <h2
+                        {...props}
+                        className="text-[12px] md:text-sm font-bold text-gray-200 dark:text-gray-300 break-words whitespace-pre-wrap"
+                    />
                 )
             }}
         >

@@ -1,13 +1,16 @@
 
 'use client'
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react"
 import { User } from "@/types/types"
-import AppImage from "../commons/AppImage"
 import SearchService from "@/services/api/SearchService"
 import { parseContent, Token } from "@konemono/nostr-content-parser"
 import { npubToHex, nprofileToPubkey, neventToId } from "@/utils/utils"
 import MarkdownContent from "./MarkDownContent"
+import UserModal from "../user/UserModal"
+import { hashtagsFromContent, stripMarkdownLinks } from "@/utils/contents"
+import LinkPreview from "../commons/LinkPreview"
 
 type Props = {
     content: string;
@@ -15,10 +18,16 @@ type Props = {
 }
 
 const Content = ({ content, cliped = false }: Props) => {
+    let filesCount = 0
     const [profiles, setProfiles] = useState<Record<string, User | null>>({})
     const [events, setEvents] = useState<Record<string, any>>({})
+    const [selectedUser, setSelectedUser] = useState<User | null>(null)
+    const [isUserOpen, setIsUserOpen] = useState(false)
     const videoRefs = useRef<HTMLVideoElement[]>([])
-    const tokens: Token[] = parseContent((content))
+
+    const text = stripMarkdownLinks(content)
+    const tags = hashtagsFromContent(content)
+    const tokens: Token[] = parseContent(text, tags.map(t => ["t", t]))
 
     useEffect(() => {
         const fetchProfiles = async () => {
@@ -56,7 +65,7 @@ const Content = ({ content, cliped = false }: Props) => {
         entries.forEach(entry => {
             const video = entry.target as HTMLVideoElement
             if (!entry.isIntersecting) {
-            video.pause()
+                video.pause()
             }
         })
     }, [])
@@ -68,36 +77,40 @@ const Content = ({ content, cliped = false }: Props) => {
     }, [tokens, handleIntersection])
 
     const renderToken = (token: Token, i: number) => {
-        // Texto normal
         if (token.type === "text") {
-            const clip = token.content.split(" ").slice(0, 38).join(" ")
+            const clip = token.content.split(" ").slice(0, 65).join(" ")
             const content = cliped ? `${clip}...` : token.content
             return (
-                <MarkdownContent key={i} content={content.replaceAll("nostr:", "")} />
+                <div className="prose dark:prose-invert max-w-full break-words whitespace-pre-wrap">
+                    <MarkdownContent content={content.replaceAll("nostr:", "")} />
+                </div>           
             )
         }
-        // Hashtags
         if (token.type === "hashtag") {
             return (
-                <strong
-                    key={i}
-                    className="text-[12px] md:text-sm text-purple-400 hover:underline cursor-pointer mr-1"
+                <span
+                  key={i}
+                  className="text-[12px] md:text-sm text-purple-400 hover:underline cursor-pointer mx-1 whitespace-nowrap break-normal"
                 >
-                    #{token.content}
-                </strong>
+                    {token.content}
+                </span>
             )
         }
 
         if (token.type === "nip19" &&
             (token.content.includes("npub1") || 
-                token.content.includes("nprofile1"))) {
+             token.content.includes("nprofile1"))) {
             const profile = profiles[token.content]
             const display = profile?.display_name || profile?.name || token.content.slice(0, 12) + "…"
             return (
                 <span
                     key={i}
-                    className="text-[12px] md:text-sm text-blue-400 cursor-pointer hover:underline mr-1"
+                    className="text-[12px] md:text-sm text-blue-400 cursor-pointer hover:underline break-all"
                     onClick={() => {
+                        if (profile) {
+                          setSelectedUser(profile)
+                          setIsUserOpen(true)
+                        }
                     }}
                 >
                     @{display}
@@ -111,48 +124,62 @@ const Content = ({ content, cliped = false }: Props) => {
             return (
                 <span
                     key={i}
-                    className="text-[12px] md:text-sm text-blue-500 underline hover:opacity-80"
-                    onClick={() => {
-                        // TODO: abrir modal da nota
-                        console.log("Abrir modal note:", note)
-                    }}
+                    className="text-blue-500 underline hover:opacity-80 break-all"
                 >
                     {note?.title || token.content.slice(0, 12) + "…"}
                 </span>
             )
         }
-
+        if(token.type == "relay") {
+            const website = token.content
+                .replace("wss", "https").replace("ws", "http")
+            return (
+                <Link
+                    href={website}
+                    className="mx-2 text-blue-400 hover:underline break-all"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >{token.content}</Link>
+            )
+        }
         // Links / media
         if (token.type === "url") {
             if (token?.metadata?.type === "image") {
-                if(cliped) return null
+                if(cliped && filesCount > 0) return null;
+                filesCount = filesCount + 1
                 return (
-                    <AppImage
-                        key={i}
-                        width={600}
-                        height={600}
-                        src={token.content}
-                        onError="hidden"
-                        alt="image"
-                        className="max-w-[100%] max-h-[90vh] my-2 rounded-xl"
-                    />
+                    <div className="w-full my-2 flex justify-center">
+                        <img
+                            key={i}
+                            src={token.content}
+                            onError={e => e.currentTarget.src = "/default-banner.jpg"}
+                            className="rounded-xl object-contain"
+                            alt="image"
+                        />
+                    </div>
                 )
             }
             if (token?.metadata?.type === "video") {
-                if(cliped) return null
+                if(cliped && filesCount > 0) return null;
+                filesCount = filesCount + 1
                 return (
-                    <video
-                        key={i}
-                        loop
-                        src={token.content}
-                        controls
-                        ref={el => { if (el) videoRefs.current[i] = el }}
-                        className="w-full h-auto max-w-[100%] max-h-[90vh] rounded-xl bg-gray-900 bg-opacity-35 my-2"
-                    />
+                    <div className="w-full my-2 flex justify-center">
+                        <video
+                            key={i}
+                            loop
+                            src={token.content}
+                            controls
+                            ref={el => { if (el) videoRefs.current[i] = el }}
+                            className="w-full h-auto max-w-full max-h-[90vh] rounded-xl bg-gray-900 bg-opacity-35 my-2"
+                        />
+                    </div>
                 )
             }
+               
             return (
-                <MarkdownContent key={i} content={token.content} />
+                <div key={i} className="flex w-full my-2">
+                    <LinkPreview link={token.content} />
+                </div>
             )
         }
 
@@ -160,9 +187,18 @@ const Content = ({ content, cliped = false }: Props) => {
     }
 
     return (
-        <div className="text-[12px] md:text-sm prose dark:prose-invert max-w-none leading-relaxed">
-            {tokens.map(renderToken)}
-        </div>
+        <>
+            <div className="w-full max-w-full leading-relaxed p-4 break-words">
+                {tokens.map(renderToken)}
+            </div>
+            {selectedUser && isUserOpen && (
+                <UserModal
+                  user={selectedUser}
+                  isOpen={isUserOpen}
+                  onClose={() => setIsUserOpen(false)}
+                />
+            )}
+        </>
     )
 }
 

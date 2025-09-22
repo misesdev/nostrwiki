@@ -4,10 +4,9 @@ import { useEffect, useState } from "react"
 import { User, Note } from "@/types/types"
 import BlurModal from "../commons/BlurModal"
 import AppImage from "../commons/AppImage"
-import NoteContent from "../note/NoteContent"
 import SearchService from "@/services/api/SearchService"
 import Content from "../note/Content"
-import { format } from "date-fns"
+import NoteViewr from "../note/NoteViwer"
 
 type UserModalProps = {
     user: User
@@ -16,6 +15,8 @@ type UserModalProps = {
 }
 
 const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
+
+    if(!user) return null
 
     const [notes, setNotes] = useState<Note[]>([])
     const [loading, setLoading] = useState(false)
@@ -45,7 +46,7 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
         <BlurModal isOpen={isOpen} onClose={onClose}>
             <div className="max-w-[100%] max-h-[90vh] overflow-y-auto px-2 py-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                 {/* Header do usuário */}
-                <div className="flex p-3 md:p-5 flex-col sm:flex-row items-center sm:items-start gap-4 mb-6">
+                <div className="flex p-3 md:p-5 flex-col sm:flex-row items-start gap-4 mb-6 w-full max-w-full">
                     <AppImage
                         width={100}
                         height={100}
@@ -54,19 +55,18 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
                         className="w-20 h-20 rounded-full border-4 border-white dark:border-gray-800"
                         onError="/default-avatar.png"
                     />
-                    <div className="flex-1 text-left">
-                        <h2 className="text-[14px] md:text-2xl font-bold text-gray-300">
+                    <div className="flex-1 text-left w-full">
+                        <h2 className="text-[16px] md:text-2xl font-bold text-gray-300">
                             {user.display_name || user.name}
                         </h2>
-                        <div className="text-gray-300 mt-1">
-                            <Content content={user.about || "Without Descriptino"} />
+                        <div className="w-full max-w-full text-gray-300 mt-1">
+                            <Content content={user.about || "Without Description"} />
                         </div>
                     </div>
                 </div>
-
                 {/* Lista de notas */}
                 <div className="flex flex-col gap-6">
-                    <div className="pl-4 m-1">
+                    <div className="pl-2 m-1">
                         {loading && 
                             <p className="text-[12px] md:text-sm font-bold text-gray-500">
                                 loading notes...
@@ -83,22 +83,9 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
                             </p>
                         )}
                     </div>
-                    {notes.map((note) => (
-                        <div key={note.id} className="overflow-hidden bg-gray-900 bg-opacity-50 rounded-xl p-4 shadow-md transition hover:shadow-lg">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-[12px] md:text-sm text-gray-500">
-                                    {format(new Date(note.published_at * 1000), "dd MMM yyyy")}
-                                </span>
-                                {/* <span className="text-gray-400 text-sm"> */}
-                                {/*     {note.author.display_name || note.author.name} */}
-                                {/* </span> */}
-                            </div>
-                            <h3 className="text-[14px] md:text-lg font-semibold text-gray-200 mb-2">
-                                {note.title || "Without Title"}
-                            </h3>
-                            <NoteContent note={note} />
-                        </div>
-                    ))}
+                    <div className="w-full my-1 flex flex-col items-center">
+                        {notes.map((note) => (<NoteViewr key={note.id} note={note}/>))}
+                    </div>
                 </div>
             </div>
         </BlurModal>

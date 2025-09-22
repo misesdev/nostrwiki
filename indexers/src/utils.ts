@@ -128,12 +128,18 @@ export const mediaType = (url: string): "image" | "video" | "audio" | "iframe" =
 }
 
 export const extractTagsFromContent = (content: string): string[] => {
-    const regex = /#(\w+)/g; 
+    // Regex: Search for a #word that:
+    // - is NOT at the beginning of the line followed by a space (# Heading)
+    // - is NOT ## or ### (Markdown headings)
+    // - We allow letters, numbers, underscores, and hyphens in the hashtag
+    const regex = /(^|\s)#(?!#)([a-zA-Z0-9_-]+)/g;
     const matches: string[] = [];
-    let match: any;
+    let match: RegExpExecArray | null;
+
     while ((match = regex.exec(content)) !== null) {
-        matches.push(match[1].toLowerCase()); 
+        matches.push(match[2].toLowerCase());
     }
+
     return matches;
 }
 
