@@ -36,7 +36,7 @@ const NoteSearch = ({ term }: SearchParams) => {
                     uniques.current.set(note.id, note)
             })
             setNotes(Array.from(uniques.current.values()))
-            setEndOfResults(!notes.length)
+            setEndOfResults(notes.length < (take/2))
             setSkip(prev => prev + take)
             setLoading(false)
         }
@@ -52,7 +52,7 @@ const NoteSearch = ({ term }: SearchParams) => {
                 uniques.current.set(note.id, normalizeNote(note))
         })
         setNotes(Array.from(uniques.current.values()))
-        setEndOfResults(!notes.length)
+        setEndOfResults(notes.length < (take/2))
         setSkip(prev => prev + take)
         setLoading(false)
     }, [term, skip, take])

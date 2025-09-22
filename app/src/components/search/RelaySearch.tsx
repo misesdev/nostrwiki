@@ -34,8 +34,8 @@ const RelaySearch = ({ term }: SearchParams) => {
                 uniques.current.set(relay.url, normalizeRelay(relay))
             })
             setRelays(Array.from(uniques.current.values()))
+            setEndOfResults(relays.length < (take/2))
             setSkip(prev => prev + take)
-            setEndOfResults(!relays.length)
             setLoading(false)
         }
         load()
@@ -49,7 +49,7 @@ const RelaySearch = ({ term }: SearchParams) => {
             uniques.current.set(relay.url, normalizeRelay(relay))
         })
         setRelays(Array.from(uniques.current.values()))
-        setEndOfResults(!relays.length)
+        setEndOfResults(relays.length < (take/2))
         setSkip(prev => prev + take)
         setLoading(false)
     }, [term, skip, take])

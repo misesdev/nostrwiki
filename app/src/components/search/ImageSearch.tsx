@@ -35,7 +35,7 @@ const ImageSearch = ({ term }: SearchParams) => {
                 uniques.current.set(image.url, normalizeFile(image))
             })
             setImages(Array.from(uniques.current.values()))
-            setEndOfResults(!images.length)
+            setEndOfResults(images.length < (take/2))
             setSkip(prev => prev + take)
             setLoading(false)
         }
@@ -50,7 +50,7 @@ const ImageSearch = ({ term }: SearchParams) => {
             uniques.current.set(image.url, normalizeFile(image))
         })
         setImages(Array.from(uniques.current.values()))
-        setEndOfResults(!images.length)
+        setEndOfResults(images.length < (take/2))
         setSkip(prev => prev + take)
         setLoading(false)
     }, [term, skip, take])

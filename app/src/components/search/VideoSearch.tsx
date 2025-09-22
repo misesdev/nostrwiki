@@ -35,7 +35,7 @@ const VideoSearch = ({ term }: SearchParams) => {
                 uniques.current.set(video.url, normalizeFile(video))
             })
             setVideos(Array.from(uniques.current.values()))
-            setEndOfResults(!videos.length)
+            setEndOfResults(videos.length < (take/2))
             setSkip(prev => prev + take)
             setLoading(false)
         }
@@ -50,7 +50,7 @@ const VideoSearch = ({ term }: SearchParams) => {
             uniques.current.set(video.url, normalizeFile(video))
         })
         setVideos(Array.from(uniques.current.values()))
-        setEndOfResults(!videos.length)
+        setEndOfResults(videos.length < (take/2))
         setSkip(prev => prev + take)
         setLoading(false)
     }, [term, skip, take])

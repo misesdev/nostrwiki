@@ -31,7 +31,7 @@ const UserSearch = ({ term }: SearchParams) => {
                 uniques.current.set(user.pubkey, normalizeUser(user))
             })
             setUsers(Array.from(uniques.current.values()))
-            setEndOfResults(!users.length)
+            setEndOfResults(users.length < (take/2))
             setSkip(prev => prev + take)
             setLoading(false)
         }
@@ -46,7 +46,7 @@ const UserSearch = ({ term }: SearchParams) => {
             uniques.current.set(user.pubkey, normalizeUser(user))
         })
         setUsers(Array.from(uniques.current.values()))
-        setEndOfResults(!users.length)
+        setEndOfResults(users.length < (take/2))
         setSkip(prev => prev + take)
         setLoading(false)
     }, [term, skip, take])
