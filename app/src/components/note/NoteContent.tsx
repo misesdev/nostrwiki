@@ -189,7 +189,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
 
     return (
         <>
-            <div className="w-full max-w-full leading-relaxed p-4 break-words">
+            <div className="max-w-none leading-relaxed break-words flex flex-wrap items-center">
                 {tokens.map(renderToken)}
             </div>
             {selectedUser && isUserOpen && (
