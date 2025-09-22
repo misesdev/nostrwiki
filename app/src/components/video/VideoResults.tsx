@@ -8,11 +8,11 @@ type Props = {
     playVideo: (v: NFile) => void;
 }
 
-export default function VideoResults({ videos, playVideo }: Props) {
+const VideoResults = ({ videos, playVideo }: Props) => {
     if(!videos.length) return null 
     return (
-        <div className="my-5 lg:m-10">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-3 gap-6">
+        <div className="w-full">
+            <div className='w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-7 py-5 px-3 md:px-6'>
                 {videos.map((video, key) => (
                     <VideoItem key={key} video={video} playVideo={playVideo} />
                 ))}
@@ -20,3 +20,5 @@ export default function VideoResults({ videos, playVideo }: Props) {
         </div>
     );
 }
+
+export default VideoResults

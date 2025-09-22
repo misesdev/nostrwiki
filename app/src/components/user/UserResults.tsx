@@ -3,19 +3,22 @@
 import { User } from "@/types/types"
 import UserItem from "./UserItem"
 
-type UserListProps = {
-    users: User[]
+type UserListProps = { 
+    users: User[]; 
+    showInModal: (u: User) => void;
 }
 
-export const UsersResults = ({ users }: UserListProps) => {
+const UsersResults = ({ users, showInModal }: UserListProps) => {
     if (!users.length) return null
     return (
-        <div className='my-5 lg:m-10'>
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-3 gap-4'>
+        <div className="w-full">
+            <div className='w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 py-5 px-3 md:px-6'>
                 {users.map((user, key) => (
-                    <UserItem key={key} user={user} />
+                    <UserItem key={key} user={user} showInModal={showInModal} />
                 ))}
             </div>
         </div>
     )
 }
+
+export default UsersResults

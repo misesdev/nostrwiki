@@ -6,7 +6,7 @@ import SearchService from "@/services/api/SearchService"
 import { useCallback, useEffect, useRef, useState } from "react"
 import EmptyResults from "./EmptyResults"
 import RelayLoader from "../relay/RelayLoader"
-import { RelayResults } from "../relay/RelayResults"
+import RelayResults from "../relay/RelayResults"
 import UserModal from "../user/UserModal"
 
 const RelaySearch = ({ term }: SearchParams) => {
@@ -93,11 +93,7 @@ const RelaySearch = ({ term }: SearchParams) => {
                 <div ref={loaderRef} className="h-[50px]" />
             </div>
             {isOpen && !!author?.pubkey && (
-                <UserModal
-                    isOpen={isOpen}
-                    onClose={() => setIsOpen(false)}
-                    user={author as User}
-                />
+                <UserModal isOpen={isOpen} user={author as User} onClose={() => setIsOpen(false)} />
             )}
         </>
     )

@@ -6,13 +6,16 @@ import { normalizeUser } from "@/utils/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { UserLoader } from "../user/UserLoader";
 import EmptyResults from "./EmptyResults";
-import { UsersResults } from "../user/UserResults";
+import UsersResults from "../user/UserResults";
+import UserModal from "../user/UserModal";
 
 const UserSearch = ({ term }: SearchParams) => {
  
     const take = 16
     const [skip, setSkip] = useState(0)
+    const [isOpen, setIsOpen] = useState(true)
     const [loading, setLoading] = useState(true)
+    const [user, setUser] = useState<User|null>(null)
     const [users, setUsers] = useState<User[]>([])
     const [endOfResults, setEndOfResults] = useState(false)
     const loaderRef = useRef<HTMLDivElement | null>(null);
@@ -71,18 +74,28 @@ const UserSearch = ({ term }: SearchParams) => {
         };
     }, [loading, endOfResults, fetchUsers]);
 
+    const showInModal = useCallback((profile: User) => {
+        setUser(profile)
+        setIsOpen(true)
+    }, [user, isOpen])
+
     if (!loading && !users.length) 
         return <EmptyResults term={term} /> 
 
     return (
-        <div className="w-full text-[12px] md:text-sm">
-            {!!users.length && <UsersResults users={users} />}
-            {loading && !endOfResults && <UserLoader />}
-            {endOfResults && 
-                <p className="text-center text-gray-500">No more results</p>
-            }
-            <div ref={loaderRef} className="h-[50px]" />
-        </div>
+        <>
+            <div className="w-full text-[12px] md:text-sm">
+                <UsersResults showInModal={showInModal} users={users} />
+                {loading && !endOfResults && <UserLoader />}
+                {endOfResults && 
+                    <p className="text-center text-gray-500">No more results</p>
+                }
+                <div ref={loaderRef} className="h-[50px]" />
+            </div>
+            {isOpen && !!user && (
+                <UserModal isOpen={isOpen} user={user as User} onClose={() => setIsOpen(false)} />
+            )}
+        </>
     )
 }
 

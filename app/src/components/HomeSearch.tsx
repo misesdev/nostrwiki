@@ -23,7 +23,7 @@ export default function HomeSearch(): ReactNode {
                     alt='Nostr Wiki - Explorer'
                     width={300}
                     height={300}
-                    className='w-[80px] md:w-[120px] lg:w-[140px]'
+                    className='w-[80px] sm:w-[90px] md:w-[100px] lg:w-[120px]'
                 />
                 <h1 className="text-[18px] md:text-[24px] text-gray-400 mt-2 font-bold">
                     Nostr Wiki - Explorer

@@ -35,7 +35,7 @@ export default function RootLayout({ children }: any) {
             <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             </head>
-            <body className='bg-gray-900 bg-gradient-to-b relative min-h-screen pt-[120px] sm:pt-[165px] lg:pt-[110px] pb-16'>
+            <body className='bg-gray-900 bg-gradient-to-b relative min-h-screen pt-[90px] pb-16'>
                 <Toaster position="bottom-center" />
                 {children}
                 <Footer />

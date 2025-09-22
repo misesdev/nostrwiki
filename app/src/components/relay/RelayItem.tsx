@@ -10,7 +10,7 @@ interface Props {
     viewManteiner: (u: User) => void;
 }
 
-export const RelayItem = ({ relay, viewManteiner }: Props) => {
+const RelayItem = ({ relay, viewManteiner }: Props) => {
 
     const handleCopy = () => {
         navigator.clipboard.writeText(relay.url)
@@ -18,7 +18,7 @@ export const RelayItem = ({ relay, viewManteiner }: Props) => {
     }
 
     return (
-        <div className="w-full rounded-2xl p-5 bg-gray-800/40 backdrop-blur-md shadow-md hover:shadow-xl hover:bg-gray-800/60 transition-all duration-300 flex flex-col md:flex-row gap-5">
+        <div className="p-5 bg-gray-800 bg-opacity-35 backdrop-blur-sm shadow-lg rounded-2xl overflow-hidden transition hover:shadow-2xl hover:-translate-y-1 duration-300">
             {/* Ícone */}
             <div className="flex-shrink-0">
                 <AppImage
@@ -112,3 +112,5 @@ export const RelayItem = ({ relay, viewManteiner }: Props) => {
         </div>
     )
 }
+
+export default RelayItem

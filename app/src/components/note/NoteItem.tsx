@@ -5,7 +5,6 @@ import { format } from "date-fns"
 import AppImage from "../commons/AppImage"
 import { useState } from "react"
 import UserModal from "../user/UserModal"
-import NoteContent from "./NoteContent"
 import { getClipedContent } from "@/utils/utils"
 import Content from "./Content"
 

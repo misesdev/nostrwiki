@@ -10,7 +10,7 @@ type Props = {
     showInSlide: (f: NFile) => void;
 }
 
-export const ImageItem = ({ image, showInSlide }: Props) => {
+const ImageItem = ({ image, showInSlide }: Props) => {
 
     const handleCopy = () => {
         navigator.clipboard.writeText(image.url)
@@ -18,7 +18,7 @@ export const ImageItem = ({ image, showInSlide }: Props) => {
     }
 
     return (
-        <div className="bg-gray-800/40 backdrop-blur-md shadow-lg rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:bg-gray-800/60">
+        <div className="bg-gray-800 bg-opacity-35 backdrop-blur-sm shadow-lg rounded-2xl overflow-hidden transition hover:shadow-2xl hover:-translate-y-1 duration-300">
             <div 
                 onClick={() => showInSlide(image)}
                 className="relative w-full h-72 md:h-64 lg:h-72 overflow-hidden group"
@@ -97,3 +97,5 @@ export const ImageItem = ({ image, showInSlide }: Props) => {
         </div>
     )
 }
+
+export default ImageItem
