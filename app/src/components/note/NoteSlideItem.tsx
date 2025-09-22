@@ -28,7 +28,7 @@ const NoteSlideItem = ({ item }: Props) => {
                     <p className="text-[14px] md:text-lg font-semibold">
                         {author.display_name || author.name}
                     </p>
-                    <p className="text-[11px] text-sm text-gray-400">{date}</p>
+                    <p className="text-[12px] md:text-sm text-gray-400">{date}</p>
                 </div>
             </div>
 
