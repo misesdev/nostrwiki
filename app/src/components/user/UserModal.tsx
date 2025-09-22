@@ -16,13 +16,11 @@ type UserModalProps = {
 
 const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
 
-    if(!user) return null
-
     const [notes, setNotes] = useState<Note[]>([])
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        if (!isOpen) return
+        if (!isOpen || !user?.pubkey) return
 
         const fetchNotes = async () => {
             setLoading(true)
@@ -40,7 +38,7 @@ const UserModal = ({ user, isOpen, onClose }: UserModalProps) => {
         }
 
         fetchNotes()
-    }, [isOpen, user.pubkey])
+    }, [isOpen, user?.pubkey])
 
     return (
         <BlurModal isOpen={isOpen} onClose={onClose}>

@@ -9,42 +9,29 @@ import AppImage from './commons/AppImage';
 export default function HomeSearch(): ReactNode {
 
     const router = useRouter()
-    const [focused, setFocused] = useState(false)
-    const isMobile = useMemo(() => window.innerWidth <= 700, [window.innerWidth])
-    
     const handleSearch = (searchTerm: string) => {
         router.push(`/search/notes?term=${searchTerm.trim()}`);
-    }
-
-    const onFocus = () => {
-        //if(isMobile) setFocused(true)
-    }
-
-    const onBlur = () => {
-        //if(isMobile) setFocused(false)
     }
 
     return (
         <div className="w-full flex flex-col items-center justify-center px-4 sm:px-8">
             <div className='flex flex-col items-center pb-5'>
-                {!focused && 
-                    (<AppImage
-                        priority
-                        src='/logo.png'
-                        onError='/logo.png'
-                        alt='Nostr Wiki - Explorer'
-                        width={300}
-                        height={300}
-                        className='w-[80px] md:w-[120px] lg:w-[140px]'
-                    />)
-                }
+                <AppImage
+                    priority
+                    src='/logo.png'
+                    onError='/logo.png'
+                    alt='Nostr Wiki - Explorer'
+                    width={300}
+                    height={300}
+                    className='w-[80px] md:w-[120px] lg:w-[140px]'
+                />
                 <h1 className="text-[18px] md:text-[24px] text-gray-400 mt-2 font-bold">
                     Nostr Wiki - Explorer
                 </h1>
             </div>
             {/* Search Box */}
             <div className="w-full max-w-3xl">
-                <SearchBox onFocus={onFocus} onBlur={onBlur} handleSearch={handleSearch} />
+                <SearchBox handleSearch={handleSearch} />
             </div>
 
             <h2 className="mt-6 text-gray-400 text-[12px] md:text-sm text-center max-w-xl">
