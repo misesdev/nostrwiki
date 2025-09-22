@@ -15,7 +15,7 @@ trait RelaySearchable
             ->selectRaw("
                 relays.url, relays.name, relays.icon, relays.pubkey, relays.description, 
                 relays.contact, relays.supported_nips, relays.software, relays.version, 
-                relays.available, relays.created_at, relays.updated_at,
+                relays.available, relays.created_at, relays.updated_at, relays.ref_count,
                 (
                     greatest(
                         ts_rank(relays.search_vector, websearch_to_tsquery('portuguese', unaccent(?))),

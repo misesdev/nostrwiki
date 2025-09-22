@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('kind');
             $table->string('tags', 512)->nullable(); 
             $table->string('published_by', 100);
-            $table->bigInteger('published_at');
+            $table->bigInteger('published_at')->index();
             $table->bigInteger('ref_count')
                 ->default(1)->index();
             $table->timestamps();

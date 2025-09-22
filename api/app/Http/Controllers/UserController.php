@@ -53,7 +53,10 @@ class UserController extends Controller
 
         if(!$user) return response()->json(['message' => 'user not found'], 404);
 
-        $notes = $user->notes()->with('author')->skip($skip)->take($take)->get();
+        $notes = $user->notes()
+            ->with('author')
+            ->orderByDesc('published_at')
+            ->skip($skip)->take($take)->get();
 
         return response()->json($notes, 200);
     }
