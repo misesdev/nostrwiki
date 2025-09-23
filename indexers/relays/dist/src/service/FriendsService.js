@@ -17,6 +17,11 @@ class FriendsService {
     constructor(dbFriends = new DBFriends_1.default()) {
         this._dbFriends = dbFriends;
     }
+    upsert(friends) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this._dbFriends.upsert(friends);
+        });
+    }
     saveFriends(user, friends) {
         return __awaiter(this, void 0, void 0, function* () {
             const allfriends = friends.map((pubkey) => ({

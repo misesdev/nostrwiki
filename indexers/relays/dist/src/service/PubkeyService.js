@@ -31,27 +31,34 @@ class PubkeyService {
             if (pubkeys.length == 1 && pubkeys[0] == this._settings.initial_pubkey) {
                 yield this._dbUsers.upsertPubkeys((0, utils_1.distinct)(pubkeys));
             }
-            const relayUrls = [];
+            const uniqueRelays = new Set();
             let skip = this._settings.max_fetch_events;
             for (let i = 0; i < pubkeys.length; i += skip) {
-                console.log("fetching", skip, "pubkeys from friends");
+                const uniquePubkeys = new Set();
+                const uniqueFriends = new Set();
+                console.log("fetching", skip, "friend events");
                 let events = yield pool.fechEvents({
                     authors: pubkeys.slice(i, i + skip),
                     kinds: [3],
                     limit: skip
                 });
-                for (let i = 0; i < events.length; i++) {
-                    let event = events[i];
-                    let npubs = (0, utils_1.getPubkeys)(event);
-                    console.log("npubs...:", npubs.length);
-                    yield this._dbUsers.upsertPubkeys((0, utils_1.distinct)(npubs));
-                    yield this._friendService
-                        .saveFriends(event.pubkey, (0, utils_1.distinct)(npubs));
-                    const urls = RelayService_1.default.relaysFromEvent(event);
-                    relayUrls.push(...urls);
-                }
+                events.forEach(event => {
+                    const pubkeys = (0, utils_1.getPubkeys)(event);
+                    pubkeys.forEach(pubkey => {
+                        uniquePubkeys.add(pubkey);
+                        uniqueFriends.add({
+                            user_pubkey: event.pubkey,
+                            friend_pubkey: pubkey
+                        });
+                    });
+                    const relays = RelayService_1.default.relaysFromEvent(event);
+                    relays.forEach(relay => uniqueRelays.add(relay));
+                });
+                console.log("found pubkeys.:", uniquePubkeys.size);
+                yield this._dbUsers.upsertPubkeys(Array.from(uniquePubkeys));
+                yield this._friendService.upsert(Array.from(uniqueFriends));
             }
-            accumulateRelays(relayUrls);
+            accumulateRelays(Array.from(uniqueRelays.values()));
         });
     }
     static getPubkeyIndex(settings, service) {

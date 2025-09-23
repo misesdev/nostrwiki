@@ -9,6 +9,32 @@ import { configDotenv } from "dotenv";
 
 configDotenv()
 
+var shutdown = false;
+var nextRun: NodeJS.Timeout | null = null;
+var pool: RelayPool | null = null;
+
+const gracefulShutdown = async () => {
+    if (shutdown) return; 
+    shutdown = true;
+
+    console.log("\nclosing connections ...");
+
+    try 
+    {
+        if (nextRun) clearTimeout(nextRun);
+        if (pool) await pool.disconect();
+    } 
+    catch (err) {
+        console.error("Erro ao encerrar pool:", err);
+    } 
+    finally {
+        process.exit(0);
+    }
+}
+
+process.on("SIGTERM", gracefulShutdown);
+process.on("SIGINT", gracefulShutdown);
+
 const runIndexer = async () => {
     const appSettings = new AppSettings()
     const settings = await appSettings.get()
@@ -24,11 +50,9 @@ const runIndexer = async () => {
             )
         } 
 
-        const relays = await RelayService.currentRelays(settings, Service.note_indexer)
-
         const users = await PubkeyService.currentUsers(settings, Service.note_indexer)
 
-        const pool = await RelayPool.getInstance(relays)
+        const pool = await RelayPool.getInstance(settings, Service.note_indexer)
 
         const noteService = new NoteService(settings)
         await noteService.loadNotes({ pool, users, accumulateRelays })
@@ -43,12 +67,6 @@ const runIndexer = async () => {
             await relayService.upRefs(relayRefs) 
         }
        
-        if(settings.note_pubkey_index >= settings.pubkeys_per_process)
-        { 
-            const relayIndex = settings.note_relay_index + relays.length
-            await appSettings.updateRelayIndex(Service.note_indexer, relayIndex)
-        }
-
         if(users.length) 
         {
             const pubkeyIndex = settings.note_pubkey_index + users.length
@@ -61,8 +79,11 @@ const runIndexer = async () => {
         console.error("Indexer error:", err);
     } 
     finally {
-        console.log("Indexer finished. Next run in", settings.indexer_interval, "minutes");
-        setTimeout(runIndexer, settings.indexer_interval * 60 * 1000);
+        if (!shutdown) // execute only is not shutdown 
+        { 
+            console.log("Indexer finished. Next run in", settings.indexer_interval, "minutes");
+            nextRun = setTimeout(runIndexer, settings.indexer_interval * 60 * 1000);
+        }
     }
 }
 

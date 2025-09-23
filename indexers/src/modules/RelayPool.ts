@@ -2,11 +2,15 @@ import { WebSocket } from "ws"
 import { distinctEvent } from "../utils";
 import { NostrFilter } from "./types/NostrFilter";
 import { NostrEvent } from "./types/NostrEvent";
-import { NostrRelay } from "./types/NostrRelay";
+import { Settings } from "../settings/types";
+import { ServiceKey } from "../constant";
+import RelayService from "../service/RelayService"
+import DBRelays from "../service/database/DBRelays";
+import AppSettings from "../settings/AppSettings";
 
 export class RelayPool 
 {
-    private relays: string[];
+    public relays: string[];
     public websockets: WebSocket[];
     public timeout: number = 3200;
     private subscription: string = "3da9794398579582309458";
@@ -15,43 +19,36 @@ export class RelayPool
     {
         if(relays.length < 1)
             throw Error("expected relays");
-
         this.relays = relays; 
         this.websockets = [];
     }
 
     private async connectRelay(relay: string) : Promise<WebSocket> 
     {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             let websock = new WebSocket(relay);
-            websock.on("open", () => resolve(websock));
-            websock.on("close", () => reject(`disconnected: ${relay}`))
-            websock.on("error", () => reject(`not connetd: ${relay}`))
-
-            setTimeout(() => {
-                //websock.removeAllListeners("open");
-                resolve(null)
-            }, this.timeout)
+            websock.on("open", () => resolve(websock))
+            websock.on("close", () => resolve(null))
+            websock.on("error", () => resolve(null))
+            setTimeout(() => resolve(null), this.timeout)
         });
     }
 
     public async connect() 
     {
-        console.log("connecting")
+        let websockets = this.relays.map(async (relay) => await this.connectRelay(relay))
 
-        let websockets = this.relays.map(relay => this.connectRelay(relay).catch(error => {
-            console.log(error)
-            return null;
-        }))
+        const allwebsockets = await Promise.all(websockets)
 
-        this.websockets = await Promise.all(websockets)
+        const connectedRelays = allwebsockets.filter((socket: WebSocket) => socket != null)
 
-        this.websockets = this.websockets.filter(socket => socket != null)
+        this.websockets.push(...connectedRelays)
 
         console.log("connected relays", this.websockets.length)
     }
 
-    private async disconectRelay(websocket: WebSocket): Promise<void> {
+    private async disconectRelay(websocket: WebSocket): Promise<void> 
+    {
         new Promise<void>((resolve) => {
             let timeout: any
             websocket.send(`[\"CLOSE\", ${this.subscription}]`)
@@ -60,6 +57,7 @@ export class RelayPool
                 let data = JSON.parse(message.toString()); 
 
                 if(data[0] == "EOSE") {
+                    console.log("disconect relay.:", websocket.url)
                     websocket.removeListener("message", handleMessage)
                     clearTimeout(timeout)
                     resolve()
@@ -75,9 +73,9 @@ export class RelayPool
         })
     }
 
-    public async disconect() {
-        let promises = this.websockets.map(websocket => this.disconectRelay(websocket))
-
+    public async disconect() 
+    {
+        let promises = this.websockets.map(async (websocket) => await this.disconectRelay(websocket))
         await Promise.all(promises)
     }
 
@@ -116,7 +114,6 @@ export class RelayPool
             // remove the listener in timeout
             timeout = setTimeout(() => { 
                 websocket.removeAllListeners("message")
-                console.log(`timeout: ${websocket.url}`)
                 resolve(events);
             }, this.timeout);
         });
@@ -149,11 +146,55 @@ export class RelayPool
         return null
     }
 
-    public static async getInstance(relays: NostrRelay[]): Promise<RelayPool>
-    {       
-        const relayPool = new RelayPool(relays.map(r => r.url))
-        await relayPool.connect()
-        return relayPool
+    public async addRelays(relay: string[]): Promise<void>
+    {
+        console.log("connecting more relays")
+        this.relays = relay.filter(r => !this.relays.some(i => i==r))
+        if(this.relays.length) {
+            await this.connect()
+        }
+    }
+
+    public static async getInstance(settings: Settings, service: ServiceKey): Promise<RelayPool>
+    {   
+        const dbRelays = new DBRelays()
+        const appSettings = new AppSettings()
+
+        let currentIndex = RelayService.getRelayIndex(settings, service)
+
+        const relays = await dbRelays.list(currentIndex, settings.relays_connections)
+
+        if(!relays.length) {
+            const list = await dbRelays.list(0, settings.relays_connections)
+            await appSettings.updateRelayIndex(service, 0)
+            relays.push(...list)
+            currentIndex = 0
+        }
+
+        const pool = new RelayPool(relays.map(r => r.url))
+
+        await pool.connect()
+
+        while(pool.websockets.length <= 30) 
+        {
+            currentIndex += settings.relays_connections
+
+            const relays = await dbRelays.list(currentIndex, settings.relays_connections)
+
+            if(relays.length) 
+                await appSettings.updateRelayIndex(service, currentIndex)
+
+            if(!relays.length) 
+            {
+                const list = await dbRelays.list(0, settings.relays_connections)
+                await appSettings.updateRelayIndex(service, 0)
+                relays.push(...list)
+                currentIndex = 0
+            }
+
+            await pool.addRelays(relays.map(r => r.url))
+        }
+        return pool
     }
 }
 

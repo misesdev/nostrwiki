@@ -8,10 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RelayPool = void 0;
 const ws_1 = require("ws");
 const utils_1 = require("../utils");
+const RelayService_1 = __importDefault(require("../service/RelayService"));
+const DBRelays_1 = __importDefault(require("../service/database/DBRelays"));
+const AppSettings_1 = __importDefault(require("../settings/AppSettings"));
 class RelayPool {
     constructor(relays) {
         this.timeout = 3200;
@@ -23,27 +29,21 @@ class RelayPool {
     }
     connectRelay(relay) {
         return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
+            return new Promise((resolve) => {
                 let websock = new ws_1.WebSocket(relay);
                 websock.on("open", () => resolve(websock));
-                websock.on("close", () => reject(`disconnected: ${relay}`));
-                websock.on("error", () => reject(`not connetd: ${relay}`));
-                setTimeout(() => {
-                    //websock.removeAllListeners("open");
-                    resolve(null);
-                }, this.timeout);
+                websock.on("close", () => resolve(null));
+                websock.on("error", () => resolve(null));
+                setTimeout(() => resolve(null), this.timeout);
             });
         });
     }
     connect() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("connecting");
-            let websockets = this.relays.map(relay => this.connectRelay(relay).catch(error => {
-                console.log(error);
-                return null;
-            }));
-            this.websockets = yield Promise.all(websockets);
-            this.websockets = this.websockets.filter(socket => socket != null);
+            let websockets = this.relays.map((relay) => __awaiter(this, void 0, void 0, function* () { return yield this.connectRelay(relay); }));
+            const allwebsockets = yield Promise.all(websockets);
+            const connectedRelays = allwebsockets.filter((socket) => socket != null);
+            this.websockets.push(...connectedRelays);
             console.log("connected relays", this.websockets.length);
         });
     }
@@ -104,7 +104,6 @@ class RelayPool {
                 // remove the listener in timeout
                 timeout = setTimeout(() => {
                     websocket.removeAllListeners("message");
-                    console.log(`timeout: ${websocket.url}`);
                     resolve(events);
                 }, this.timeout);
             });
@@ -135,11 +134,41 @@ class RelayPool {
             return null;
         });
     }
-    static getInstance(relays) {
+    addRelays(relay) {
         return __awaiter(this, void 0, void 0, function* () {
-            const relayPool = new RelayPool(relays.map(r => r.url));
-            yield relayPool.connect();
-            return relayPool;
+            console.log("connecting more relays");
+            this.relays = relay.filter(r => !this.relays.some(i => i == r));
+            yield this.connect();
+        });
+    }
+    static getInstance(settings, service) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dbRelays = new DBRelays_1.default();
+            const appSettings = new AppSettings_1.default();
+            let currentIndex = RelayService_1.default.getRelayIndex(settings, service);
+            const relays = yield dbRelays.list(currentIndex, settings.relays_connections);
+            if (!relays.length) {
+                const list = yield dbRelays.list(0, settings.relays_connections);
+                yield appSettings.updateRelayIndex(service, 0);
+                relays.push(...list);
+                currentIndex = 0;
+            }
+            const pool = new RelayPool(relays.map(r => r.url));
+            yield pool.connect();
+            while (pool.websockets.length <= settings.relays_connections) {
+                currentIndex += settings.relays_connections;
+                const relays = yield dbRelays.list(currentIndex, settings.relays_connections);
+                if (relays.length)
+                    yield appSettings.updateRelayIndex(service, currentIndex);
+                if (!relays.length) {
+                    const list = yield dbRelays.list(0, settings.relays_connections);
+                    yield appSettings.updateRelayIndex(service, 0);
+                    relays.push(...list);
+                    currentIndex = 0;
+                }
+                yield pool.addRelays(relays.map(r => r.url));
+            }
+            return pool;
         });
     }
 }

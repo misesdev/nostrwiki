@@ -38,7 +38,7 @@ class AppSettingsSeeder extends Seeder
             // Maximum number of events per request when indexing relays
             "max_fetch_events" => 320,
             // Check if relays are reachable in batches of 20 relays (20 requests)
-            "relays_betch_size" => 85,
+            "relays_betch_size" => 50,
             // Run every 1 minute
             "indexer_interval" => 5,
 

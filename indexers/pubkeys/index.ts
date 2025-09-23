@@ -8,6 +8,32 @@ import { configDotenv } from "dotenv";
 
 configDotenv()
 
+var shutdown = false;
+var nextRun: NodeJS.Timeout | null = null;
+var pool: RelayPool | null = null;
+
+const gracefulShutdown = async () => {
+    if (shutdown) return; 
+    shutdown = true;
+
+    console.log("\nclosing connections ...");
+
+    try 
+    {
+        if (nextRun) clearTimeout(nextRun);
+        if (pool) await pool.disconect();
+    } 
+    catch (err) {
+        console.error("Erro ao encerrar pool:", err);
+    } 
+    finally {
+        process.exit(0);
+    }
+}
+
+process.on("SIGTERM", gracefulShutdown);
+process.on("SIGINT", gracefulShutdown);
+
 const runIndexer = async () => {
     const appSettings = new AppSettings()
     const settings = await appSettings.get()
@@ -23,12 +49,9 @@ const runIndexer = async () => {
             )
         } 
 
-        const relays = await RelayService.currentRelays(settings, Service.pubkey_indexer)
-
-        const pool = await RelayPool.getInstance(relays)
+        const pool = await RelayPool.getInstance(settings, Service.pubkey_indexer)
 
         const pubkeys = await PubkeyService.currentPubkeys(settings, Service.pubkey_indexer)
-        console.log("pubkeys from database...:", pubkeys.length)
 
         // load pubkeys, friends pubkeys and relays
         const pubkeyService = new PubkeyService(settings)
@@ -44,12 +67,6 @@ const runIndexer = async () => {
             await relayService.upRefs(relayRefs) 
         }
        
-        if(settings.pubkey_index >= settings.pubkeys_per_process)
-        { 
-            const relayIndex = settings.pubkey_relay_index + relays.length
-            await appSettings.updateRelayIndex(Service.pubkey_indexer, relayIndex)
-        }
-
         if(pubkeys.length) 
         {
             const pubkeyIndex = settings.pubkey_index + pubkeys.length
@@ -62,8 +79,11 @@ const runIndexer = async () => {
         console.error("Indexer error:", err);
     } 
     finally {
-        console.log("Indexer finished. Next run in", settings.indexer_interval, "minutes");
-        setTimeout(() => runIndexer(), settings.indexer_interval * 60 * 1000);
+        if (!shutdown) // execute only is not shutdown 
+        { 
+            console.log("Indexer finished. Next run in", settings.indexer_interval, "minutes");
+            nextRun = setTimeout(runIndexer, settings.indexer_interval * 60 * 1000);
+        }
     }
 }
 

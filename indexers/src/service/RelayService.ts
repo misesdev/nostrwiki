@@ -14,12 +14,19 @@ class RelayService
 {
     private readonly _settings: Settings
     private readonly _dbRelays: DBRelays
+    private _relayIndex:Map<ServiceKey, number>
     constructor(
         settings: Settings,
         dbRelays: DBRelays = new DBRelays()
     ) {
         this._settings = settings
         this._dbRelays = dbRelays
+        this._relayIndex = new Map<ServiceKey, number>()
+        this._relayIndex.set(Service.pubkey_indexer, settings.pubkey_relay_index)
+        this._relayIndex.set(Service.profile_indexer, settings.user_relay_index)
+        this._relayIndex.set(Service.note_indexer, settings.note_relay_index)
+        this._relayIndex.set(Service.file_indexer, settings.file_relay_index)
+        this._relayIndex.set(Service.relay_indexer, settings.relay_index)
     }
 
     public async loadRelays({ pool, pubkeys, accumulateRelays }: LoadDataProps): Promise<void>
@@ -150,27 +157,13 @@ class RelayService
 
     public static getRelayIndex(settings: Settings, service: ServiceKey): number
     {
-        const map = new Map<ServiceKey, number>();
-        map.set(Service.pubkey_indexer, settings.pubkey_relay_index)
-        map.set(Service.profile_indexer, settings.user_relay_index)
-        map.set(Service.note_indexer, settings.note_relay_index)
-        map.set(Service.file_indexer, settings.file_relay_index)
-        map.set(Service.relay_indexer, settings.relay_index)
-        return map.get(service) ?? 0
-    }
-
-    public static async currentRelays(settings: Settings, service: ServiceKey): Promise<NostrRelay[]>
-    {
-        const dbRelays = new DBRelays()
-        const appSettings = new AppSettings()
-        const index = this.getRelayIndex(settings, service)
-        let relays = await dbRelays.list(index, settings.relays_connections)
-        if(!relays.length) 
-        { 
-            relays = await dbRelays.list(0, settings.relays_connections)
-            await appSettings.updateRelayIndex(service, 0)
-        }
-        return relays
+        const relayIndex = new Map<ServiceKey, number>()
+        relayIndex.set(Service.pubkey_indexer, settings.pubkey_relay_index)
+        relayIndex.set(Service.profile_indexer, settings.user_relay_index)
+        relayIndex.set(Service.note_indexer, settings.note_relay_index)
+        relayIndex.set(Service.file_indexer, settings.file_relay_index)
+        relayIndex.set(Service.relay_indexer, settings.relay_index)
+        return relayIndex.get(service) ?? 0
     }
 }
 

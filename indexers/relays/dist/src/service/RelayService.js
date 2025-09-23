@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const utils_1 = require("../utils");
-const AppSettings_1 = __importDefault(require("../settings/AppSettings"));
 const DBRelays_1 = __importDefault(require("./database/DBRelays"));
 const constant_1 = require("../constant");
 const https = require("node:https");
@@ -23,6 +22,12 @@ class RelayService {
     constructor(settings, dbRelays = new DBRelays_1.default()) {
         this._settings = settings;
         this._dbRelays = dbRelays;
+        this._relayIndex = new Map();
+        this._relayIndex.set(constant_1.Service.pubkey_indexer, settings.pubkey_relay_index);
+        this._relayIndex.set(constant_1.Service.profile_indexer, settings.user_relay_index);
+        this._relayIndex.set(constant_1.Service.note_indexer, settings.note_relay_index);
+        this._relayIndex.set(constant_1.Service.file_indexer, settings.file_relay_index);
+        this._relayIndex.set(constant_1.Service.relay_indexer, settings.relay_index);
     }
     loadRelays(_a) {
         return __awaiter(this, arguments, void 0, function* ({ pool, pubkeys, accumulateRelays }) {
@@ -147,26 +152,13 @@ class RelayService {
     }
     static getRelayIndex(settings, service) {
         var _a;
-        const map = new Map();
-        map.set(constant_1.Service.pubkey_indexer, settings.pubkey_relay_index);
-        map.set(constant_1.Service.profile_indexer, settings.user_relay_index);
-        map.set(constant_1.Service.note_indexer, settings.note_relay_index);
-        map.set(constant_1.Service.file_indexer, settings.file_relay_index);
-        map.set(constant_1.Service.relay_indexer, settings.relay_index);
-        return (_a = map.get(service)) !== null && _a !== void 0 ? _a : 0;
-    }
-    static currentRelays(settings, service) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const dbRelays = new DBRelays_1.default();
-            const appSettings = new AppSettings_1.default();
-            const index = this.getRelayIndex(settings, service);
-            let relays = yield dbRelays.list(index, settings.relays_connections);
-            if (!relays.length) {
-                relays = yield dbRelays.list(0, settings.relays_connections);
-                yield appSettings.updateRelayIndex(service, 0);
-            }
-            return relays;
-        });
+        const relayIndex = new Map();
+        relayIndex.set(constant_1.Service.pubkey_indexer, settings.pubkey_relay_index);
+        relayIndex.set(constant_1.Service.profile_indexer, settings.user_relay_index);
+        relayIndex.set(constant_1.Service.note_indexer, settings.note_relay_index);
+        relayIndex.set(constant_1.Service.file_indexer, settings.file_relay_index);
+        relayIndex.set(constant_1.Service.relay_indexer, settings.relay_index);
+        return (_a = relayIndex.get(service)) !== null && _a !== void 0 ? _a : 0;
     }
 }
 exports.default = RelayService;

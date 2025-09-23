@@ -19,6 +19,29 @@ const RelayService_1 = __importDefault(require("./src/service/RelayService"));
 const AppSettings_1 = __importDefault(require("./src/settings/AppSettings"));
 const dotenv_1 = require("dotenv");
 (0, dotenv_1.configDotenv)();
+var shutdown = false;
+var nextRun = null;
+var pool = null;
+const gracefulShutdown = () => __awaiter(void 0, void 0, void 0, function* () {
+    if (shutdown)
+        return;
+    shutdown = true;
+    console.log("\nclosing connections ...");
+    try {
+        if (nextRun)
+            clearTimeout(nextRun);
+        if (pool)
+            yield pool.disconect();
+    }
+    catch (err) {
+        console.error("Erro ao encerrar pool:", err);
+    }
+    finally {
+        process.exit(0);
+    }
+});
+process.on("SIGTERM", gracefulShutdown);
+process.on("SIGINT", gracefulShutdown);
 const runIndexer = () => __awaiter(void 0, void 0, void 0, function* () {
     const appSettings = new AppSettings_1.default();
     const settings = yield appSettings.get();
@@ -28,9 +51,8 @@ const runIndexer = () => __awaiter(void 0, void 0, void 0, function* () {
         const accumulateRelays = (relays) => {
             relays.forEach(relay => { var _a; return relayMap.set(relay, ((_a = relayMap.get(relay)) !== null && _a !== void 0 ? _a : 0) + 1); });
         };
-        const relays = yield RelayService_1.default.currentRelays(settings, constant_1.Service.relay_indexer);
         const pubkeys = yield PubkeyService_1.default.currentPubkeys(settings, constant_1.Service.relay_indexer);
-        const pool = yield RelayPool_1.RelayPool.getInstance(relays);
+        pool = yield RelayPool_1.RelayPool.getInstance(settings, constant_1.Service.relay_indexer);
         // load relays from pubkeys
         const relayService = new RelayService_1.default(settings);
         yield relayService.loadRelays({ pool, pubkeys, accumulateRelays });
@@ -39,10 +61,6 @@ const runIndexer = () => __awaiter(void 0, void 0, void 0, function* () {
         if (relayRefs.length) {
             yield relayService.saveRelays(relayRefs.map(r => r.url));
             yield relayService.upRefs(relayRefs);
-        }
-        if (settings.relay_pubkey_index >= settings.pubkeys_per_process) {
-            const relayIndex = settings.relay_index + relays.length;
-            yield appSettings.updateRelayIndex(constant_1.Service.relay_indexer, relayIndex);
         }
         if (pubkeys.length) {
             const pubkeyIndex = settings.relay_pubkey_index + pubkeys.length;
@@ -54,8 +72,11 @@ const runIndexer = () => __awaiter(void 0, void 0, void 0, function* () {
         console.error("Indexer error:", err);
     }
     finally {
-        console.log("Indexer finished. Next run in", settings.indexer_interval, "minutes");
-        setTimeout(runIndexer, settings.indexer_interval * 60 * 1000);
+        if (!shutdown) // execute only is not shutdown 
+         {
+            console.log("Indexer finished. Next run in", settings.indexer_interval, "minutes");
+            nextRun = setTimeout(runIndexer, settings.indexer_interval * 60 * 1000);
+        }
     }
 });
 runIndexer();
