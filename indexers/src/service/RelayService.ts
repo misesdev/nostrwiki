@@ -24,25 +24,25 @@ class RelayService
 
     public async loadRelays({ pool, pubkeys, accumulateRelays }: LoadDataProps): Promise<void>
     {
-        let relayUrls: string[] = []
-        let skipe = this._settings.max_fetch_events
-        for(let i = 0; i < pubkeys.length; i += skipe) 
+        const uniqueRelays = new Set<string>()
+        let skip = this._settings.max_fetch_events
+        console.log("fetching relays from", pubkeys.length ,"pubkeys")
+        for(let i = 0; i < pubkeys.length; i += skip) 
         {
             let events = await pool.fechEvents({
-                authors: pubkeys.slice(i, i + skipe),
+                authors: pubkeys.slice(i, i + skip),
                 kinds: [10002],
-                limit: skipe
+                limit: skip
             })
             for(let i = 0; i < events.length; i++)
             {
                 let event = events[i]
-                let urls = RelayService.relaysFromEvent(event)
-                console.log("found relays...:", urls.length)
-                if(urls.length)
-                    relayUrls.push(...urls)
+                let relays = RelayService.relaysFromEvent(event)
+                relays.forEach(relay => uniqueRelays.add(relay))
             }
+            console.log("found relays.:", uniqueRelays.size)
         }
-        accumulateRelays(relayUrls)
+        accumulateRelays(Array.from(uniqueRelays))
     }
 
     public static relaysFromEvent(event: NostrEvent): string[]
@@ -77,22 +77,24 @@ class RelayService
     {
         if(!relayUrls.length) return;
 
-        const limit = pLimit(12) 
+        const limit = pLimit(12)
+        const uniqueRelays = new Map<string, NostrRelay>()
         let betchSize = this._settings.relays_betch_size
         const distinctRelays: string[] = distinct(relayUrls)
-        console.log("fetching data relays...:", distinctRelays.length)
         for(let i = 0; i < distinctRelays.length; i += betchSize)
         { 
+            console.log("validating,", betchSize, "relays")
             const betch = distinctRelays.slice(i, i + betchSize)
             const results = await Promise.all(
                 betch.map(async url => limit(() => this.fetchRelayData(url)))
             )
-            const allRelays: NostrRelay[] = results.flat()
+            const allRelays: NostrRelay[] = results.flat().filter((r: NostrRelay) => !!r)
             if(allRelays.length) {
-                await this._dbRelays.upsert(allRelays.filter(r => !!r));
-                console.log("saved relays", allRelays.length)
+                console.log("valid relays...:", allRelays.filter(r => r.available).length)
+                allRelays.forEach(relay => uniqueRelays.set(relay.url, relay))
             }
         }
+        await this._dbRelays.upsert(Array.from(uniqueRelays.values()));
     }
 
     private async fetchRelayData(url: string): Promise<NostrRelay>
@@ -100,7 +102,7 @@ class RelayService
         const httpClient = axios.create({
             headers: { Accept: "application/nostr+json" },
             httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-            timeout: 3800
+            timeout: 3000
         });
         try 
         {
@@ -111,20 +113,19 @@ class RelayService
             const response = await httpClient.get(relayUrl)
             if(response.status != 200)
                 throw new Error(`unreachable relay ${url}`)
-            console.log("active relay", url)
             let relay_author: string = response.data.pubkey
             if(relay_author && relay_author.startsWith("npub")) {
                 relay_author = npubToHex(relay_author) 
             }
             return {
-                url,
-                pubkey: relay_author ?? null,
-                name: response.data.name ?? url,
+                url: url.slice(0, 100),
+                pubkey: relay_author?.slice(0, 64) ?? null,
+                name: response.data.name?.slice(0, 100) ?? url,
                 description: response.data.description ?? null,
-                contact: response.data.contact ?? null,
+                contact: response.data.contact?.slice(0, 250) ?? null,
                 supported_nips: JSON.stringify(response.data.supported_nips??[]),
-                software: response.data.software ?? null,
-                version: response.data.version ?? null,
+                software: response.data.software?.slice(0, 250) ?? null,
+                version: response.data.version?.slice(0, 50) ?? null,
                 icon: response.data.icon ?? null,
                 created_at: new Date(),
                 available: true,
@@ -132,10 +133,9 @@ class RelayService
             }
         }
         catch(ex) {
-            console.log("unreachable relay", url)
             return { 
-                url, 
-                name: url, 
+                url: url.slice(0, 100), 
+                name: url.slice(0, 100), 
                 created_at: new Date(),
                 available: false,
                 ref_count: 1

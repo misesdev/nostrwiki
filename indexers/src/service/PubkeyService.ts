@@ -33,15 +33,15 @@ class PubkeyService
         }
 
         const relayUrls: string[] = []
-        let skipe = this._settings.max_fetch_events
+        let skip = this._settings.max_fetch_events
 
-        console.log(`varrendo ${pubkeys.length} pubkeys..`)
-        for(let i = 0; i < pubkeys.length; i += skipe) 
+        for(let i = 0; i < pubkeys.length; i += skip) 
         {
+            console.log("fetching", skip, "pubkeys from friends")
             let events = await pool.fechEvents({
-                authors: pubkeys.slice(i, i + skipe),
+                authors: pubkeys.slice(i, i + skip),
                 kinds: [3],
-                limit: skipe
+                limit: skip
             })
 
             for(let i = 0; i < events.length; i++)

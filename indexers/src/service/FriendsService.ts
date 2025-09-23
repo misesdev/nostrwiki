@@ -17,7 +17,6 @@ class FriendsService
             friend_pubkey: pubkey
         }))
         await this._dbFriends.upsert(allfriends)
-        console.log(`saved ${friends.length} friends ${user}`)
     }    
 }
 

@@ -8,12 +8,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const constant_1 = require("./src/constant");
 const RelayPool_1 = require("./src/modules/RelayPool");
-const PubkeyService_1 = require("./src/service/PubkeyService");
-const RelayService_1 = require("./src/service/RelayService");
-const AppSettings_1 = require("./src/settings/AppSettings");
+const PubkeyService_1 = __importDefault(require("./src/service/PubkeyService"));
+const RelayService_1 = __importDefault(require("./src/service/RelayService"));
+const AppSettings_1 = __importDefault(require("./src/settings/AppSettings"));
 const dotenv_1 = require("dotenv");
 (0, dotenv_1.configDotenv)();
 const runIndexer = () => __awaiter(void 0, void 0, void 0, function* () {
@@ -26,8 +29,8 @@ const runIndexer = () => __awaiter(void 0, void 0, void 0, function* () {
             relays.forEach(relay => { var _a; return relayMap.set(relay, ((_a = relayMap.get(relay)) !== null && _a !== void 0 ? _a : 0) + 1); });
         };
         const relays = yield RelayService_1.default.currentRelays(settings, constant_1.Service.relay_indexer);
-        const pool = yield RelayPool_1.RelayPool.getInstance(relays);
         const pubkeys = yield PubkeyService_1.default.currentPubkeys(settings, constant_1.Service.relay_indexer);
+        const pool = yield RelayPool_1.RelayPool.getInstance(relays);
         // load relays from pubkeys
         const relayService = new RelayService_1.default(settings);
         yield relayService.loadRelays({ pool, pubkeys, accumulateRelays });

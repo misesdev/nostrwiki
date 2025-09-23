@@ -8,9 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const constant_1 = require("../constant");
-const DBSettings_1 = require("../service/database/DBSettings");
+const DBSettings_1 = __importDefault(require("../service/database/DBSettings"));
 class AppSettings {
     constructor(dbSettings = new DBSettings_1.default()) {
         this._dbSettings = dbSettings;
@@ -57,8 +60,9 @@ class AppSettings {
                 yield this._dbSettings.updateIndex(index, "pubkey_index");
         });
     }
-    updateSince(col, time) {
+    updateSince(col) {
         return __awaiter(this, void 0, void 0, function* () {
+            const time = parseInt((Date.now() / 1000).toString());
             if (col == constant_1.Service.note_indexer)
                 yield this._dbSettings.updateSince(time, "note_since");
             else if (col == constant_1.Service.file_indexer)

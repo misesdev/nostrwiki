@@ -1,7 +1,20 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.extractTagsFromContent = exports.classifyUrl = exports.extractUrls = exports.npubToHex = exports.getRelayDomain = exports.distinct = exports.distinctUsers = exports.distinctEvent = exports.getPubkeys = void 0;
+exports.checkMediaAccessible = exports.extractTagsFromContent = exports.mediaType = exports.extractUrls = exports.npubToHex = exports.getRelayDomain = exports.distinct = exports.distinctFiles = exports.distinctUsers = exports.distinctNotes = exports.distinctEvent = exports.getPubkeys = void 0;
 const bech32_1 = require("bech32");
+const axios_1 = __importDefault(require("axios"));
 const getPubkeys = (event) => {
     let pubkeys = event.tags.map((tag) => {
         // if not have a value
@@ -22,23 +35,45 @@ const getPubkeys = (event) => {
 };
 exports.getPubkeys = getPubkeys;
 const distinctEvent = (events) => {
-    return events.filter((event, index, self) => {
-        return index == self.findIndex(x => x.id == event.id);
-    });
+    const seen = new Map();
+    for (let event of events) {
+        seen.set(event.id, event);
+    }
+    return Array.from(seen.values());
 };
 exports.distinctEvent = distinctEvent;
+const distinctNotes = (notes) => {
+    const seen = new Map();
+    for (let note of notes) {
+        if (note)
+            seen.set(note.id, note);
+    }
+    return Array.from(seen.values());
+};
+exports.distinctNotes = distinctNotes;
 const distinctUsers = (users) => {
     const seen = new Map();
     for (const user of users) {
-        seen.set(user.pubkey, user);
+        if (user)
+            seen.set(user.pubkey, user);
     }
     return Array.from(seen.values());
 };
 exports.distinctUsers = distinctUsers;
+const distinctFiles = (files) => {
+    const seen = new Map();
+    for (const file of files) {
+        if (file)
+            seen.set(file.url, file);
+    }
+    return Array.from(seen.values());
+};
+exports.distinctFiles = distinctFiles;
 const distinct = (pubkeys) => {
-    return pubkeys.filter((pubkey, index, self) => {
-        return index == self.indexOf(pubkey);
-    });
+    const seen = new Set();
+    for (let pubkey of pubkeys)
+        seen.add(pubkey);
+    return Array.from(seen);
 };
 exports.distinct = distinct;
 const getRelayDomain = (relay) => {
@@ -76,11 +111,12 @@ const npubToHex = (npub) => {
 exports.npubToHex = npubToHex;
 const extractUrls = (content) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return (content.match(urlRegex) || [])
+    const urls = (content.match(urlRegex) || [])
         .map((u) => u.trim());
+    return (0, exports.distinct)(urls);
 };
 exports.extractUrls = extractUrls;
-const classifyUrl = (url) => {
+const mediaType = (url) => {
     const lower = url.toLowerCase();
     if (/\.(jpg|jpeg|png|gif|webp|avif|svg)$/.test(lower))
         return "image";
@@ -88,16 +124,46 @@ const classifyUrl = (url) => {
         return "video";
     if (/\.(mp3|wav|ogg|flac|m4a|aac)$/.test(lower))
         return "audio";
-    return "other";
+    if (lower.includes("youtube.com") ||
+        lower.includes("youtu.be") ||
+        lower.includes("vimeo.com") ||
+        lower.includes("dailymotion.com") ||
+        lower.includes("soundcloud.com") ||
+        lower.includes("twitch.tv")) {
+        return "iframe";
+    }
+    return "iframe";
 };
-exports.classifyUrl = classifyUrl;
+exports.mediaType = mediaType;
 const extractTagsFromContent = (content) => {
-    const regex = /#(\w+)/g;
+    // Regex: Search for a #word that:
+    // - is NOT at the beginning of the line followed by a space (# Heading)
+    // - is NOT ## or ### (Markdown headings)
+    // - We allow letters, numbers, underscores, and hyphens in the hashtag
+    const regex = /(^|\s)#(?!#)([a-zA-Z0-9_-]+)/g;
     const matches = [];
     let match;
     while ((match = regex.exec(content)) !== null) {
-        matches.push(match[1].toLowerCase());
+        matches.push(match[2].toLowerCase());
     }
     return matches;
 };
 exports.extractTagsFromContent = extractTagsFromContent;
+const checkMediaAccessible = (url) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { headers } = yield axios_1.default.head(url, { timeout: 2500 });
+        if (!headers)
+            return false;
+        const contentType = headers["content-type"];
+        if (!contentType)
+            return false;
+        const types = ["image", "video"];
+        if (types.some(t => contentType.includes(t)))
+            return true;
+        return false;
+    }
+    catch (_a) {
+        return false;
+    }
+});
+exports.checkMediaAccessible = checkMediaAccessible;

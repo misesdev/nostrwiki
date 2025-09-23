@@ -8,20 +8,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const DBFactory_1 = require("./DBFactory");
+const dbElastic_1 = __importDefault(require("../elastic/dbElastic"));
+const DBFactory_1 = __importDefault(require("./DBFactory"));
 class DBUsers {
-    constructor() {
+    constructor(db = new DBFactory_1.default(), elastic = new dbElastic_1.default()) {
         this.BATCH_SIZE = 100;
-        this._db = new DBFactory_1.default();
+        this._db = db;
+        this._elastic = elastic;
     }
     list(offset, items) {
         return __awaiter(this, void 0, void 0, function* () {
             const query = `
-            SELECT * 
-            FROM users 
-            WHERE available = true 
-            ORDER BY pubkey 
+            SELECT DISTINCT ON (u.pubkey) 
+                u.*,
+                n.published_at AS since
+            FROM users u
+            LEFT JOIN notes n ON n.pubkey = u.pubkey
+            WHERE u.available = true
+            ORDER BY u.pubkey, n.published_at DESC
             LIMIT $1 OFFSET $2
         `;
             const result = yield this._db.query(query, [items, offset]);
@@ -75,6 +83,7 @@ class DBUsers {
         return __awaiter(this, void 0, void 0, function* () {
             for (let i = 0; i < items.length; i += this.BATCH_SIZE) {
                 const batch = items.slice(i, i + this.BATCH_SIZE);
+                yield this._elastic.indexUsers(batch);
                 yield this.upsertBetch(batch);
             }
         });

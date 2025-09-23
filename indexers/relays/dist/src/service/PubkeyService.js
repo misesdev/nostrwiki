@@ -8,13 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const constant_1 = require("../constant");
-const AppSettings_1 = require("../settings/AppSettings");
+const AppSettings_1 = __importDefault(require("../settings/AppSettings"));
 const utils_1 = require("../utils");
-const DBUsers_1 = require("./database/DBUsers");
-const FriendsService_1 = require("./FriendsService");
-const RelayService_1 = require("./RelayService");
+const DBUsers_1 = __importDefault(require("./database/DBUsers"));
+const FriendsService_1 = __importDefault(require("./FriendsService"));
+const RelayService_1 = __importDefault(require("./RelayService"));
 class PubkeyService {
     constructor(settings, dbUsers = new DBUsers_1.default(), friendService = new FriendsService_1.default()) {
         this._dbUsers = dbUsers;
@@ -29,13 +32,13 @@ class PubkeyService {
                 yield this._dbUsers.upsertPubkeys((0, utils_1.distinct)(pubkeys));
             }
             const relayUrls = [];
-            let skipe = this._settings.max_fetch_events;
-            console.log(`varrendo ${pubkeys.length} pubkeys..`);
-            for (let i = 0; i < pubkeys.length; i += skipe) {
+            let skip = this._settings.max_fetch_events;
+            for (let i = 0; i < pubkeys.length; i += skip) {
+                console.log("fetching", skip, "pubkeys from friends");
                 let events = yield pool.fechEvents({
-                    authors: pubkeys.slice(i, i + skipe),
+                    authors: pubkeys.slice(i, i + skip),
                     kinds: [3],
-                    limit: skipe
+                    limit: skip
                 });
                 for (let i = 0; i < events.length; i++) {
                     let event = events[i];
@@ -76,6 +79,22 @@ class PubkeyService {
             if (!pubkeys.length && settings.pubkey_index <= 0)
                 pubkeys = [settings.initial_pubkey];
             return pubkeys;
+        });
+    }
+    static currentUsers(settings, service) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dbUsers = new DBUsers_1.default();
+            const appSettings = new AppSettings_1.default();
+            const index = this.getPubkeyIndex(settings, service);
+            let users = yield dbUsers.list(index, settings.pubkeys_per_process);
+            if (!users.length && settings.pubkey_index != 0) {
+                users = yield dbUsers.list(0, settings.pubkeys_per_process);
+                yield appSettings.updatePubkeyIndex(service, 0);
+            }
+            if (index >= 200000 && !settings.note_since) {
+                yield appSettings.updateSince(service);
+            }
+            return users;
         });
     }
 }

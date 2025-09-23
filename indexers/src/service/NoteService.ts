@@ -3,7 +3,7 @@ import { EventLink, NostrEvent } from "../modules/types/NostrEvent";
 import { Note, RefNote } from "../modules/types/Note";
 import { RefPubkey, User } from "../modules/types/User";
 import { Settings } from "../settings/types";
-import { checkMediaAccessible, distinct, distinctFiles, distinctNotes, extractTagsFromContent, extractUrls, mediaType } from "../utils";
+import { checkMediaAccessible, distinct, extractTagsFromContent, extractUrls, mediaType } from "../utils";
 import { LoadNotesProps } from "./commons";
 import DBFiles from "./database/DBFiles";
 import DBNotes from "./database/DBNotes";
@@ -33,7 +33,7 @@ class NoteService
     {
         if(!users.length) return
 
-        let skipe = this._settings.pubkeys_per_notes
+        let skip = this._settings.pubkeys_per_notes
         let oldestSince: number|undefined = undefined
 
         const allHaveSince = users.every(user => user.since !== null)
@@ -43,10 +43,10 @@ class NoteService
               .filter((s): s is number => s !== null && s !== undefined)
               .reduce((min, s) => Math.min(min, s), Number.MAX_SAFE_INTEGER)
 
-        console.log(`loading notes...`)
-        for(let i = 0; i < users.length; i += skipe) 
+        for(let i = 0; i < users.length; i += skip) 
         {
-            const authors = users.slice(i, i + skipe)
+            console.log("fetching", skip, "notes")
+            const authors = users.slice(i, i + skip)
             let events = await pool.fechEvents({
                 authors: authors.map(u => u.pubkey),
                 limit: this._settings.max_fetch_notes,
@@ -54,28 +54,36 @@ class NoteService
                 since: oldestSince
             })
 
-            console.log("found notes...:", events.length)
-            // indexing notes
-            const notes: Note[] = this.notesFromEvents(events, authors) 
-            console.log("saving", notes.length, "notes and indexing on elastic search")
-            await this._dbNotes.upsert(notes) 
+            if(events.length) {
+                console.log("found notes...:", events.length)
+                // indexing notes
+                const notes: Note[] = this.notesFromEvents(events, authors)
+                if(notes.length) {
+                    console.log("saving", notes.length, "notes and indexing on elastic search")
+                    await this._dbNotes.upsert(notes) 
+                }
 
-            // indexing user references
-            const pubkeyRefs = this.refPubkeys(events)
-            console.log("update", pubkeyRefs.length, "pubkey references")
-            await this._dbUsers.upRefs(pubkeyRefs)
-            
-            // indexing references
-            const eventRefs = this.refEvents(events)
-            console.log("update", eventRefs.length, "notes references")
-            await this._dbNotes.upRefs(eventRefs)
-            
-            // indexing files
-            const metaUrls = this.urlsFromEvents(events)
-            await this.loadFiles(notes, metaUrls)
+                // indexing user references
+                const pubkeyRefs = this.refPubkeys(events)
+                if(pubkeyRefs.length) {
+                    console.log("update", pubkeyRefs.length, "pubkey references")
+                    await this._dbUsers.upRefs(pubkeyRefs)
+                }
+                
+                // indexing references
+                const eventRefs = this.refEvents(events)
+                if(eventRefs.length) {
+                    console.log("update", eventRefs.length, "notes references")
+                    await this._dbNotes.upRefs(eventRefs)
+                }
+                
+                // indexing files
+                const metaUrls = this.urlsFromEvents(events)
+                await this.loadFiles(notes, metaUrls)
 
-            const relays = events.map(event => RelayService.relaysFromEvent(event))
-            accumulateRelays(relays.flat())
+                const relays = events.map(event => RelayService.relaysFromEvent(event))
+                accumulateRelays(relays.flat())
+            }
         }
     }
 
