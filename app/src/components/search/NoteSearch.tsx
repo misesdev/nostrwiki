@@ -33,7 +33,7 @@ const NoteSearch = ({ term }: SearchParams) => {
             const results = await service.search<Note>("/search/notes", { term, skip:0, take })
             results.forEach(note => {
                 if(note.content.split(" ").length >= 10)
-                    uniques.current.set(note.id, note)
+                    uniques.current.set(note.id, normalizeNote(note))
             })
             setNotes(Array.from(uniques.current.values()))
             setEndOfResults(notes.length < (take/2))

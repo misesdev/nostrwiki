@@ -6,7 +6,7 @@ import AppImage from "../commons/AppImage"
 import { useState } from "react"
 import UserModal from "../user/UserModal"
 import { getClipedContent } from "@/utils/utils"
-import Content from "./Content"
+import NoteContent from "./NoteContent"
 
 type Props = {
     note: Note;
@@ -55,7 +55,7 @@ const NoteItem = ({ note, showInSlide }: Props) => {
                     )}
 
                     <div className="text-gray-200 dark:text-gray-300 text-[12px] md:text-sm">
-                        <Content content={note.content} cliped />
+                        <NoteContent note={note} cliped />
                     </div>
                 </div>
 
