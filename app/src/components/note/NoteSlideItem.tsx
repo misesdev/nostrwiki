@@ -14,7 +14,7 @@ const NoteSlideItem = ({ item }: Props) => {
     const title = words.length ? words.join(" ") : null
 
     return (
-        <div className="relative bg-gray-800 bg-opacity-35 rounded-xl shadow-2xl text-gray-200 max-w-3xl w-full max-h-[90vh] min-h-[40vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent p-6 sm:p-10">
+        <div className="relative bg-gray-800 bg-opacity-35 rounded-xl shadow-2xl text-gray-200 max-w-3xl w-full max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent p-6 sm:p-10">
             <div className="flex items-center gap-4 mb-6">
                 <AppImage
                     width={75}
