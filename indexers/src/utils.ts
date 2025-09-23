@@ -3,6 +3,7 @@ import { NostrEvent } from "./modules/types/NostrEvent";
 import { User } from "./modules/types/User";
 import { Note } from "./modules/types/Note";
 import { NFile } from "./modules/types/File";
+import axios from "axios"
 
 export const getPubkeys = (event: NostrEvent): string[] => {
     let pubkeys = event.tags.map((tag: any) => { 
@@ -34,7 +35,7 @@ export const distinctNotes = (notes: Note[]) => {
     const seen = new Map<string, Note>();
     for(let note of notes) {
         if(note)
-            seen.set(note.id, note)
+        seen.set(note.id, note)
     }
     return Array.from(seen.values());
 }
@@ -43,7 +44,7 @@ export const distinctUsers = (users: User[]): User[] => {
     const seen = new Map<string, User>();
     for (const user of users) {
         if(user)
-            seen.set(user.pubkey, user);
+        seen.set(user.pubkey, user);
     }
     return Array.from(seen.values());
 }
@@ -52,7 +53,7 @@ export const distinctFiles = (files: NFile[]): NFile[] => {
     const seen = new Map<string, NFile>();
     for (const file of files) {
         if(file)
-            seen.set(file.url, file);
+        seen.set(file.url, file);
     }
     return Array.from(seen.values());
 }
@@ -60,34 +61,34 @@ export const distinctFiles = (files: NFile[]): NFile[] => {
 export const distinct = (pubkeys: string[]) => {
     const seen = new Set<string>()
     for(let pubkey of pubkeys)
-        seen.add(pubkey)
+    seen.add(pubkey)
     return Array.from(seen)
 }
 
 export const getRelayDomain = (relay: string) => {
     try 
-    {
+{
         if(relay.length >= 75)
-            throw new Error("invalid domain size")
+        throw new Error("invalid domain size")
         if(!relay.includes("ws://") && !relay.includes("wss://"))
-            throw new Error("invalid domain not is wss protocol")
+        throw new Error("invalid domain not is wss protocol")
 
         const url = new URL(relay)
         // invalid domains
         if(!url.hostname.includes(".") || url.hostname.length <= 2)
-            throw new Error("invalid domain")
+        throw new Error("invalid domain")
         // not accept ips
         const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
         if (ipRegex.test(url.hostname))
-            throw new Error("invalid domain is an IP")
+        throw new Error("invalid domain is an IP")
 
         let privateIpRegex = /^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|127\.)/;
         if (privateIpRegex.test(url.hostname))
-            throw new Error("invalid domain is an IP")
+        throw new Error("invalid domain is an IP")
 
         privateIpRegex = /^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/;
         if (privateIpRegex.test(url.hostname))
-            throw new Error("invalid domain is an IP")
+        throw new Error("invalid domain is an IP")
 
         return `${url.protocol}//${url.hostname}`
     } catch {
@@ -104,7 +105,7 @@ export const npubToHex = (npub: string): string => {
 export const extractUrls = (content: string): string[] => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const urls = (content.match(urlRegex) || [])
-        .map((u: string) => u.trim());
+    .map((u: string) => u.trim());
     return distinct(urls)
 }
 
@@ -115,11 +116,11 @@ export const mediaType = (url: string): "image" | "video" | "audio" | "iframe" =
     if (/\.(mp3|wav|ogg|flac|m4a|aac)$/.test(lower)) return "audio";
     if (
         lower.includes("youtube.com") ||
-        lower.includes("youtu.be") ||
-        lower.includes("vimeo.com") ||
-        lower.includes("dailymotion.com") ||
-        lower.includes("soundcloud.com") ||
-        lower.includes("twitch.tv")
+            lower.includes("youtu.be") ||
+            lower.includes("vimeo.com") ||
+            lower.includes("dailymotion.com") ||
+            lower.includes("soundcloud.com") ||
+            lower.includes("twitch.tv")
     ) {
         return "iframe";
     }
@@ -144,23 +145,21 @@ export const extractTagsFromContent = (content: string): string[] => {
 }
 
 export const checkMediaAccessible = async (url: string): Promise<boolean> => {
-    try {
-        const response = await fetch(url, { method: "HEAD" }); // HEAD evita baixar todo o conteúdo
-        if (!response.ok) return false;
-
-        const contentType = response.headers.get("content-type");
+    try
+    {
+        const { headers } = await axios.head(url, { timeout: 2500 })
+        
+        if(!headers) return false;
+        
+        const contentType = headers["content-type"]
         if (!contentType) return false;
-        
-        if (contentType.startsWith("image/") || contentType.startsWith("video/")) {
-          return true;
-        }
-        
-        if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
-          return response.status === 200; // só checa se a página existe
-        }
+
+        const types = ["image", "video"]
+        if (types.some(t => contentType.includes(t))) 
+            return true;
         
         return false;
-    } catch (err) {
+    } catch {
         return false;
     }
 }

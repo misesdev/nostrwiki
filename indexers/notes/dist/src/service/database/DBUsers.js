@@ -23,10 +23,13 @@ class DBUsers {
     list(offset, items) {
         return __awaiter(this, void 0, void 0, function* () {
             const query = `
-            SELECT * 
-            FROM users 
-            WHERE available = true 
-            ORDER BY pubkey 
+            SELECT DISTINCT ON (u.pubkey) 
+                u.*,
+                n.published_at AS since
+            FROM users u
+            LEFT JOIN notes n ON n.pubkey = u.pubkey
+            WHERE u.available = true
+            ORDER BY u.pubkey, n.published_at DESC
             LIMIT $1 OFFSET $2
         `;
             const result = yield this._db.query(query, [items, offset]);

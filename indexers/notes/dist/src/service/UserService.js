@@ -12,7 +12,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils_1 = require("../utils");
 const DBUsers_1 = __importDefault(require("./database/DBUsers"));
 const PubkeyService_1 = __importDefault(require("./PubkeyService"));
 const RelayService_1 = __importDefault(require("./RelayService"));
@@ -32,7 +31,7 @@ class UserService {
             const relayUrls = [];
             let skipe = this._settings.max_fetch_events;
             for (let i = 0; i <= pubkeys.length; i += skipe) {
-                let users = [];
+                let users = new Map();
                 let events = yield pool.fechEvents({
                     authors: pubkeys.slice(i, i + skipe),
                     limit: skipe,
@@ -42,13 +41,13 @@ class UserService {
                 for (let i = 0; i < events.length; i++) {
                     try {
                         const user = this.userFromEvent(events[i]);
-                        users.push(user);
+                        users.set(events[i].pubkey, user);
                         const urls = RelayService_1.default.relaysFromEvent(events[i]);
                         relayUrls.push(...urls);
                     }
                     catch (_b) { }
                 }
-                const distincts = (0, utils_1.distinctUsers)(users);
+                const distincts = Array.from(users.values());
                 yield this._dbUsers.upsert(distincts);
             }
             accumulateRelays(relayUrls);

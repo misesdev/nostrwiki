@@ -77,7 +77,7 @@ class RelayService
     {
         if(!relayUrls.length) return;
 
-        const limit = pLimit(10) 
+        const limit = pLimit(12) 
         let betchSize = this._settings.relays_betch_size
         const distinctRelays: string[] = distinct(relayUrls)
         console.log("fetching data relays...:", distinctRelays.length)

@@ -3,11 +3,11 @@
 import axios from "axios"
 
 export type UrlMetadata = {
-    title: string | null,
-    subtitle: string | null, 
-    image: string | null,
-    url: string,
-    domain: string
+    title: string | null;
+    subtitle: string | null; 
+    image: string | null;
+    url: string;
+    domain: string;
 }
 
 export const getPreviewData = async (url: string) : Promise<UrlMetadata> => {

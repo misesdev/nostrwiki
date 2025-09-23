@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('files', function (Blueprint $table) {
             $table->string('thumbnail', 512)->nullable()->after('url');
-            $table->string('available')->boolean()->index();
+            $table->boolean('available')->default(0)->index();
         });
     }
 

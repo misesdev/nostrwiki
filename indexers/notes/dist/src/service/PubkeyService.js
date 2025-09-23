@@ -91,6 +91,9 @@ class PubkeyService {
                 users = yield dbUsers.list(0, settings.pubkeys_per_process);
                 yield appSettings.updatePubkeyIndex(service, 0);
             }
+            if (index >= 200000 && !settings.note_since) {
+                yield appSettings.updateSince(service);
+            }
             return users;
         });
     }

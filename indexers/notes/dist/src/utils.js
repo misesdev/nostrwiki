@@ -8,9 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkMediaAccessible = exports.extractTagsFromContent = exports.mediaType = exports.extractUrls = exports.npubToHex = exports.getRelayDomain = exports.distinct = exports.distinctFiles = exports.distinctUsers = exports.distinctNotes = exports.distinctEvent = exports.getPubkeys = void 0;
 const bech32_1 = require("bech32");
+const axios_1 = __importDefault(require("axios"));
 const getPubkeys = (event) => {
     let pubkeys = event.tags.map((tag) => {
         // if not have a value
@@ -107,8 +111,9 @@ const npubToHex = (npub) => {
 exports.npubToHex = npubToHex;
 const extractUrls = (content) => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return (content.match(urlRegex) || [])
+    const urls = (content.match(urlRegex) || [])
         .map((u) => u.trim());
+    return (0, exports.distinct)(urls);
 };
 exports.extractUrls = extractUrls;
 const mediaType = (url) => {
@@ -131,32 +136,33 @@ const mediaType = (url) => {
 };
 exports.mediaType = mediaType;
 const extractTagsFromContent = (content) => {
-    const regex = /#(\w+)/g;
+    // Regex: Search for a #word that:
+    // - is NOT at the beginning of the line followed by a space (# Heading)
+    // - is NOT ## or ### (Markdown headings)
+    // - We allow letters, numbers, underscores, and hyphens in the hashtag
+    const regex = /(^|\s)#(?!#)([a-zA-Z0-9_-]+)/g;
     const matches = [];
     let match;
     while ((match = regex.exec(content)) !== null) {
-        matches.push(match[1].toLowerCase());
+        matches.push(match[2].toLowerCase());
     }
     return matches;
 };
 exports.extractTagsFromContent = extractTagsFromContent;
 const checkMediaAccessible = (url) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const response = yield fetch(url, { method: "HEAD" }); // HEAD evita baixar todo o conteúdo
-        if (!response.ok)
+        const { headers } = yield axios_1.default.head(url, { timeout: 2500 });
+        if (!headers)
             return false;
-        const contentType = response.headers.get("content-type");
+        const contentType = headers["content-type"];
         if (!contentType)
             return false;
-        if (contentType.startsWith("image/") || contentType.startsWith("video/")) {
+        const types = ["image", "video"];
+        if (types.some(t => contentType.includes(t)))
             return true;
-        }
-        if (url.includes("youtube.com/watch") || url.includes("youtu.be/")) {
-            return response.status === 200; // só checa se a página existe
-        }
         return false;
     }
-    catch (err) {
+    catch (_a) {
         return false;
     }
 });

@@ -137,28 +137,32 @@ class NoteService
             {
                 if(!url) continue;
                 const type = mediaType(url)
-                const description = event.content
-                    .split(" ").filter(t => t.length <= 15).slice(0, 25).join(" ")
-                files.set(url, {
-                    url,
-                    type,
-                    note_id: event.id,
-                    title: event.title.substring(0, 255),
-                    description: description,
-                    published_by: event.published_by?.substring(0, 100),
-                    published_at: event.published_at,
-                    pubkey: event.pubkey,
-                    tags: event.tags?.substring(0, 512),
-                    created_at: new Date(),
-                    ref_count: 1
-                })
+                if(type != "iframe") 
+                {
+                    const description = event.content
+                        .split(" ").filter(t => t.length <= 15).slice(0, 25).join(" ")
+                    files.set(url, {
+                        url,
+                        type,
+                        note_id: event.id,
+                        title: event.title.substring(0, 255),
+                        description: description,
+                        published_by: event.published_by?.substring(0, 100),
+                        published_at: event.published_at,
+                        pubkey: event.pubkey,
+                        tags: event.tags?.substring(0, 512),
+                        created_at: new Date(),
+                        ref_count: 1
+                    })
+                }
             }
         }
 
-        let betch = 25
-        const limit = pLimit(10)
+        let betch = 85
+        const limit = pLimit(15)
         const validFiles: NFile[] = []
         const uniqueFiles = Array.from(files.values())
+        console.log("validating files...:", uniqueFiles.length)
         for(let i = 0; i < uniqueFiles.length; i += betch)
         {
             const betchFiles = uniqueFiles.slice(i, i+betch)
@@ -169,12 +173,14 @@ class NoteService
                     return null
                 }))
             )
-            const allFiles: NFile[] = results.flat()
-            validFiles.push(...allFiles.filter(f => !!f?.url))
+            const allFiles: NFile[] = results.flat().filter((f: NFile) => !!f?.url)
+            console.log("valid files...:", allFiles.length)
+            validFiles.push(...allFiles)
         }
-
-        console.log("saving", validFiles.length, "files from notes")
-        await this._dbFiles.upsert(validFiles)
+        if(validFiles.length) {
+            console.log("saving", validFiles.length, "files from notes")
+            await this._dbFiles.upsert(validFiles)
+        }
     }
 
     private refPubkeys(events: NostrEvent[]): RefPubkey[]

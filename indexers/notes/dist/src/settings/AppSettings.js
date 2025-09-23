@@ -60,8 +60,9 @@ class AppSettings {
                 yield this._dbSettings.updateIndex(index, "pubkey_index");
         });
     }
-    updateSince(col, time) {
+    updateSince(col) {
         return __awaiter(this, void 0, void 0, function* () {
+            const time = parseInt((Date.now() / 1000).toString());
             if (col == constant_1.Service.note_indexer)
                 yield this._dbSettings.updateSince(time, "note_since");
             else if (col == constant_1.Service.file_indexer)
