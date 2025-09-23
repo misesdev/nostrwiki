@@ -1,6 +1,6 @@
 'use client'
 
-import { NFile } from "@/types/types"
+import { NFile, User } from "@/types/types"
 import toast from "react-hot-toast"
 import { Copy, LinkIcon } from "lucide-react"
 import AppImage from '../commons/AppImage';
@@ -8,9 +8,10 @@ import AppImage from '../commons/AppImage';
 type Props = {
     image: NFile;
     showInSlide: (f: NFile) => void;
+    showAuthor: (u: User) => void;
 }
 
-const ImageItem = ({ image, showInSlide }: Props) => {
+const ImageItem = ({ image, showInSlide, showAuthor }: Props) => {
 
     const handleCopy = () => {
         navigator.clipboard.writeText(image.url)
@@ -70,7 +71,7 @@ const ImageItem = ({ image, showInSlide }: Props) => {
             <div className="p-4 flex flex-col gap-3">
                 {/* Autor */}
                 {image.author && (
-                    <div className="flex items-center gap-3">
+                    <div onClick={() => showAuthor(image.author)} className="flex items-center gap-3">
                         <AppImage
                             width={50}
                             height={50}

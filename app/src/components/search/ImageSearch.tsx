@@ -1,7 +1,7 @@
 'use client'
 
 import SearchService from '@/services/api/SearchService';
-import { NFile, SearchParams } from '@/types/types';
+import { NFile, SearchParams, User } from '@/types/types';
 import { normalizeFile } from '@/utils/utils';
 import EmptyResults from './EmptyResults';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -9,6 +9,7 @@ import ImageLoader from '../images/ImageLoader';
 import ImageResults from '../images/ImageResults';
 import AppSlide from '../commons/AppSlide';
 import ImageSlideItem from '../images/ImageSlideItem';
+import UserModal from '../user/UserModal';
 
 const ImageSearch = ({ term }: SearchParams) => {
 
@@ -18,6 +19,8 @@ const ImageSearch = ({ term }: SearchParams) => {
     const [images, setImages] = useState<NFile[]>([])
     const [endOfResults, setEndOfResults] = useState(false)
     const loaderRef = useRef<HTMLDivElement | null>(null);
+    const [author, setAuthor] = useState<User|null>(null)
+    const [isOpen, setIsOpen] = useState(false)
     const [slideOpen, setSlideOpen] = useState(false)
     const [imageIndex, setImageIndex] = useState(0)
     const uniques = useRef(new Map<string, NFile>()) 
@@ -80,13 +83,18 @@ const ImageSearch = ({ term }: SearchParams) => {
         setSlideOpen(true)
     }, [images])
 
+    const showAuthor = useCallback((user: User) => {
+        setAuthor(user)
+        setIsOpen(true)
+    }, [isOpen, author])
+
     if (!loading && !images.length) 
         return <EmptyResults term={term} />
 
     return (
         <>
             <div className='w-full text-[12px] md:text-sm'>
-                <ImageResults showInSlide={showInSlide} images={images} />
+                <ImageResults showAuthor={showAuthor} showInSlide={showInSlide} images={images} />
                 {loading && !endOfResults && <ImageLoader />}
                 {endOfResults && 
                     <p className="text-center text-gray-500">No more results</p>
@@ -103,6 +111,14 @@ const ImageSearch = ({ term }: SearchParams) => {
                     fetchMoreItems={fetchImages}
                     endOfResults={endOfResults}
                     component={ImageSlideItem}
+                />
+            )}
+            {isOpen && !!author && (
+                <UserModal 
+                    isOpen={isOpen}
+                    user={author as User}
+                    onClose={() => setIsOpen(false)}
+                    
                 />
             )}
         </>
