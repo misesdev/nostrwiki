@@ -30,7 +30,7 @@ const NoteItem = ({ note, showInSlide }: Props) => {
                             <AppImage
                                 width={40}
                                 height={40}
-                                src={note.author.picture || "/default-avatar.png"}
+                                src={note.author.picture}
                                 onError="/default-avatar.png"
                                 alt={note.author.display_name || note.author.name}
                                 className="w-10 h-10 rounded-full object-cover border-2 border-gray-600"

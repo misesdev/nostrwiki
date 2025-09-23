@@ -82,7 +82,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
                 .split(" ").slice(0, 65).join(" ")
             const content = cliped ? `${clip}...` : token.content
             return (
-                <div className="prose dark:prose-invert max-w-none leading-relaxed break-words">
+                <div key={i} className="prose dark:prose-invert max-w-none leading-relaxed break-words">
                     <MarkdownContent content={content.replaceAll("nostr:", "")} />
                 </div>           
             )
@@ -135,7 +135,7 @@ const NoteContent = ({ note, cliped=false }: Props) => {
             const website = token.content
                 .replace("wss", "https").replace("ws", "http")
             return (
-                <Link
+                <Link key={i}
                     href={website}
                     className="mx-2 text-blue-400 hover:underline break-all"
                     target="_blank"

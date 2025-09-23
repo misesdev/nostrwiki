@@ -81,10 +81,10 @@ export const shortenString = (value: string, size: number): string =>
 }
 
 export const normalizeUser = (user: User): User => {
-    if(!isValidImageUrl(user.picture))
-    user.picture = "/default-avatar.png"
-    if(!isValidImageUrl(user.banner))
-    user.banner = "/default-banner.jpg"
+    if(!user.picture?.includes("http"))
+        user.picture = "/default-avatar.png"
+    if(!user.banner?.includes("http"))
+        user.banner = "/default-banner.jpg"
     user.about = !!user.about?.trim() ? user.about : "User not have a description"
     user.display_name = getClipedContent(user.display_name || user.name, 25)
     user.name = getClipedContent(user.name || user.display_name, 25)
@@ -92,58 +92,26 @@ export const normalizeUser = (user: User): User => {
 }
 
 export const normalizeRelay = (relay: Relay): Relay => {
-    if(!isValidImageUrl(relay.icon))
-    relay.icon = "/default-icon.jpg"
+    if(!relay.icon?.includes("http"))
+        relay.icon = "/default-icon.jpg"
     if(relay.author)
-    relay.author = normalizeUser(relay.author)
+        relay.author = normalizeUser(relay.author)
     relay.name = getClipedContent(relay.name || relay.url, 25)
     return relay
 }
 
 export const normalizeNote = (note: Note): Note => {
     if(note.author)
-    note.author = normalizeUser(note.author)
+        note.author = normalizeUser(note.author)
     return note
 }
 
 export const normalizeFile = (image: NFile): NFile => {
     if(image.author)
-    image.author = normalizeUser(image.author)
+        image.author = normalizeUser(image.author)
     return image
 }
 
-function isValidImageUrl(url?: string): boolean {
-    if (!url) return false;
-    const VALID_IMAGE_EXT = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".svg", ".avif"];
-    try {
-        const parsed = new URL(url);
-        // precisa ser http ou https
-        if (!["http:", "https:"].includes(parsed.protocol)) return false;
-
-        // verificar extensão no final do pathname
-        const lower = parsed.pathname.toLowerCase();
-        return VALID_IMAGE_EXT.some(ext => lower.endsWith(ext));
-    } catch {
-        return false;
-    }
-}
-
-export const getLanguage = () => {
-    if (typeof navigator === "undefined") 
-    return "english";
-
-    const lang = (navigator.language || navigator.languages[0] || "en").toLowerCase()
-
-    const shortLang = lang.toLowerCase().split("-")[0]
-
-    switch (shortLang) {
-        case "pt":
-            return "portuguese";
-        case "en":
-        default:
-            return "english";
-    }
-}
 
 /**
  * Converte npub1… para hex (pubkey)
@@ -187,25 +155,9 @@ export const neventToId = (nevent: string): string => {
 export const getMediaType = (url: string): "image" | "video" | "link" => {
     const imageExt = /\.(jpeg|jpg|png|gif|webp|avif)$/i
     const videoExt = /\.(mp4|webm|ogg|mov)$/i
-
     if (imageExt.test(url)) return "image"
     if (videoExt.test(url)) return "video"
     return "link"
 }
 
-export const downloadFile = (url: string, filename?: string) => {
-    const link = document.createElement('a');
-    link.href = url;
 
-    // Se não passar um filename, extrai do final da URL
-    link.download = filename || url.split('/').pop() || 'file';
-
-    // Dispara o download
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
-
-function toHex(bytes: Uint8Array|number[]): string {
-    return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
-}

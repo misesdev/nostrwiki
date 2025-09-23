@@ -80,7 +80,7 @@ const Content = ({ content, cliped = false }: Props) => {
     const renderToken = (token: Token, i: number) => {
         if (token.type === "text") {
             return (
-                <div className="prose dark:prose-invert max-w-full break-words whitespace-pre-wrap">
+                <div key={i} className="prose dark:prose-invert max-w-full break-words whitespace-pre-wrap">
                     <MarkdownContent content={token.content.replaceAll("nostr:", "")} />
                 </div>           
             )
@@ -133,7 +133,7 @@ const Content = ({ content, cliped = false }: Props) => {
             const website = token.content
                 .replace("wss", "https").replace("ws", "http")
             return (
-                <Link
+                <Link key={i}
                     href={website}
                     className="mx-2 text-blue-400 hover:underline break-all"
                     target="_blank"
@@ -143,37 +143,37 @@ const Content = ({ content, cliped = false }: Props) => {
         }
         // Links / media
         if (token.type === "url") {
-            if (token?.metadata?.type === "image") {
-                if(cliped && filesCount > 0) return null;
-                filesCount = filesCount + 1
-                return (
-                    <div className="w-full my-2 flex justify-center">
-                        <img
-                            key={i}
-                            src={token.content}
-                            onError={e => e.currentTarget.src = "/default-banner.jpg"}
-                            className="rounded-xl object-contain"
-                            alt="image"
-                        />
-                    </div>
-                )
-            }
-            if (token?.metadata?.type === "video") {
-                if(cliped && filesCount > 0) return null;
-                filesCount = filesCount + 1
-                return (
-                    <div className="w-full my-2 flex justify-center">
-                        <video
-                            key={i}
-                            loop
-                            src={token.content}
-                            controls
-                            ref={el => { if (el) videoRefs.current[i] = el }}
-                            className="w-full h-auto max-w-full max-h-[90vh] rounded-xl bg-gray-900 bg-opacity-35 my-2"
-                        />
-                    </div>
-                )
-            }
+            // if (token?.metadata?.type === "image") {
+            //     if(cliped && filesCount > 0) return null;
+            //     filesCount = filesCount + 1
+            //     return (
+            //         <div className="w-full my-2 flex justify-center">
+            //             <img
+            //                 key={i}
+            //                 src={token.content}
+            //                 onError={e => e.currentTarget.src = "/default-banner.jpg"}
+            //                 className="rounded-xl object-contain"
+            //                 alt="image"
+            //             />
+            //         </div>
+            //     )
+            // }
+            // if (token?.metadata?.type === "video") {
+            //     if(cliped && filesCount > 0) return null;
+            //     filesCount = filesCount + 1
+            //     return (
+            //         <div className="w-full my-2 flex justify-center">
+            //             <video
+            //                 key={i}
+            //                 loop
+            //                 src={token.content}
+            //                 controls
+            //                 ref={el => { if (el) videoRefs.current[i] = el }}
+            //                 className="w-full h-auto max-w-full max-h-[90vh] rounded-xl bg-gray-900 bg-opacity-35 my-2"
+            //             />
+            //         </div>
+            //     )
+            // }
                
             return (
                 <div key={i} className="flex w-full my-2">
