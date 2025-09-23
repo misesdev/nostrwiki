@@ -1,4 +1,5 @@
 import { Service, ServiceKey } from "../constant";
+import { Friend } from "../modules/types/Friend";
 import { User } from "../modules/types/User";
 import AppSettings from "../settings/AppSettings";
 import { Settings } from "../settings/types";
@@ -32,31 +33,36 @@ class PubkeyService
             await this._dbUsers.upsertPubkeys(distinct(pubkeys))         
         }
 
-        const relayUrls: string[] = []
+        const uniqueRelays = new Set<string>()
         let skip = this._settings.max_fetch_events
-
         for(let i = 0; i < pubkeys.length; i += skip) 
         {
-            console.log("fetching", skip, "pubkeys from friends")
+            const uniquePubkeys = new Set<string>()
+            const uniqueFriends = new Set<Friend>()
+            console.log("fetching", skip, "friend events")
             let events = await pool.fechEvents({
                 authors: pubkeys.slice(i, i + skip),
                 kinds: [3],
                 limit: skip
             })
 
-            for(let i = 0; i < events.length; i++)
-            {
-                let event = events[i]
-                let npubs = getPubkeys(event)
-                console.log("npubs...:", npubs.length)
-                await this._dbUsers.upsertPubkeys(distinct(npubs))
-                await this._friendService
-                    .saveFriends(event.pubkey, distinct(npubs))
-                const urls = RelayService.relaysFromEvent(event)
-                relayUrls.push(...urls)
-            }
+            events.forEach(event => {
+                const pubkeys = getPubkeys(event)
+                pubkeys.forEach(pubkey => {
+                    uniquePubkeys.add(pubkey)
+                    uniqueFriends.add({
+                        user_pubkey: event.pubkey,
+                        friend_pubkey: pubkey
+                    })
+                })
+                const relays = RelayService.relaysFromEvent(event)
+                relays.forEach(relay => uniqueRelays.add(relay))
+            })
+            console.log("found pubkeys.:", uniquePubkeys.size)
+            await this._dbUsers.upsertPubkeys(Array.from(uniquePubkeys))
+            await this._friendService.upsert(Array.from(uniqueFriends))
         }
-        accumulateRelays(relayUrls)
+        accumulateRelays(Array.from(uniqueRelays.values()))
     }
 
     public static getPubkeyIndex(settings: Settings, service: ServiceKey): number

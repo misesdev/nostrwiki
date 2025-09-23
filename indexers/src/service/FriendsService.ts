@@ -9,7 +9,12 @@ class FriendsService
     ) {
         this._dbFriends = dbFriends
     }
-    
+   
+    public async upsert(friends: Friend[]): Promise<void>
+    {
+        await this._dbFriends.upsert(friends)
+    }
+
     public async saveFriends(user: string, friends: string[]): Promise<void>
     {
         const allfriends = friends.map((pubkey): Friend => ({
