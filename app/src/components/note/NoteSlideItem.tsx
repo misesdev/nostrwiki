@@ -32,7 +32,7 @@ const NoteSlideItem = ({ item }: Props) => {
                 </div>
             </div>
 
-            {title && (
+            {title && item.kind != 1 && (
                 <h2 className="text-[14px] md:text-1xl font-bold mb-4 text-white">
                     {title}
                 </h2>

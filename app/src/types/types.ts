@@ -35,6 +35,7 @@ export type Relay = {
 
 export type Note = {
     id: string;
+    kind: number;
     title: string;
     content: string;
     published_at: number;

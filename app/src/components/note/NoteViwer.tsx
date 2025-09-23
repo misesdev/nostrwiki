@@ -19,7 +19,7 @@ const NoteViewr = ({ note }: NoteViewrProps) => {
                     {format(new Date(note.published_at * 1000), "dd MMM yyyy")}
                 </span>
             </div>
-            {title && (
+            {title && note.kind != 1 && (
                 <h3 className="text-[14px] md:text-lg font-semibold text-gray-200 mb-2">
                     {title}
                 </h3>

@@ -46,7 +46,7 @@ const NoteItem = ({ note, showInSlide }: Props) => {
                 </div>
 
                 <div className="p-4 flex flex-col gap-2">
-                    {title && (
+                    {title && note.kind != 1 && (
                         <button onClick={() => showInSlide(note)}>
                             <h3 className="text-[14px] md:text-lg font-bold text-blue-500 dark:text-blue-400 hover:text-blue-400 dark:hover:text-blue-300 hover:underline line-clamp-2 transition">
                                 {title}
@@ -54,7 +54,9 @@ const NoteItem = ({ note, showInSlide }: Props) => {
                         </button>
                     )}
 
-                    <div className="text-gray-200 dark:text-gray-300 text-[12px] md:text-sm">
+                    <div 
+                        onClick={() => showInSlide(note)} 
+                        className="md:cursor-pointer text-gray-200 dark:text-gray-300 text-[12px] md:text-sm">
                         <NoteContent note={note} cliped />
                     </div>
                 </div>
