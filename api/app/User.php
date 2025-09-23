@@ -36,20 +36,14 @@ class User extends Model
         return $this->hasMany(Note::class, 'pubkey', 'pubkey');
     }
 
-    /**
-     * Pesquisa notas deste usuário.
-     */
     public function searchNotes(string $term, int $skip, int $take)
     {
-        return $this->notes()              // pega apenas as notas do usuário
-                    ->search($term, $skip, $take)  // aplica o trait NoteSearchable
+        return $this->notes()             
+                    ->search($term, $skip, $take)  
                     ->get();
     }
 
-    /**
-     * Friends of user (1 → N via pivot)
-     */
-    public function friends(): BelongsToMany
+    public function follows(): BelongsToMany
     {
         return $this->belongsToMany(
             User::class,
@@ -62,12 +56,31 @@ class User extends Model
             ->select('u.*');
     }
 
-    public function searchFriends(string $term, int $skip, $take, string $lang)
+    public function followers(): BelongsToMany
     {
-        return $this->friends()
+        return $this->belongsToMany(
+            User::class,
+            'friends',
+            'friend_pubkey', 
+            'user_pubkey',   
+            'pubkey',
+            'pubkey'
+        );
+    }
+
+    public function searchFollows(string $term, int $skip, $take, string $lang)
+    {
+        return $this->follows()
             ->getQuery()
             ->search($term, $skip, $take, $lang)
             ->get();
     }
 
+    public function searchFolowers(string $term, int $skip, $take, string $lang)
+    {
+        return $this->followers()
+            ->getQuery()
+            ->search($term, $skip, $take, $lang)
+            ->get();
+    }
 }

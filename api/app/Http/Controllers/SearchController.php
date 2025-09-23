@@ -17,41 +17,10 @@ class SearchController extends Controller
     {
         $term = $request->term;
 
-        // Search on indexs 'notes' and 'user'
         $indices = 'notes,users';
         $elasticUrl = env('ELASTIC_URL', 'http://elasticsearch:9200');
         $response = Http::post("$elasticUrl/$indices/_search", [
             'size' => 23,
-            // 'query' => [
-            //     'bool' => [
-            //         'should' => [
-            //             [
-            //                 'multi_match' => [
-            //                     'query'  => $term,
-            //                     'fields' => [
-            //                         'display_name^5',
-            //                         'name^3',
-            //                         'content^2'
-            //                     ],
-            //                     'type'   => 'phrase_prefix'
-            //                 ]
-            //             ],
-            //             [
-            //                 'multi_match' => [
-            //                     'query'     => $term,
-            //                     'fields'    => [
-            //                         'display_name^2',
-            //                         'name',
-            //                         'about',
-            //                         'content'
-            //                     ],
-            //                     'type'      => 'best_fields',
-            //                     'fuzziness' => 'AUTO'
-            //                 ]
-            //             ]
-            //         ]
-            //     ]
-            // ]
             'query' => [
                 'multi_match' => [
                     'query' => $term,
@@ -193,7 +162,7 @@ class SearchController extends Controller
     /**
      * @response User[] // 1 - PHPDoc
      */
-    function search_user_friends(UserSearchRequest $request)
+    function search_user_follows(UserSearchRequest $request)
     {
         $term = $request->term;
         $pubkey = $request->pubkey;
@@ -204,7 +173,26 @@ class SearchController extends Controller
 
         if(!$user) return response()->json(['message' => 'user not found'], 404);
 
-        $friends = $user->searchFriends($term, $skip, $take)->get();
+        $friends = $user->searchFollows($term, $skip, $take)->get();
+
+        return response()->json($friends, 200);
+    }
+
+    /**
+     * @response User[] // 1 - PHPDoc
+     */
+    function search_user_followers(UserSearchRequest $request)
+    {
+        $term = $request->term;
+        $pubkey = $request->pubkey;
+        $skip = $request->input('skip', 0);
+        $take = $request->input('take', 50);
+
+        $user = User::find($pubkey);
+
+        if(!$user) return response()->json(['message' => 'user not found'], 404);
+
+        $friends = $user->searchFollowers($term, $skip, $take)->get();
 
         return response()->json($friends, 200);
     }

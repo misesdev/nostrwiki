@@ -31,16 +31,31 @@ class UserController extends Controller
     /**
      * @response User[] // 1 - PHPDoc
      */
-    function friends(UserDataRequest $request)
+    function follows(UserDataRequest $request)
     {
         $user = User::find($request->pubkey);
 
         if(!$user) return response()->json(['message' => 'user not found'], 404);
 
-        $friends = $user->friends()->get();
+        $friends = $user->follows()->get();
 
         return response()->json($friends, 200);
     }
+
+    /**
+     * @response User[] // 1 - PHPDoc
+     */
+    function followers(UserDataRequest $request)
+    {
+        $user = User::find($request->pubkey);
+
+        if(!$user) return response()->json(['message' => 'user not found'], 404);
+
+        $friends = $user->followers()->get();
+
+        return response()->json($friends, 200);
+    }
+
 
     /**
      * @response Note[] // 1 - PHPDoc
