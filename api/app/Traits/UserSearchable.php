@@ -19,7 +19,7 @@ trait UserSearchable
             ->selectRaw("
                 users.pubkey, users.name, users.display_name, users.picture, 
                 users.about, users.banner, users.website, users.nip05, users.lud06, 
-                users.lud16, users.zap_service, users.ref_count, users.created_at, users.updated_at,
+                users.lud16, users.zap_service, users.ref_count, 
                 (
                     GREATEST(
                         ts_rank(users.search_vector, websearch_to_tsquery('portuguese', unaccent(?))),

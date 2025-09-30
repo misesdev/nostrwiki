@@ -149,9 +149,8 @@ const NoteContent = ({ note, cliped=false }: Props) => {
                 if(cliped && filesCount > 0) return null;
                 filesCount = filesCount + 1
                 return (
-                    <div className="w-full my-2 flex justify-center">
+                    <div key={i} className="w-full my-2 flex justify-center">
                         <img
-                            key={i}
                             src={token.content}
                             onError={e => e.currentTarget.src = "/default-banner.jpg"}
                             className="max-w-[96%] max-h-[90vh] rounded-xl object-contain"
@@ -164,9 +163,8 @@ const NoteContent = ({ note, cliped=false }: Props) => {
                 if(cliped && filesCount > 0) return null;
                 filesCount = filesCount + 1
                 return (
-                    <div className="w-full my-2 flex justify-center">
+                    <div key={i} className="w-full my-2 flex justify-center">
                         <video
-                            key={i}
                             loop
                             src={token.content}
                             controls

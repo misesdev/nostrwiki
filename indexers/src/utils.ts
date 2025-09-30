@@ -164,3 +164,17 @@ export const checkMediaAccessible = async (url: string): Promise<boolean> => {
     }
 }
 
+export const getClipedContent = (content: string, limit: number=50): string => {
+    if (!content) return "";
+    const chars = Array.from(content); 
+    if (chars.length > limit) {
+        return `${chars.slice(0, limit).join("")}...`;
+    }
+    return content;
+}
+
+export const shortenString = (value: string, size: number): string =>
+{
+    let length = Math.ceil(size / 2);
+    return `${value.substring(0, length)}...${value.slice(-length)}`
+}

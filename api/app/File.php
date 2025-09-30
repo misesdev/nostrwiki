@@ -14,7 +14,12 @@ class File extends Model
     protected $keyType = 'string';
     protected $primaryKey = 'url';
     
-    protected $hidden = ['search_vector', 'search_text'];
+    protected $hidden = [
+        'search_vector', 
+        'search_text',
+        'created_at',
+        'update_at'
+    ];
 
     protected $fillable = [
         'url',

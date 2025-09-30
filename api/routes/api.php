@@ -11,29 +11,29 @@ Route::get('/search/autocomplete', [SearchController::class, 'autocomplete']);
 
 Route::middleware('cache.response')->group(function () {
 
-    # Users
+    # Search
     Route::get('/search/users', [SearchController::class, 'search_users']);
-    Route::get('/search/user/notes', [SearchController::class, 'search_user_notes']);
-    Route::get('/search/user/follows', [SearchController::class, 'search_user_follows']);
-    Route::get('/search/user/followers', [SearchController::class, 'search_user_followers']);
-    Route::get('/users/profile/{pubkey}', [UserController::class, 'profile']);
-    Route::get('/users/followers', [UserController::class, 'followers']);
-    Route::get('/users/follows', [UserController::class, 'follows']);
-    Route::get('/users/notes', [UserController::class, 'notes']);
-    
-    # Relays
     Route::get('/search/relays', [SearchController::class, 'search_relays']);
-    Route::get('/relays/relay', [RelaysController::class, 'relay']);
-    Route::get('/relays/from/{pubkey}', [RelaysController::class, 'from']);
-
-    # Notes
     Route::get('/search/notes', [SearchController::class, 'search_notes']);
-    Route::get('/notes/note/{id}', [NoteController::class, 'note']);
-
-    # Files
     Route::get('/search/images', [SearchController::class, 'search_images']);
     Route::get('/search/videos', [SearchController::class, 'search_videos']);
     Route::get('/search/files', [SearchController::class, 'search_files']);
+    
+    # Users
+    Route::get('/user/notes/search', [SearchController::class, 'search_user_notes']);
+    Route::get('/user/follows/search', [SearchController::class, 'search_user_follows']);
+    Route::get('/user/followers/search', [SearchController::class, 'search_user_followers']);
+    Route::get('/user/followers', [UserController::class, 'followers']);
+    Route::get('/user/follows', [UserController::class, 'follows']);
+    Route::get('/user/notes', [UserController::class, 'notes']);
+    Route::get('/user/{pubkey}', [UserController::class, 'profile']);
+    
+    # Relays
+    Route::get('/relays/from/{pubkey}', [RelaysController::class, 'from']);
+    Route::get('/relay/{url}', [RelaysController::class, 'relay']);
+
+    # Notes
+    Route::get('/note/{id}', [NoteController::class, 'note']);
 
 });
 

@@ -15,6 +15,19 @@ class DBNotes
         this._elastic = elastic
     }
 
+    public async lastNotes(pubkeys: string[]): Promise<Note[]> 
+    {
+        if (!pubkeys.length) return []
+        const query = `
+            SELECT DISTINCT ON (pubkey) *
+            FROM notes
+            WHERE pubkey = ANY($1)
+            ORDER BY pubkey, published_at DESC
+        `
+        const result = await this._db.query<Note>(query, [pubkeys])
+        return result
+    }
+
     public async upsert(notes: Note[]): Promise<void>
     {
         for (let i = 0; i < notes.length; i += this.BATCH_SIZE) {
@@ -29,7 +42,7 @@ class DBNotes
         if(!notes.length) return;
 
         const columns = [
-            "id", "kind", "pubkey", "title", "content", "published_by", "published_at", 
+            "id", "kind", "pubkey", "content", "published_by", "published_at", 
             "created_at", "tags"
         ];
         const values: any[] = [];
@@ -43,7 +56,6 @@ class DBNotes
                 note.id,
                 note.kind,
                 note.pubkey,
-                note.title,
                 note.content,
                 note.published_by,
                 note.published_at,
@@ -56,7 +68,9 @@ class DBNotes
             VALUES ${placeholders.join(", ")}
             ON CONFLICT (id) 
             DO UPDATE SET
-                ref_count = EXCLUDED.ref_count + 1
+                content = EXCLUDED.content,
+                ref_count = EXCLUDED.ref_count + 1,
+                updated_at = NOW()
         `;
         await this._db.exec(query, values);
     }

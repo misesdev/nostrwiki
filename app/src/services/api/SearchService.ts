@@ -22,20 +22,22 @@ class SearchService
 
     public async autocomplete(term: string): Promise<AutocompleteResult[]>
     {
-        const response = await this._client.get(`/search/autocomplete?term=${term.trim()}`)
+        const response = await this._client.get("/search/autocomplete", {
+            params: { term }
+        })
         
-        if(![404, 200].includes(response.status)) 
+        if(response.status != 200) 
             throw Error('Error when searching fo users')
         
         return response.data as AutocompleteResult[]
     }
 
-    public async search<Entity>(url: string, body: APISerachProps): Promise<Entity[]> 
+    public async search<Entity>(url: string, params: APISerachProps): Promise<Entity[]> 
     {
-        const response = await this._client.post(url, body)
+        const response = await this._client.get(url, { params })
 
-        if(![404, 200].includes(response.status)) 
-            throw Error('Error when searching fo users')
+        if(response.status != 200) 
+            throw Error('Error when searching')
 
         const results: Entity[] = await response.data
 
@@ -44,31 +46,29 @@ class SearchService
 
     public async profile(pubkey: string): Promise<User>
     {
-        const response = await this._client.get(`/users/profile/${pubkey}`)
+        const response = await this._client.get(`/user/${pubkey}`)
        
-        if(![404, 200].includes(response.status)) 
-            throw Error('Error when searching fo users')
+        if(response.status != 200) 
+            throw Error('Error when searching users')
         
         return normalizeUser(response.data as User)
     }
 
-    public async userNotes(body: APIUserNotesProps): Promise<Note[]>
+    public async userNotes(params: APIUserNotesProps): Promise<Note[]>
     {
-        const response = await this._client.post(`/users/notes`, body)
+        const response = await this._client.get("/user/notes", { params })
         
-        if(![404, 200].includes(response.status)) { 
-            console.log(response)
-            throw Error('Error when searching fo users')
-        }
+        if(response.status != 200) 
+            throw Error('Error when searching notes')
 
         return (response.data as Note[]).map(n => normalizeNote(n))
     }
 
     public async note(id: string): Promise<Note>
     {
-        const response = await this._client.get(`/notes/note/${id}`)
+        const response = await this._client.get(`/note/${id}`)
         
-        if(![404, 200].includes(response.status)) 
+        if(response.status != 200) 
             throw Error('Error when searching fo users')
         
         return normalizeNote(response.data as Note)

@@ -11,7 +11,12 @@ class Relay extends Model
     use HasFactory;
     use RelaySearchable;
 
-    protected $hidden = ['search_vector', 'search_text'];
+    protected $hidden = [
+        'search_vector',
+        'search_text',
+        'created_at', 
+        'updated_at'
+    ];
 
     protected $fillable = [
         'id',

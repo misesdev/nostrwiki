@@ -23,7 +23,7 @@ class DBFiles
         if(!files.length) return;
 
         const columns = [
-            "url", "pubkey", "note_id", "title", "description", "published_by",
+            "url", "pubkey", "note_id", "description", "published_by",
             "published_at", "type", "tags", "created_at"
         ];
         const values: any[] = [];
@@ -37,7 +37,6 @@ class DBFiles
                 file.url,
                 file.pubkey,
                 file.note_id,
-                file.title,
                 file.description,
                 file.published_by,
                 file.published_at,
@@ -51,7 +50,10 @@ class DBFiles
             VALUES ${placeholders.join(", ")}
             ON CONFLICT (url) 
             DO UPDATE SET
-                ref_count = EXCLUDED.ref_count + 1
+                tags = EXCLUDED.tags,
+                description = EXCLUDED.description,
+                ref_count = EXCLUDED.ref_count + 1,
+                updated_at = NOW()
         `;
         await this._db.exec(query, values);
     }

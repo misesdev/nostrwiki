@@ -14,8 +14,8 @@ trait NoteSearchable
         $bindings = [$term, $term];
         return $query->with(['author'])
             ->selectRaw("
-                notes.id, notes.kind, notes.pubkey, notes.title, notes.content,
-                notes.tags, notes.published_at, notes.created_at, notes.updated_at,
+                notes.id, notes.kind, notes.pubkey, notes.content,
+                notes.tags, notes.published_at, 
                 (
                     greatest(
                         ts_rank(notes.search_vector, websearch_to_tsquery('portuguese', unaccent(?))),

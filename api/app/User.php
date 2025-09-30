@@ -15,7 +15,14 @@ class User extends Model
     protected $keyType = 'string';
     protected $primaryKey = 'pubkey';
 
-    protected $hidden = ['search_vector', 'search_text', 'available'];
+    protected $hidden = [
+        'search_vector', 
+        'search_text',
+        'available', 
+        'created_at', 
+        'updated_at',
+        'ref_count'
+    ];
 
     protected $fillable = [
         'name',

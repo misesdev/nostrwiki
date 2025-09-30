@@ -2,7 +2,6 @@ export type Note = {
     id: string;
     kind: number;
     pubkey: string;
-    title: string;
     content: string;
     published_by?: string;
     published_at: number;

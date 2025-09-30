@@ -26,7 +26,6 @@ class DBElastic
             {
                 id: note.id,
                 pubkey: note.pubkey,
-                title: note.title,
                 content: note.content,
                 published_by: note.published_by,
                 published_at: note.published_at,

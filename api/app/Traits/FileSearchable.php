@@ -18,7 +18,6 @@ trait FileSearchable
             ->selectRaw("
                 files.url, files.note_id, files.pubkey, files.title, 
                 files.description, files.type, files.tags, files.published_at, 
-                files.created_at, files.updated_at,
                 (
                     greatest(
                         ts_rank(files.search_vector, websearch_to_tsquery('portuguese', unaccent(?))),
@@ -47,11 +46,9 @@ trait FileSearchable
     {
         return $query
             ->with(['author', 'note'])
-            //->join('notes', 'files.note_id', '=', 'notes.id')
             ->selectRaw("
                 files.url, files.note_id, files.pubkey, files.title, 
                 notes.description, files.type, files.tags, files.published_at, 
-                files.created_at, files.updated_at,
                 (
                     greatest(
                         ts_rank(files.search_vector, websearch_to_tsquery('portuguese', unaccent(?))),
@@ -68,6 +65,7 @@ trait FileSearchable
                     // fallback ILIKE no search_vector
                     ->orWhereRaw("files.search_text ILIKE unaccent(?)", ["%{$term}%"]);
             })
+            ->orderByDesc('published_at')
             ->orderByDesc('relevance')
             ->skip($skip)
             ->take($take);

@@ -2,20 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Request\NoteRequest;
 use App\Note;
 use App\User;
+use Illuminate\Support\Facades\Validator;
 
 class NoteController extends Controller
 {
     /**
      * @response Note // 1 - PHPDoc
      */
-    function note(NoteRequest $request)
+    function note(string $id)
     {
-        $note = Note::with('author')->find($request->id);
+        $validate = Validator::make([ 'id' => $id ], [
+            'id' => ['required', 'size:64', 'regex:/^[a-fA-F0-9]+$/'],
+        ]);
 
-        if(!$note) return response()->json(['message' => 'note not found'], 404);
+        if($validate->fails())
+            return response()->json($validate->errors(), 403);
+
+        $note = Note::with('author')->find($id);
+
+        if(!$note) {
+            return response()->json([
+                'message' => 'no note found'
+            ], 204);
+        }
 
         return response()->json($note);
     }

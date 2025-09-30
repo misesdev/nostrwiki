@@ -23,7 +23,12 @@ class UserController extends Controller
 
         $user = User::find($pubkey);
 
-        if(!$user) return response()->json(['message' => 'user not found'], 404);
+        if(!$user) {
+            // response 204 - No Content
+            return response()->json([
+                'message' => 'user not found'
+            ], 204);
+        }
 
         return response()->json($user, 200);
     }
@@ -33,11 +38,19 @@ class UserController extends Controller
      */
     function follows(UserDataRequest $request)
     {
+        $skip = $request->input('skip', 0);
+        $take = $request->input('take', 50);
         $user = User::find($request->pubkey);
 
-        if(!$user) return response()->json(['message' => 'user not found'], 404);
+        if(!$user) {
+            // response 204 - No Content
+            return response()->json([
+                'message' => 'user not found'
+            ], 204);
+        }
 
-        $friends = $user->follows()->get();
+        $friends = $user->follows()
+            ->skip($skip)->take($take)->get();
 
         return response()->json($friends, 200);
     }
@@ -47,29 +60,40 @@ class UserController extends Controller
      */
     function followers(UserDataRequest $request)
     {
+        $skip = $request->input('skip', 0);
+        $take = $request->input('take', 50);
         $user = User::find($request->pubkey);
 
-        if(!$user) return response()->json(['message' => 'user not found'], 404);
+        if(!$user) {
+            // response 204 - No Content
+            return response()->json([
+                'message' => 'user not found'
+            ], 204);
+        }
 
-        $friends = $user->followers()->get();
+        $friends = $user->followers()
+            ->skip($skip)->take($take)->get();
 
         return response()->json($friends, 200);
     }
-
 
     /**
      * @response Note[] // 1 - PHPDoc
      */
     function notes(UserDataRequest $request)
     {      
-        $skip = $request->skip; 
-        $take = $request->take; 
+        $skip = $request->input('skip', 0);
+        $take = $request->input('take', 50);
         $user = User::find($request->pubkey);
 
-        if(!$user) return response()->json(['message' => 'user not found'], 404);
+        if(!$user) {
+            // response 204 - No Content
+            return response()->json([
+                'message' => 'user not found'
+            ], 204);
+        }
 
         $notes = $user->notes()
-            ->with('author')
             ->orderByDesc('published_at')
             ->skip($skip)->take($take)->get();
 

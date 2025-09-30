@@ -143,38 +143,6 @@ const Content = ({ content, cliped = false }: Props) => {
         }
         // Links / media
         if (token.type === "url") {
-            // if (token?.metadata?.type === "image") {
-            //     if(cliped && filesCount > 0) return null;
-            //     filesCount = filesCount + 1
-            //     return (
-            //         <div className="w-full my-2 flex justify-center">
-            //             <img
-            //                 key={i}
-            //                 src={token.content}
-            //                 onError={e => e.currentTarget.src = "/default-banner.jpg"}
-            //                 className="rounded-xl object-contain"
-            //                 alt="image"
-            //             />
-            //         </div>
-            //     )
-            // }
-            // if (token?.metadata?.type === "video") {
-            //     if(cliped && filesCount > 0) return null;
-            //     filesCount = filesCount + 1
-            //     return (
-            //         <div className="w-full my-2 flex justify-center">
-            //             <video
-            //                 key={i}
-            //                 loop
-            //                 src={token.content}
-            //                 controls
-            //                 ref={el => { if (el) videoRefs.current[i] = el }}
-            //                 className="w-full h-auto max-w-full max-h-[90vh] rounded-xl bg-gray-900 bg-opacity-35 my-2"
-            //             />
-            //         </div>
-            //     )
-            // }
-               
             return (
                 <div key={i} className="flex w-full my-2">
                     <LinkPreview link={token.content} />

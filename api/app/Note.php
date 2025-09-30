@@ -14,13 +14,17 @@ class Note extends Model
     protected $keyType = 'string';
     protected $primaryKey = 'id';
 
-    protected $hidden = ['search_vector', 'search_text'];
+    protected $hidden = [
+        'search_vector', 
+        'search_text',
+        'created_at',
+        'update_at'
+    ];
 
     protected $fillable = [
         'id',
         'kind',
         'pubkey',
-        'title',
         'content',
         'published_at',
         'tags',

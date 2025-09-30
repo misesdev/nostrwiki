@@ -8,19 +8,19 @@ class CacheResponse
 {
     public function handle($request, Closure $next)
     {
-        // Gerar chave de cache baseada em método + URL + corpo da requisição
+        // Generate cache key based in method + URL + body of request
         $body = $request->isMethod('post') ? json_encode($request->all()) : '';
         $key = 'response|' . md5($request->method() . '|' . $request->fullUrl() . '|' . $body);
 
-        // Retorna do cache se existir
+        // return from cache if exists
         if (Cache::has($key)) {
             return response()->json(Cache::get($key));
         }
 
         $response = $next($request);
 
-        // Armazena a resposta no cache (60 segundos por padrão)
-        Cache::put($key, $response->getData(true), 300);
+        // save in cache for 3 minutes
+        Cache::put($key, $response->getData(true), 180);
 
         return $response;
     }
