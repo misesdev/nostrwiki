@@ -16,7 +16,7 @@ trait FileSearchable
             ->with(['author', 'note'])
             ->when($type, fn($q) => $q->where('type', $type))
             ->selectRaw("
-                files.url, files.note_id, files.pubkey, files.title, 
+                files.url, files.note_id, files.pubkey, 
                 files.description, files.type, files.tags, files.published_at, 
                 (
                     greatest(

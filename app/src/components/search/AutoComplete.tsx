@@ -24,8 +24,9 @@ const safeSplitTokens = (text?: string) => {
     if (!text) return [];
     // split por espaços, remover pontuação de borda, manter #/@, decode entities mínimas
     return text
+        .replaceAll("#", "")
         .replaceAll(/\n/g, " ")
-        .split(/\s+/)
+        .split(" ").filter(t => t.length <= 12)
         .map(t => t.replaceAll(/^[^\w#@]+|[^\w#@]+$/g, "").trim())
         .map(t => t.replaceAll("#", "").trim())
         .filter(Boolean);
@@ -144,15 +145,8 @@ const AutoComplete = ({ term, results, onSearch }: AutoCompleteProps) => {
                     const note: Note = normalizeNote(item as any);
                     const words = term.split(" ").length + 1;
                     const preview = buildNotePreview(note, words);
-                    if (preview) { 
-                        let exits = false;
-                        uniqueResults.forEach(value => {
-                            const similarity = textSimilarity((value as AutocompleteNote).title, preview)
-                            if(similarity >= 0.75) exits = true
-                        })
-                        if(!exits)
-                            uniqueResults.set(preview, {...item, title: preview })
-                    }
+                    if (preview?.length) 
+                        uniqueResults.set(preview, {...item, content: preview })
                 } else if(item.type == "user") {
                     const user: User = normalizeUser(item as any);
                     uniqueResults.set(user.display_name, item) 

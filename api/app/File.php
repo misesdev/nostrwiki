@@ -25,7 +25,6 @@ class File extends Model
         'url',
         'pubkey',
         'note_id',
-        'title',
         'description',
         'published_at',
         'ref_count',
