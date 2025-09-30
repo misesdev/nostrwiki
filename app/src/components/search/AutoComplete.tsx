@@ -54,7 +54,7 @@ const buildNotePreview = (note: Note, words: number) => {
         const filtered = tokens.filter(t => !isBadToken(t) && t.length <= 12);
         return filtered.slice(0, words);
     }
-    const titleTokens = takeTokens(note.title);
+    const titleTokens = takeTokens(note.content);
     if (titleTokens.length)
         return titleTokens.slice(0, words).join(" ");
 
@@ -114,12 +114,12 @@ const NoteResult = ({ item, onSearch }: ResultProps) => {
     return (
         <div
             className="flex items-start gap-2 p-3 hover:bg-gray-700 cursor-pointer"
-            onClick={() => onSearch(note.title)}
+            onClick={() => onSearch(note.content)}
         >
             <AiOutlineSearch className="text-sm my-1 mx-2 text-gray-500" />
             <div className="min-w-0">
                 <div className="text-gray-200 text-sm truncate">
-                    {note.title}
+                    {note.content}
                 </div>
                 {/* uma linha pequena com origem/autor se existir */}
                 {note.published_by && (
