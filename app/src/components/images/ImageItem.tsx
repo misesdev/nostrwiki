@@ -4,6 +4,7 @@ import { NFile, User } from "@/types/types"
 import toast from "react-hot-toast"
 import { Copy, LinkIcon } from "lucide-react"
 import AppImage from '../commons/AppImage';
+import { shortenString } from "@/utils/utils";
 
 type Props = {
     image: NFile;
@@ -28,7 +29,7 @@ const ImageItem = ({ image, showInSlide, showAuthor }: Props) => {
                     width={400}
                     height={400}
                     src={image.url}
-                    alt={`Post ${image.note.title}`}
+                    alt={`Post ${shortenString(image.note.content, 25)}`}
                     className="w-full h-full object-cover transform group-hover:scale-105 transition duration-500"
                     onError="hidden"
                 />
@@ -60,11 +61,9 @@ const ImageItem = ({ image, showInSlide, showAuthor }: Props) => {
                     </a>
                 </div>
 
-                {image.note?.title && (
-                    <span className="absolute bottom-3 left-3 text-xs px-3 py-1 bg-black/70 text-white rounded-md shadow-md line-clamp-1">
-                        {image.note.title}
-                    </span>
-                )}
+                <span className="absolute bottom-3 left-3 text-xs px-3 py-1 bg-black/70 text-white rounded-md shadow-md line-clamp-1">
+                    {shortenString(image.note.content, 100)}
+                </span>
             </div>
 
             {/* Conteúdo abaixo */}
@@ -89,11 +88,11 @@ const ImageItem = ({ image, showInSlide, showAuthor }: Props) => {
                     </div>
                 )}
 
-                {/* {image.author && ( */}
-                {/*     <span className="text-xs text-gray-500 dark:text-gray-400"> */}
-                {/*         Posted by {image.author.display_name || image.author.name} */}
-                {/*     </span> */}
-                {/* )} */}
+                {image.author && (
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Posted by {image.author.display_name || image.author.name}
+                    </span>
+                )}
             </div>
         </div>
     )

@@ -5,6 +5,7 @@ import toast from "react-hot-toast"
 import { Copy, LinkIcon, Play } from "lucide-react"
 import AppImage from '../commons/AppImage';
 import { AppVideo } from "../commons/AppVideo";
+import { shortenString } from "@/utils/utils";
 
 type Props = {
     video: NFile;
@@ -55,7 +56,7 @@ export const VideoItem = ({ playVideo, video }: Props) => {
 
                     <div className="flex items-center gap-2">
                         <p className="text-gray-500 dark:text-gray-400 text-xs">
-                            {video.note.title} 
+                            {shortenString(video.note.content, 100)} 
                         </p>
                     </div>
 
