@@ -49,7 +49,19 @@ class NoteService
         for(let i = 0; i < users.length; i += skip) 
         {
             console.log("fetching", skip, "notes")
+            oldestSince = undefined
             const authors = users.slice(i, i + skip)
+
+            // if at a least a third of the users already have notes 
+            // in the database, take the smallest timestam as a filter
+            const pubkeys = authors.map(u => u.pubkey)
+            const notes = lastNotes.filter(n => pubkeys.includes(n.pubkey))
+            if(notes.length >= (users.length - skip / 3))
+            {
+                oldestSince = lastNotes
+                  .map(note => note.published_at)
+                  .reduce((min, s) => Math.min(min, s), Number.MAX_SAFE_INTEGER)
+            }
             let events = await pool.fechEvents({
                 authors: authors.map(u => u.pubkey),
                 limit: this._settings.max_fetch_notes,
