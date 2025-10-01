@@ -20,6 +20,7 @@ const UserSearch = ({ term }: SearchParams) => {
     const [endOfResults, setEndOfResults] = useState(false)
     const loaderRef = useRef<HTMLDivElement | null>(null);
     const uniques = useRef(new Map<string, User>()) 
+    const isFetching = useRef<boolean>(false) 
 
     useEffect(() => { 
         setSkip(0)
@@ -42,7 +43,9 @@ const UserSearch = ({ term }: SearchParams) => {
     }, [term])
 
     const fetchUsers = useCallback(async () => {
+        if(isFetching.current) return; 
         setLoading(true)
+        isFetching.current = true
         const service = new SearchService()
         const users = await service.search<User>("/search/users", { term, skip, take })
         users.forEach(user => {
@@ -51,8 +54,9 @@ const UserSearch = ({ term }: SearchParams) => {
         setUsers(Array.from(uniques.current.values()))
         setEndOfResults(users.length < (take/2))
         setSkip(prev => prev + take)
+        isFetching.current = false
         setLoading(false)
-    }, [term, skip, take])
+    }, [term, skip, take, isFetching.current])
 
     useEffect(() => {
         const observer = new IntersectionObserver(

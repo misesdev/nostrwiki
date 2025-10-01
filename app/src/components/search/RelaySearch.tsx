@@ -20,6 +20,7 @@ const RelaySearch = ({ term }: SearchParams) => {
     const loaderRef = useRef<HTMLDivElement | null>(null)
     const uniques = useRef(new Map<string, Relay>())
     const [author, setAuthor] = useState<User|null>(null)
+    const isFetching = useRef<boolean>(false) 
 
     useEffect(() => { 
         setSkip(0)
@@ -42,7 +43,9 @@ const RelaySearch = ({ term }: SearchParams) => {
     }, [term])
 
     const fetchRelays = useCallback(async () => {
+        if(isFetching.current) return;
         setLoading(true)
+        isFetching.current = true
         const service = new SearchService()
         const relays = await service.search<Relay>("/search/relays", { term, skip, take })
         relays.forEach(relay => {
@@ -51,8 +54,9 @@ const RelaySearch = ({ term }: SearchParams) => {
         setRelays(Array.from(uniques.current.values()))
         setEndOfResults(relays.length < (take/2))
         setSkip(prev => prev + take)
+        isFetching.current = false
         setLoading(false)
-    }, [term, skip, take])
+    }, [term, skip, take, isFetching.current])
 
     useEffect(() => {
         const observer = new IntersectionObserver(

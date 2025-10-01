@@ -24,6 +24,7 @@ const ImageSearch = ({ term }: SearchParams) => {
     const [slideOpen, setSlideOpen] = useState(false)
     const [imageIndex, setImageIndex] = useState(0)
     const uniques = useRef(new Map<string, NFile>()) 
+    const isFetching = useRef<boolean>(false) 
 
     useEffect(() => { 
         setSkip(0)
@@ -46,7 +47,9 @@ const ImageSearch = ({ term }: SearchParams) => {
     }, [term])
 
     const fetchImages = useCallback(async () => {
+        if(isFetching.current) return;
         setLoading(true)
+        isFetching.current = true
         const service = new SearchService()
         const images = await service.search<NFile>("/search/images", { term, skip, take })
         images.forEach(image => {
@@ -55,8 +58,9 @@ const ImageSearch = ({ term }: SearchParams) => {
         setImages(Array.from(uniques.current.values()))
         setEndOfResults(images.length < (take/2))
         setSkip(prev => prev + take)
+        isFetching.current = false
         setLoading(false)
-    }, [term, skip, take])
+    }, [term, skip, take, isFetching.current])
 
     useEffect(() => {
         const observer = new IntersectionObserver(

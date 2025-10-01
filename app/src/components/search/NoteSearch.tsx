@@ -21,6 +21,7 @@ const NoteSearch = ({ term }: SearchParams) => {
     const [slideOpen, setSlideOpen] = useState(false)
     const [noteIndex, setNoteIndex] = useState(0)
     const uniques = useRef(new Map<string, Note>()) 
+    const isFetching = useRef<boolean>(false) 
 
     useEffect(() => { 
         setSkip(0)
@@ -32,8 +33,7 @@ const NoteSearch = ({ term }: SearchParams) => {
             const service = new SearchService()
             const results = await service.search<Note>("/search/notes", { term, skip:0, take })
             results.forEach(note => {
-                if(note.content.split(" ").length >= 10)
-                    uniques.current.set(note.id, normalizeNote(note))
+                uniques.current.set(note.id, normalizeNote(note))
             })
             setNotes(Array.from(uniques.current.values()))
             setEndOfResults(results.length < (take/2))
@@ -44,18 +44,20 @@ const NoteSearch = ({ term }: SearchParams) => {
     }, [term])
 
     const fetchNotes = useCallback(async () => {
+        if(isFetching.current) return;
         setLoading(true)
+        isFetching.current = true
         const service = new SearchService()
         const results = await service.search<Note>("/search/notes", { term, skip, take })
         results.forEach(note => {
-            if(note.content.split(" ").length >= 10)
-                uniques.current.set(note.id, normalizeNote(note))
+            uniques.current.set(note.id, normalizeNote(note))
         })
         setNotes(Array.from(uniques.current.values()))
         setEndOfResults(results.length < (take/2))
         setSkip(prev => prev + take)
+        isFetching.current = false
         setLoading(false)
-    }, [term, skip, take])
+    }, [term, skip, take, isFetching.current])
 
     useEffect(() => {
         const observer = new IntersectionObserver(

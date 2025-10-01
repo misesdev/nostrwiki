@@ -21,6 +21,7 @@ const VideoSearch = ({ term }: SearchParams) => {
     const [slideOpen, setSlideOpen] = useState(false)
     const [playIndex, setPlayIndex] = useState(0)
     const uniques = useRef(new Map<string, NFile>()) 
+    const isFetching = useRef<boolean>(false) 
 
     useEffect(() => { 
         setSkip(0)
@@ -43,7 +44,9 @@ const VideoSearch = ({ term }: SearchParams) => {
     }, [term])
 
     const fetchVideos = useCallback(async () => {
+        if(isFetching.current) return;
         setLoading(true)
+        isFetching.current = true
         const service = new SearchService()
         const videos = await service.search<NFile>("/search/videos", { term, skip, take })
         videos.forEach(video => {
@@ -52,8 +55,9 @@ const VideoSearch = ({ term }: SearchParams) => {
         setVideos(Array.from(uniques.current.values()))
         setEndOfResults(videos.length < (take/2))
         setSkip(prev => prev + take)
+        isFetching.current = false
         setLoading(false)
-    }, [term, skip, take])
+    }, [term, skip, take, isFetching.current])
 
     useEffect(() => {
         const observer = new IntersectionObserver(

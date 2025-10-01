@@ -1,5 +1,6 @@
 'use client'
 
+import { shortenString } from "@/utils/utils";
 import Link from "next/link";
 
 type Props = {
@@ -10,7 +11,7 @@ const EmptyResults = ({ term }: Props) => {
     return (
         <div className='flex flex-col justify-center items-center pt-10'>
             <h1 className='m-5 text-[16px] md:text-[20px] lg:text-3xl mb-4 text-gray-400 text-center'>
-                No results found for `{term}`
+                No results found for `{shortenString(term, 25)}`
             </h1>
             <p className='m-10 text-[12px] lg:text-lg text-gray-300 text-center'>
                 Try searching for other terms with the same meaning.{' '}
