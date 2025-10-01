@@ -31,7 +31,7 @@ const SearchHeader = () => {
                                 className="w-8 h-8 md:w-15 md:h-15 rounded-full"
                                 onError="hidden"
                             />
-                            <h1 className="text-sm md:text-lg font-bold text-gray-200 ">Nosbook</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-200 ">Nostr Wiki</h1>
                         </div>
                     </Link>
 

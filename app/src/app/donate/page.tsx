@@ -22,7 +22,7 @@ export default function DonatePage() {
             <div className="flex flex-col items-center px-4 sm:px-0">
                 
                 <h1 className="text-1xl sm:text-3xl text-center text-gray-200 font-bold mb-4">
-                    Support Nostr Book
+                    Support Nostr Wiki
                 </h1>
 
                 <h2 className="text-[12px] md:text-sm text-gray-400 text-center max-w-xl mb-6">
@@ -31,6 +31,7 @@ export default function DonatePage() {
                 </h2>
 
                 <div className="flex flex-col items-center bg-gray-800 bg-opacity-50 p-5 rounded-xl shadow-lg">
+                    <div className="h-10"></div>
                     <QRCodeCanvas
                         value={lightningAddress} 
                         size={150}

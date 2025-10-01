@@ -39,13 +39,6 @@ class NoteService
 
         let oldestSince: number|undefined = undefined
 
-        if(lastNotes.length >= (users.length-5000))
-        {
-            oldestSince = lastNotes
-              .map(note => note.published_at)
-              .reduce((min, s) => Math.min(min, s), Number.MAX_SAFE_INTEGER)
-        }
-
         for(let i = 0; i < users.length; i += skip) 
         {
             console.log("fetching", skip, "notes")
@@ -62,6 +55,7 @@ class NoteService
                   .map(note => note.published_at)
                   .reduce((min, s) => Math.min(min, s), Number.MAX_SAFE_INTEGER)
             }
+
             let events = await pool.fechEvents({
                 authors: authors.map(u => u.pubkey),
                 limit: this._settings.max_fetch_notes,
