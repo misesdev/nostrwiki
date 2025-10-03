@@ -77,6 +77,7 @@ return new class extends Migration
         // índices
         DB::statement("CREATE INDEX notes_search_vector_idx ON notes USING GIN (search_vector)"); // full-text
         DB::statement("CREATE INDEX notes_search_text_trgm_idx ON notes USING gin (search_text gin_trgm_ops)");
+        DB::statement("CREATE INDEX idx_notes_pubkey_published_at ON notes (pubkey, published_at DESC)");
     }
 
     public function down(): void
