@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y libpq-dev zip unzip git curl \
     && docker-php-ext-enable redis \
     && docker-php-ext-install pdo pdo_pgsql pgsql
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
 COPY composer.json composer.lock ./
 
