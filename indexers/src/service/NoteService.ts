@@ -118,7 +118,7 @@ class NoteService
             if(!tags.length) 
                 tags = event.content.split(" ").filter(l => l.length <= 15)
             
-            const tagsContent = distinct(tags).slice(0, 15).join(" ")
+            const tagsContent = distinct(tags).join(" ")
             const author = authors.find(u => u.pubkey == event.pubkey)
             notes.set(event.id, {
                 id: event.id,
@@ -262,13 +262,14 @@ class NoteService
         );
         // Ignorar se for comentário/reply (tags tipo "e" indicam referências a outros eventos)
         const isReply = event.tags.some(t => t[0] === "e");
-        // Conteúdo muito curto sem arquivos não vale a pena indexar
-        const isTooShort = event.content.trim().length < MIN_CONTENT_LENGTH;
         // Filtro de conteúdo vazio ou só links de npub/nprofile/note/nevent/naddr
         const cleaned = event.content
             .replace(/\b(npub|nprofile|note|nevent|naddr)1[0-9a-z]{50,}\b/g, "")
             .replace(/\s+/g, " ")
             .trim();
+        // Conteúdo muito curto sem arquivos não vale a pena indexar
+        const isTooShort = cleaned.length < MIN_CONTENT_LENGTH;
+        
         const isEmptyAfterClean = cleaned.length === 0;
         // Decisão final
         return !isReply && (hasFile || (!isTooShort && !isEmptyAfterClean));

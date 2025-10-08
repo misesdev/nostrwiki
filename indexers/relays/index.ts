@@ -49,7 +49,7 @@ const runIndexer = async () => {
     global.gc?.();
 }
 
-cron.schedule("0 0 0 * * *", async () => {
+cron.schedule("0 0 3 * * *", async () => {
     await runIndexer()
 })
 

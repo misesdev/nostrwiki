@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer("file_pubkey_index")->default(0);
             $table->integer("relay_pubkey_index")->default(0);
 
-            $table->integer("pubkeys_per_process")->default(30000);
+            $table->integer("pubkeys_per_process")->default(75000);
             $table->integer("max_fetch_notes")->default(800);
             $table->integer("pubkeys_per_notes")->default(25);
 
@@ -34,9 +34,6 @@ return new class extends Migration
             $table->integer("max_fetch_events")->default(120);
             $table->integer("relays_betch_size")->default(15);
             $table->integer("indexer_interval")->default(5);
-
-            $table->bigInteger("note_since")->nullable();
-            $table->bigInteger("file_since")->nullable();
         });
     }
 

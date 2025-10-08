@@ -53,17 +53,6 @@ class AppSettings
         else
             await this._dbSettings.updateIndex(index, "pubkey_index");
     }
-
-    public async updateSince(col: ServiceKey): Promise<void>
-    {
-        const time = parseInt((Date.now() / 1000).toString())
-        if(col == Service.note_indexer)
-            await this._dbSettings.updateSince(time, "note_since")
-        else if(col == Service.file_indexer)
-            await this._dbSettings.updateSince(time, "file_since")
-        else
-            await this._dbSettings.updateSince(time, "note_since")
-    }
 }
 
 export default AppSettings

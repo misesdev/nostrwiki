@@ -47,14 +47,6 @@ class DBSettings
         `
         await this._db.exec(query, [])
     }
-
-    public async updateSince(timeSeconds: number, col: string): Promise<void>
-    {
-        const query = `
-            UPDATE app_settings SET ${col} = ${timeSeconds} WHERE 1=1
-        `
-        await this._db.exec(query, [])
-    }
 }
 
 export default DBSettings

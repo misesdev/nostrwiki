@@ -1,8 +1,7 @@
-import { Service, ServiceKey } from "../constant";
+import { ServiceKey } from "../constant";
 import { NostrEvent } from "../modules/types/NostrEvent";
 import { User } from "../modules/types/User";
 import { Settings } from "../settings/types";
-import { distinctUsers } from "../utils";
 import { LoadDataProps } from "./commons";
 import DBUsers from "./database/DBUsers";
 import PubkeyService from "./PubkeyService";
@@ -78,23 +77,23 @@ class UserService
         if(!user.picture && user["profile"])
             user.picture = user["profile"]
 
-        if(user.name?.length >= 100)
-            user.name = `${user.name.substring(0, 95)}...`
-        if(user.display_name?.length >= 100)
+        if(user.name && user.name?.length >= 100)
+            user.name = user.name.substring(0, 100)
+        if(user.display_name && user.display_name?.length >= 100)
             user.display_name = `${user.display_name.substring(0, 95)}...`
-        if(user.picture?.length >= 512)
+        if(user.picture && user.picture?.length >= 512)
             user.picture = `${user.picture.substring(0, 508)}...`
-        if(user.banner?.length >= 512)
+        if(user.banner && user.banner?.length >= 512)
             user.banner = `${user.banner.substring(0, 508)}...`
-        if(user.website?.length >= 512)
+        if(user.website && user.website?.length >= 512)
             user.website = `${user.website.substring(0, 508)}...`
-        if(user.nip05?.length >= 512)
+        if(user.nip05 && user.nip05?.length >= 512)
             user.nip05 = `${user.nip05.substring(0, 508)}...`
-        if(user.lud06?.length >= 512)
+        if(user.lud06 && user.lud06?.length >= 512)
             user.lud06 = `${user.lud06.substring(0, 508)}...`
-        if(user.lud16?.length >= 512)
+        if(user.lud16 && user.lud16?.length >= 512)
             user.lud16 = `${user.lud16.substring(0, 508)}...`
-        if(user.zapService?.length >= 512)
+        if(user.zapService && user.zapService?.length >= 512)
             user.zapService = `${user.zapService.substring(0, 508)}...`
     
         for (let property in user) {

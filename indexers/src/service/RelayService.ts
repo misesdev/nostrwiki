@@ -2,7 +2,6 @@ import { NostrEvent } from "../modules/types/NostrEvent";
 import { NostrRelay, RefRelay } from "../modules/types/NostrRelay";
 import { Settings } from "../settings/types";
 import { distinct, getRelayDomain, npubToHex } from "../utils";
-import AppSettings from "../settings/AppSettings" 
 import DBRelays from "./database/DBRelays";
 import { LoadDataProps } from "./commons";
 import { Service, ServiceKey } from "../constant"
