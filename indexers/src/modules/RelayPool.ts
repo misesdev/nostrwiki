@@ -175,7 +175,7 @@ export class RelayPool
 
         await pool.connect()
 
-        while(pool.websockets.length <= 30) 
+        while(pool.websockets.length <= 20) 
         {
             currentIndex += settings.relays_connections
 

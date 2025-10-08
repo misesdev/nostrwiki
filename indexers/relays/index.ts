@@ -5,54 +5,24 @@ import PubkeyService from "./src/service/PubkeyService";
 import RelayService from "./src/service/RelayService";
 import AppSettings from "./src/settings/AppSettings";
 import { configDotenv } from "dotenv";
+import cron from "node-cron"
 
 configDotenv()
 
-var shutdown = false;
-var nextRun: NodeJS.Timeout | null = null;
-var pool: RelayPool | null = null;
-
-const gracefulShutdown = async () => {
-    if (shutdown) return; 
-    shutdown = true;
-
-    console.log("\nclosing connections ...");
-
-    try 
-    {
-        if (nextRun) clearTimeout(nextRun);
-        if (pool) await pool.disconect();
-    } 
-    catch (err) {
-        console.error("Erro ao encerrar pool:", err);
-    } 
-    finally {
-        process.exit(0);
-    }
-}
-
-process.on("SIGTERM", gracefulShutdown);
-process.on("SIGINT", gracefulShutdown);
-
 const runIndexer = async () => {
-    const appSettings = new AppSettings()
-    const settings = await appSettings.get()
     try 
     {
         console.log("Running indexer...");
-
+        const appSettings = new AppSettings()
+        const settings = await appSettings.get()
         const relayMap = new Map<string, number>()
-
         const accumulateRelays = (relays: string[]) => {
             relays.forEach(relay => 
                 relayMap.set(relay, (relayMap.get(relay)??0)+1)
             )
         } 
-
         const pubkeys = await PubkeyService.currentPubkeys(settings, Service.relay_indexer)
-        
-        pool = await RelayPool.getInstance(settings, Service.relay_indexer)
-        
+        const pool = await RelayPool.getInstance(settings, Service.relay_indexer)
         // load relays from pubkeys
         const relayService = new RelayService(settings)
         await relayService.loadRelays({ pool, pubkeys, accumulateRelays })
@@ -65,26 +35,21 @@ const runIndexer = async () => {
             await relayService.saveRelays(relayRefs.map(r => r.url))
             await relayService.upRefs(relayRefs) 
         }
-       
         if(pubkeys.length) 
         {
             const pubkeyIndex = settings.relay_pubkey_index + pubkeys.length
             await appSettings.updatePubkeyIndex(Service.relay_indexer, pubkeyIndex)
         }
-
         await pool.disconect()
     } 
     catch (err) {
         console.error("Indexer error:", err);
     } 
-    finally {
-        if (!shutdown) // execute only is not shutdown 
-        { 
-            console.log("Indexer finished. Next run in", settings.indexer_interval, "minutes");
-            nextRun = setTimeout(runIndexer, settings.indexer_interval * 60 * 1000);
-        }
-    }
+    // force garbage collector if enabled --expose-gc
+    global.gc?.();
 }
 
-runIndexer()
+cron.schedule("0 0 0 * * *", async () => {
+    await runIndexer()
+})
 

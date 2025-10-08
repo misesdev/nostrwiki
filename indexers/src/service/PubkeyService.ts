@@ -100,20 +100,13 @@ class PubkeyService
     {
         const dbUsers = new DBUsers()
         const appSettings = new AppSettings()
-
         const index = this.getPubkeyIndex(settings, service)
         let users: User[] = await dbUsers.list(index, settings.pubkeys_per_process)
-        
         if(!users.length && settings.pubkey_index != 0) 
         {
             users = await dbUsers.list(0, settings.pubkeys_per_process)
             await appSettings.updatePubkeyIndex(service, 0)
         }
-
-        if(index >= 200000 && !settings.note_since) {
-            await appSettings.updateSince(service)
-        }
-
         return users
     }
 }

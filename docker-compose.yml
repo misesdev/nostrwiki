@@ -15,7 +15,9 @@ x-indexer-common: &indexer-common
     - elasticsearch
   environment:
     <<: *db-env
+    TZ: America/Sao_Paulo
   restart: unless-stopped
+  mem_limit: 1g
   ulimits:
     nproc: 65535
     nofile:
@@ -59,6 +61,7 @@ services:
     image: redis:7
     networks:
       - app-network
+    mem_limit: 1g
 
   nginx:
     image: nginx:alpine
@@ -83,6 +86,7 @@ services:
       - db-engine
       - nginx
       - redis
+    mem_limit: 4g
     restart: unless-stopped
     networks:
       - app-network
@@ -95,6 +99,8 @@ services:
       NODE_ENV: production
     ports:
       - "${APP_PORT:-3000}:${APP_PORT:-3000}"
+    mem_limit: 3g
+    restart: unless-stopped
     networks:
       - app-network
 

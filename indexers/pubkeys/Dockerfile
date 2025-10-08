@@ -12,5 +12,5 @@ COPY pubkeys/* ./
 
 RUN npm run build
 
-CMD ["node", "./dist/index.js"]
+CMD ["node", "--expose-gc", "./dist/index.js"]
 
