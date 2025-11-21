@@ -12,7 +12,7 @@ import DBUsers from "./database/DBUsers";
 import RelayService from "./RelayService";
 const pLimit = require("p-limit");
 
-class NoteService 
+class ArticleService 
 {
     private readonly _settings: Settings
     private readonly _dbNotes: DBNotes
@@ -276,4 +276,4 @@ class NoteService
     }
 }
 
-export default NoteService
+export default ArticleService
