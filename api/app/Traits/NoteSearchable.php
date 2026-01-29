@@ -63,7 +63,7 @@ trait NoteSearchable
                     // Fallback para termos curtos ou parciais usando search_text
                     ->orWhereRaw("notes.search_text ILIKE unaccent(?)", ["%{$term}%"]);
             })
-            ->where('kind', '>=', 1)
+            ->where('kind', '<>', 1)
             ->orderByDesc('published_at')
             ->orderByDesc('relevance')
             ->orderByDesc('kind')

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import SearchBox from './SearchBox';
 import AppImage from './commons/AppImage';
@@ -10,7 +10,7 @@ export default function HomeSearch(): ReactNode {
 
     const router = useRouter()
     const handleSearch = (searchTerm: string) => {
-        router.push(`/search/notes?term=${searchTerm.trim()}`);
+        router.push(`/search/articles?term=${searchTerm.trim()}`);
     }
 
     return (
