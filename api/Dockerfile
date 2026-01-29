@@ -17,9 +17,9 @@ RUN composer install --optimize-autoloader --no-dev
 
 RUN composer run-script post-autoload-dump
 
-RUN php artisan config:cache
-RUN php artisan route:cache
-RUN php artisan key:generate
+# RUN php artisan config:cache
+# RUN php artisan route:cache
+# RUN php artisan key:generate
 
 ENV APP_ENV=production
 ENV APP_DEBUG=false
