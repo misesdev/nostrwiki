@@ -103,6 +103,20 @@ class SearchController extends Controller
         return response()->json($notes);
     }
 
+        /**
+     * @response Note[] // 1 - PHPDoc
+     */
+    function search_articles(SearchRequest $request)
+    {
+        $term = $request->term;
+        $skip = $request->input('skip', 0);
+        $take = $request->input('take', 50);
+
+        $notes = Note::searchArticles($term, $skip, $take)->get();
+
+        return response()->json($notes);
+    }
+
     /**
      * @response File[] // 1 - PHPDoc
      */

@@ -14,7 +14,6 @@ trait FileSearchable
         $bindings = [$term, $term];
         return $query
             ->with(['author', 'note'])
-            ->when($type, fn($q) => $q->where('type', $type))
             ->selectRaw("
                 files.url, files.note_id, files.pubkey, 
                 files.description, files.type, files.tags, files.published_at, 
@@ -34,6 +33,7 @@ trait FileSearchable
                     // fallback ILIKE no search_vector
                     ->orWhereRaw("files.search_text ILIKE unaccent(?)", ["%{$term}%"]);
             })
+            ->when($type, fn($q) => $q->where('type', $type))
             ->orderByDesc('published_at')
             ->orderByDesc('relevance')
             ->skip($skip)

@@ -76,8 +76,12 @@ export const getClipedContent = (content: string, limit: number=50): string => {
 
 export const shortenString = (value: string, size: number): string =>
 {
-    let length = Math.ceil(size / 2);
-    return `${value.substring(0, length)}...${value.slice(-length)}`
+    if(value.length > size)
+    {
+        let length = Math.ceil(size / 2);
+        return `${value.substring(0, length)}...${value.slice(-length)}`
+    }
+    return value
 }
 
 export const normalizeUser = (user: User): User => {

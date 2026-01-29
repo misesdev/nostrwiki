@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 
 const tabs = [
     { key: 'notes', label: 'Notes', icon: AiOutlineFileText },
+    { key: 'articles', label: 'Articles', icon: AiOutlineFileText },
     { key: 'users', label: 'Users', icon: AiOutlineUser },
     { key: 'images', label: 'Images', icon: AiOutlineCamera },
     { key: 'videos', label: 'Videos', icon: AiOutlineVideoCamera },

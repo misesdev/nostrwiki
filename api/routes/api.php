@@ -15,6 +15,7 @@ Route::middleware('cache.response')->group(function () {
     Route::get('/search/users', [SearchController::class, 'search_users']);
     Route::get('/search/relays', [SearchController::class, 'search_relays']);
     Route::get('/search/notes', [SearchController::class, 'search_notes']);
+    Route::get('/search/articles', [SearchController::class, 'search_articles']);
     Route::get('/search/images', [SearchController::class, 'search_images']);
     Route::get('/search/videos', [SearchController::class, 'search_videos']);
     Route::get('/search/files', [SearchController::class, 'search_files']);
